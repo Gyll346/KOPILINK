@@ -1,0 +1,75 @@
+services:
+  # Laravel Application Container
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: kopilink_app
+    restart: unless-stopped
+    working_dir: /var/www
+    volumes:
+      - ./:/var/www
+    networks:
+      - kopilink_network
+    ports:
+      - "8000:8000"
+    environment:
+      - APP_NAME=KopiLink
+      - APP_ENV=local
+      - APP_DEBUG=true
+      - APP_URL=http://localhost:8000
+      - DB_CONNECTION=mysql
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_DATABASE=kopilink_db
+      - DB_USERNAME=kopilink_user
+      - DB_PASSWORD=kopilink_secret
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # MySQL Database Container
+  db:
+    image: mysql:8.0
+    container_name: kopilink_db
+    restart: unless-stopped
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: kopilink_db
+      MYSQL_USER: kopilink_user
+      MYSQL_PASSWORD: kopilink_secret
+      MYSQL_ROOT_PASSWORD: root_kopilink_secret
+    volumes:
+      - kopilink_mysql_data:/var/lib/mysql
+    networks:
+      - kopilink_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot_kopilink_secret"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # phpMyAdmin Container
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: kopilink_phpmyadmin
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+      MYSQL_ROOT_PASSWORD: root_kopilink_secret
+    depends_on:
+      - db
+    networks:
+      - kopilink_network
+
+networks:
+  kopilink_network:
+    driver: bridge
+
+volumes:
+  kopilink_mysql_data:
+    driver: local
