@@ -180,7 +180,7 @@
 <div class="container-fluid py-5">
     <div class="container">
         <div class="section-title">
-            <h4 class="text-primary text-uppercase" style="letter-spacing: 5px;">Sampel Kemasan</h4>
+            <h4 class="text-primary text-uppercase" style="letter-spacing: 5px;">Kemasan Ber-QR Terbaru</h4>
             <h1 class="display-4">Jejak Kopi Terverifikasi</h1>
         </div>
         <div class="row">
@@ -196,9 +196,12 @@
                             {!! \SimpleSoftwareIO\QrCode\Facades\QrCode::size(120)->margin(0)->generate(url('/trace/' . $kem->qr_code_url)) !!}
                         </div>
                         <h5 class="text-white font-weight-bold mb-1">{{ $kem->produksi->lahan->petani->nama }}</h5>
-                        <p class="text-white-50 small mb-2"><i class="fa fa-map-marker-alt text-primary mr-1"></i> {{ $kem->produksi->lahan->petani->alamat }}</p>
-                        <p class="text-white-50 small mb-3">Roastery: <strong class="text-white">{{ $kem->coffeeShop->nama_toko }}</strong></p>
-                        <a href="{{ route('trace.show', ['slug' => $kem->qr_code_url]) }}" class="btn btn-outline-primary btn-sm btn-block">
+                        <p class="text-white-50 small mb-1"><i class="fa fa-map-marker-alt text-primary mr-1"></i> {{ $kem->produksi->lahan->petani->alamat }}</p>
+                        <p class="text-white-50 small mb-2">Roastery: <strong class="text-white">{{ $kem->coffeeShop->nama_toko }}</strong></p>
+                        <small class="text-primary font-weight-bold d-block mb-3">
+                            <i class="fa fa-clock mr-1"></i> {{ $kem->created_at ? $kem->created_at->format('d M Y, H:i') : 'Baru saja' }}
+                        </small>
+                        <a href="{{ route('trace.show', ['slug' => $kem->qr_code_url]) }}" class="btn btn-outline-primary btn-sm btn-block mt-auto">
                             <i class="fa fa-eye mr-1"></i> Buka Kisah Single-Origin
                         </a>
                     </div>
