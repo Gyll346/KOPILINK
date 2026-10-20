@@ -3,14 +3,12 @@
 @section('title', 'Jejak Kopi Single-Origin - ' . $kemasan->qr_code_url)
 
 @push('styles')
-<!-- Leaflet.js CSS for OpenStreetMap Interactive Map -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
 <style>
-    #map {
+    .map-container {
         height: 380px;
         width: 100%;
         border-radius: 8px;
-        z-index: 1;
+        overflow: hidden;
     }
     .badge-sdg {
         padding: 8px 14px;
@@ -214,12 +212,20 @@
                             <h5 class="font-weight-bold m-0"><i class="fa fa-map-marked-alt text-primary mr-2"></i> Peta Koordinat Lahan Kebun</h5>
                             <small class="text-muted">Titik geospasial aktual budidaya kopi di Kalimantan Barat</small>
                         </div>
-                        <a href="https://www.openstreetmap.org/?mlat={{ $lahan->koordinat_y }}&mlon={{ $lahan->koordinat_x }}#map=16/{{ $lahan->koordinat_y }}/{{ $lahan->koordinat_x }}" target="_blank" class="btn btn-sm btn-outline-dark">
-                            Buka di OSM &rarr;
+                        <a href="https://www.google.com/maps?q={{ $lahan->koordinat_y }},{{ $lahan->koordinat_x }}" target="_blank" class="btn btn-sm btn-outline-dark">
+                            Buka di Google Maps &rarr;
                         </a>
                     </div>
                     <div class="card-body p-3">
-                        <div id="map"></div>
+                        <div class="map-container">
+                            <iframe 
+                                style="width: 100%; height: 380px; border: 0;"
+                                src="https://maps.google.com/maps?q={{ $lahan->koordinat_y }},{{ $lahan->koordinat_x }}&hl=id&z=15&output=embed"
+                                allowfullscreen="" 
+                                loading="lazy" 
+                                referrerpolicy="no-referrer-when-downgrade">
+                            </iframe>
+                        </div>
                         <div class="mt-2 text-center text-muted small">
                             <strong>Koordinat GPS:</strong> Latitude: <code>{{ $lahan->koordinat_y }}</code> &bull; Longitude: <code>{{ $lahan->koordinat_x }}</code>
                         </div>
@@ -289,32 +295,3 @@
 </div>
 @endsection
 
-@push('scripts')
-<!-- Leaflet.js Interactive Map Script -->
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        const lat = {{ $lahan->koordinat_y }};
-        const lng = {{ $lahan->koordinat_x }};
-
-        // Inisialisasi peta Leaflet
-        const map = L.map('map').setView([lat, lng], 14);
-
-        // Tile layer OpenStreetMap
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors | KopiLink'
-        }).addTo(map);
-
-        // Custom Marker
-        const marker = L.marker([lat, lng]).addTo(map);
-        marker.bindPopup(`
-            <div style="font-family: 'Montserrat', sans-serif;">
-                <strong style="color: #33211D;">Kebun Kopi {{ $lahan->jenis_kopi }}</strong><br>
-                <span>Petani: {{ $petani->nama }}</span><br>
-                <span>Kelompok: {{ $petani->kelompok_tani }}</span><br>
-                <small style="color: #777;">Koordinat: ${lat}, ${lng}</small>
-            </div>
-        `).openPopup();
-    });
-</script>
-@endpush

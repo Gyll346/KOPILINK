@@ -183,9 +183,9 @@
             <h4 class="text-primary text-uppercase" style="letter-spacing: 5px;">Kemasan Ber-QR Terbaru</h4>
             <h1 class="display-4">Jejak Kopi Terverifikasi</h1>
         </div>
-        <div class="row">
+        <div class="row" id="recent-traces-container">
             @foreach($recentTraces as $kem)
-                <div class="col-lg-4 col-md-6 mb-4">
+                <div class="col-lg-4 col-md-6 mb-4 recent-trace-item">
                     <div class="card border-0 shadow-sm p-4 text-center rounded h-100" style="background-color: #33211D;">
                         <div class="mb-3">
                             <span class="badge badge-warning text-dark font-weight-bold px-3 py-2" style="background-color: #DA9F5B; font-size: 13px;">
@@ -208,7 +208,76 @@
                 </div>
             @endforeach
         </div>
+
+        <!-- Pagination Clearfix -->
+        <div class="clearfix mt-3" id="recent-traces-pagination-wrapper">
+            <ul class="pagination float-right mb-0" id="recent-traces-pagination"></ul>
+        </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const items = Array.from(document.querySelectorAll('.recent-trace-item'));
+    const paginationUl = document.getElementById('recent-traces-pagination');
+    if (!items.length || !paginationUl) return;
+
+    let currentPage = 1;
+
+    function getItemsPerPage() {
+        return window.innerWidth >= 768 ? 6 : 3;
+    }
+
+    function render() {
+        const perPage = getItemsPerPage();
+        const totalPages = Math.ceil(items.length / perPage);
+        if (currentPage > totalPages) currentPage = totalPages || 1;
+
+        items.forEach((el, idx) => {
+            const start = (currentPage - 1) * perPage;
+            const end = start + perPage;
+            el.style.display = (idx >= start && idx < end) ? '' : 'none';
+        });
+
+        if (totalPages <= 1) {
+            paginationUl.innerHTML = '';
+            return;
+        }
+
+        let html = '';
+        html += `<li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+                    <a class="page-link" href="javascript:void(0)" data-page="${currentPage - 1}">Previous</a>
+                 </li>`;
+
+        for (let i = 1; i <= totalPages; i++) {
+            html += `<li class="page-item ${i === currentPage ? 'active' : ''}">
+                        <a class="page-link" href="javascript:void(0)" data-page="${i}">${i}</a>
+                     </li>`;
+        }
+
+        html += `<li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+                    <a class="page-link" href="javascript:void(0)" data-page="${currentPage + 1}">Next</a>
+                 </li>`;
+
+        paginationUl.innerHTML = html;
+    }
+
+    paginationUl.addEventListener('click', function (e) {
+        const link = e.target.closest('a[data-page]');
+        if (!link || link.parentElement.classList.contains('disabled')) return;
+        e.preventDefault();
+        currentPage = parseInt(link.getAttribute('data-page'), 10);
+        render();
+    });
+
+    let resizeTimer;
+    window.addEventListener('resize', function () {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(render, 150);
+    });
+
+    render();
+});
+</script>
 @endif
 @endsection

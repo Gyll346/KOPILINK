@@ -16,7 +16,6 @@ class TraceabilityController extends Controller
         $totalProduksi = Produksi::sum('jumlah_green_bean');
         $recentTraces = KemasanKopi::with(['produksi.lahan.petani', 'coffeeShop'])
             ->orderByDesc('id_kemasan')
-            ->take(6)
             ->get();
 
         return view('pages.home', compact('totalPetani', 'totalKemasan', 'totalProduksi', 'recentTraces'));
