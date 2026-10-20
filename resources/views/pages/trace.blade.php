@@ -89,13 +89,9 @@
                 <div class="card border-0 shadow-lg text-white mb-4" style="background-color: #33211D; border-radius: 8px;">
                     <div class="card-body p-4">
                         <div class="d-flex align-items-center mb-4">
-                            @if($lahan->foto_lahan)
-                                <img src="{{ asset('storage/' . $lahan->foto_lahan) }}" alt="Foto Kebun" class="rounded-circle mr-3 border border-warning" style="width: 75px; height: 75px; object-fit: cover;">
-                            @else
-                                <div class="rounded-circle bg-primary text-secondary mr-3 d-flex align-items-center justify-content-center font-weight-bold" style="width: 75px; height: 75px; font-size: 28px; color: #33211D !important;">
-                                    <i class="fa fa-user"></i>
-                                </div>
-                            @endif
+                            <div class="rounded-circle bg-primary text-secondary mr-3 d-flex align-items-center justify-content-center font-weight-bold shadow-sm" style="width: 70px; height: 70px; font-size: 30px; color: #33211D !important; flex-shrink: 0;">
+                                <i class="fa fa-user"></i>
+                            </div>
                             <div>
                                 <span class="badge badge-success px-2 py-1 mb-1" style="font-size: 10px;">
                                     <i class="fab fa-whatsapp mr-1"></i> Petani Terverifikasi OTP
@@ -136,6 +132,41 @@
                                 @endif
                             </p>
                         </div>
+
+                        <!-- Dokumentasi Foto Kebun & Foto Hasil Panen dari Petani -->
+                        @if($lahan->foto_lahan || $produksi->foto_green_bean)
+                            <div class="mt-4 pt-3 border-top border-secondary">
+                                <span class="text-white-50 small d-block font-weight-bold mb-2">
+                                    <i class="fa fa-images text-primary mr-1"></i> Dokumentasi Lapangan Petani:
+                                </span>
+                                <div class="row">
+                                    @if($lahan->foto_lahan)
+                                        <div class="col-{{ $produksi->foto_green_bean ? '6' : '12' }} mb-2">
+                                            <a href="{{ asset('storage/' . $lahan->foto_lahan) }}" target="_blank" class="d-block text-decoration-none">
+                                                <div class="rounded overflow-hidden border border-secondary position-relative">
+                                                    <img src="{{ asset('storage/' . $lahan->foto_lahan) }}" alt="Foto Kebun Kopi" class="w-100" style="height: 120px; object-fit: cover;">
+                                                    <span class="badge badge-dark position-absolute" style="bottom: 4px; left: 4px; font-size: 10px; opacity: 0.9;">
+                                                        <i class="fa fa-tree mr-1"></i> Foto Kebun
+                                                    </span>
+                                                </div>
+                                            </a>
+                                        </div>
+                                    @endif
+                                    @if($produksi->foto_green_bean)
+                                        <div class="col-{{ $lahan->foto_lahan ? '6' : '12' }} mb-2">
+                                            <a href="{{ asset('storage/' . $produksi->foto_green_bean) }}" target="_blank" class="d-block text-decoration-none">
+                                                <div class="rounded overflow-hidden border border-secondary position-relative">
+                                                    <img src="{{ asset('storage/' . $produksi->foto_green_bean) }}" alt="Foto Hasil Panen" class="w-100" style="height: 120px; object-fit: cover;">
+                                                    <span class="badge badge-dark position-absolute" style="bottom: 4px; left: 4px; font-size: 10px; opacity: 0.9;">
+                                                        <i class="fa fa-seedling mr-1"></i> Biji Panen
+                                                    </span>
+                                                </div>
+                                            </a>
+                                        </div>
+                                    @endif
+                                </div>
+                            </div>
+                        @endif
                     </div>
                 </div>
 
@@ -208,6 +239,14 @@
                                 Dikelola oleh <strong>{{ $petani->nama }}</strong> di <strong>Desa {{ $petani->kelompok_tani }}</strong>. 
                                 Populasi: {{ number_format($lahan->jumlah_tanaman) }} pohon di atas lahan seluas {{ $lahan->luas_lahan }} Ha.
                             </p>
+                            @if($lahan->foto_lahan)
+                                <div class="mt-2 mb-3">
+                                    <a href="{{ asset('storage/' . $lahan->foto_lahan) }}" target="_blank">
+                                        <img src="{{ asset('storage/' . $lahan->foto_lahan) }}" alt="Foto Kebun" class="rounded border shadow-sm" style="height: 110px; max-width: 100%; object-fit: cover;">
+                                    </a>
+                                    <small class="d-block text-muted mt-1"><i class="fa fa-camera mr-1"></i> Foto Kebun Agroforestri</small>
+                                </div>
+                            @endif
                         </div>
 
                         <div class="timeline-step">
@@ -217,6 +256,14 @@
                                 Panen batch seberat <strong>{{ $produksi->jumlah_green_bean }} Kg</strong> dipetik dan dicatat pada tanggal 
                                 <strong>{{ $produksi->tanggal_input->format('d F Y') }}</strong>.
                             </p>
+                            @if($produksi->foto_green_bean)
+                                <div class="mt-2 mb-3">
+                                    <a href="{{ asset('storage/' . $produksi->foto_green_bean) }}" target="_blank">
+                                        <img src="{{ asset('storage/' . $produksi->foto_green_bean) }}" alt="Foto Biji Kopi" class="rounded border shadow-sm" style="height: 110px; max-width: 100%; object-fit: cover;">
+                                    </a>
+                                    <small class="d-block text-muted mt-1"><i class="fa fa-camera mr-1"></i> Foto Biji Kopi (Green Bean)</small>
+                                </div>
+                            @endif
                         </div>
 
                         <div class="timeline-step">
