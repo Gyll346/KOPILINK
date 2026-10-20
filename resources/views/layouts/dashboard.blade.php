@@ -376,6 +376,13 @@
                 }
             });
         });
+
+        // Mencegah akses kembali via tombol Back / Undo browser setelah sesi logout
+        window.addEventListener('pageshow', function (event) {
+            if (event.persisted || (window.performance && window.performance.navigation && window.performance.navigation.type === 2)) {
+                window.location.reload();
+            }
+        });
     </script>
 
     @stack('scripts')
