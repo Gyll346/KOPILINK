@@ -15,6 +15,17 @@
 </div>
 
 <div class="card card-stat">
+    <div class="card-header bg-white border-0 pt-3 px-3 pb-2 d-flex justify-content-between align-items-center flex-wrap">
+        <h6 class="font-weight-bold m-0 text-dark mb-2 mb-md-0"><i class="fa fa-boxes text-primary mr-2"></i> Data Panen Green Bean</h6>
+        <div style="min-width: 250px; max-width: 320px;">
+            <div class="input-group input-group-sm">
+                <div class="input-group-prepend">
+                    <span class="input-group-text bg-light border-right-0"><i class="fa fa-search text-muted"></i></span>
+                </div>
+                <input type="text" class="form-control border-left-0" id="searchTableInput" placeholder="Cari batch, varietas, status..." onkeyup="filterProduksiTable()">
+            </div>
+        </div>
+    </div>
     <div class="card-body p-0">
         @if($produksiList->isEmpty())
             <div class="text-center py-5">
@@ -24,7 +35,7 @@
             </div>
         @else
             <div class="table-responsive">
-                <table class="table table-hover mb-0">
+                <table class="table table-hover mb-0" id="produksiTable">
                     <thead class="thead-light">
                         <tr>
                             <th class="pl-4">ID Batch</th>
@@ -81,4 +92,19 @@
         @endif
     </div>
 </div>
+
+<script>
+function filterProduksiTable() {
+    const input = document.getElementById("searchTableInput");
+    const filter = input.value.toLowerCase();
+    const table = document.getElementById("produksiTable");
+    if (!table) return;
+    const tr = table.getElementsByTagName("tbody")[0].getElementsByTagName("tr");
+
+    for (let i = 0; i < tr.length; i++) {
+        const text = tr[i].textContent || tr[i].innerText;
+        tr[i].style.display = text.toLowerCase().indexOf(filter) > -1 ? "" : "none";
+    }
+}
+</script>
 @endsection
