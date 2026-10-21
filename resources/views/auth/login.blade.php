@@ -55,7 +55,14 @@
 
                                     <div class="form-group mb-4">
                                         <label class="text-white font-weight-bold">Password</label>
-                                        <input type="password" name="password" class="form-control p-4 border-0" placeholder="Kata sandi" required>
+                                        <div class="input-group">
+                                            <input type="password" name="password" id="password_petani" class="form-control p-4 border-0" placeholder="Kata sandi" required>
+                                            <div class="input-group-append">
+                                                <button class="btn btn-light px-3" type="button" onclick="togglePasswordVisibility('password_petani', this)" style="border-radius: 0 4px 4px 0;">
+                                                    <i class="fa fa-eye text-dark"></i>
+                                                </button>
+                                            </div>
+                                        </div>
                                     </div>
 
                                     <button class="btn btn-primary btn-block font-weight-bold py-3 text-secondary text-uppercase" type="submit" style="color: #33211D !important; font-size: 16px;">
@@ -90,7 +97,14 @@
 
                                     <div class="form-group mb-4">
                                         <label class="text-white font-weight-bold">Password</label>
-                                        <input type="password" name="password" class="form-control p-4 border-0" placeholder="Kata sandi mitra" required>
+                                        <div class="input-group">
+                                            <input type="password" name="password" id="password_cs" class="form-control p-4 border-0" placeholder="Kata sandi mitra" required>
+                                            <div class="input-group-append">
+                                                <button class="btn btn-light px-3" type="button" onclick="togglePasswordVisibility('password_cs', this)" style="border-radius: 0 4px 4px 0;">
+                                                    <i class="fa fa-eye text-dark"></i>
+                                                </button>
+                                            </div>
+                                        </div>
                                     </div>
 
                                     <button class="btn btn-primary btn-block font-weight-bold py-3 text-secondary text-uppercase" type="submit" style="color: #33211D !important; font-size: 16px;">
@@ -111,4 +125,22 @@
         </div>
     </div>
 </div>
+
+<script>
+function togglePasswordVisibility(inputId, btn) {
+    const input = document.getElementById(inputId);
+    const icon = btn.querySelector('i');
+    if (!input || !icon) return;
+
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+    } else {
+        input.type = 'password';
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+    }
+}
+</script>
 @endsection

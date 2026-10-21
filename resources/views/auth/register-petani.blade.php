@@ -58,19 +58,28 @@
                                 </div>
                             </div>
 
-                            <div class="form-group">
-                                <label class="text-white font-weight-bold">Alamat / Lokasi Desa <span class="text-danger">*</span></label>
-                                <textarea name="alamat" class="form-control border-0 p-3" rows="3" placeholder="Contoh: Desa Pasak Piang, RT 02 / RW 01, Kec. Sungai Ambawang" required>{{ old('alamat') }}</textarea>
-                            </div>
-
                             <div class="form-row">
                                 <div class="col-md-6 form-group">
                                     <label class="text-white font-weight-bold">Password <span class="text-danger">*</span></label>
-                                    <input type="password" name="password" class="form-control p-4 border-0" placeholder="Minimal 6 karakter" required>
+                                    <div class="input-group">
+                                        <input type="password" name="password" id="reg_password" class="form-control p-4 border-0" placeholder="Minimal 6 karakter" required>
+                                        <div class="input-group-append">
+                                            <button class="btn btn-light px-3" type="button" onclick="togglePasswordVisibility('reg_password', this)" style="border-radius: 0 4px 4px 0;">
+                                                <i class="fa fa-eye text-dark"></i>
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
                                 <div class="col-md-6 form-group">
                                     <label class="text-white font-weight-bold">Konfirmasi Password <span class="text-danger">*</span></label>
-                                    <input type="password" name="password_confirmation" class="form-control p-4 border-0" placeholder="Ulangi password" required>
+                                    <div class="input-group">
+                                        <input type="password" name="password_confirmation" id="reg_password_confirm" class="form-control p-4 border-0" placeholder="Ulangi password" required>
+                                        <div class="input-group-append">
+                                            <button class="btn btn-light px-3" type="button" onclick="togglePasswordVisibility('reg_password_confirm', this)" style="border-radius: 0 4px 4px 0;">
+                                                <i class="fa fa-eye text-dark"></i>
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
@@ -90,4 +99,22 @@
         </div>
     </div>
 </div>
+
+<script>
+function togglePasswordVisibility(inputId, btn) {
+    const input = document.getElementById(inputId);
+    const icon = btn.querySelector('i');
+    if (!input || !icon) return;
+
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+    } else {
+        input.type = 'password';
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+    }
+}
+</script>
 @endsection

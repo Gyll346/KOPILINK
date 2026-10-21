@@ -40,7 +40,7 @@
                 </div>
                 <div>
                     <strong class="text-muted d-block">Alamat Domisili:</strong>
-                    <span class="text-dark">{{ $petani->alamat }}</span>
+                    <span class="text-dark">{{ $petani->alamat ?? 'Belum diisi (lengkapi di formulir)' }}</span>
                 </div>
             </div>
         </div>

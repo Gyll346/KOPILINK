@@ -32,7 +32,6 @@ class AuthController extends Controller
             'password' => 'required|string|min:6|confirmed',
             'nama' => 'required|string|max:100',
             'kontak' => 'required|string|max:20',
-            'alamat' => 'required|string',
             'kelompok_tani' => 'required|in:Pasak Piang,Padi Jaya',
         ]);
 
@@ -47,7 +46,7 @@ class AuthController extends Controller
             'password' => Hash::make($validated['password']),
             'nama' => $validated['nama'],
             'kontak' => $formattedPhone,
-            'alamat' => $validated['alamat'],
+            'alamat' => null,
             'kelompok_tani' => $validated['kelompok_tani'],
             'is_verified' => false,
         ]);
