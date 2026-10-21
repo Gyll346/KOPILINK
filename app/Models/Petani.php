@@ -20,6 +20,7 @@ class Petani extends Authenticatable
         'kontak',
         'alamat',
         'kelompok_tani',
+        'foto_profil',
         'otp_code',
         'otp_expired_at',
         'is_verified',

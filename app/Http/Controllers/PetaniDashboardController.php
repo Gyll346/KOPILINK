@@ -129,4 +129,34 @@ class PetaniDashboardController extends Controller
         return redirect()->route('petani.produksi.index')
             ->with('status', 'Data panen green bean berhasil dicatat dengan status Tersedia!');
     }
+
+    public function profile()
+    {
+        $petani = Auth::guard('petani')->user();
+        return view('petani.profile', compact('petani'));
+    }
+
+    public function profileUpdate(Request $request)
+    {
+        /** @var \App\Models\Petani $petani */
+        $petani = Auth::guard('petani')->user();
+
+        $validated = $request->validate([
+            'nama' => 'required|string|max:100',
+            'alamat' => 'required|string',
+            'foto_profil' => 'nullable|image|max:10240',
+        ]);
+
+        $petani->nama = $validated['nama'];
+        $petani->alamat = $validated['alamat'];
+
+        if ($request->hasFile('foto_profil')) {
+            $petani->foto_profil = $this->imageService->compressAndStore($request->file('foto_profil'), 'petani_profil');
+        }
+
+        $petani->save();
+
+        return redirect()->route('petani.profile')
+            ->with('status', 'Profil dan foto petani berhasil diperbarui!');
+    }
 }

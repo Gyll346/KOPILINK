@@ -54,6 +54,10 @@ Route::middleware('auth:petani')->prefix('petani')->name('petani.')->group(funct
     Route::get('/produksi', [PetaniDashboardController::class, 'produksiIndex'])->name('produksi.index');
     Route::get('/produksi/create', [PetaniDashboardController::class, 'produksiCreate'])->name('produksi.create');
     Route::post('/produksi/store', [PetaniDashboardController::class, 'produksiStore'])->name('produksi.store');
+
+    // Profil Petani
+    Route::get('/profile', [PetaniDashboardController::class, 'profile'])->name('profile');
+    Route::post('/profile', [PetaniDashboardController::class, 'profileUpdate'])->name('profile.update');
 });
 
 /*

@@ -87,9 +87,13 @@
                 <div class="card border-0 shadow-lg text-white mb-4" style="background-color: #33211D; border-radius: 8px;">
                     <div class="card-body p-4">
                         <div class="d-flex align-items-center mb-4">
-                            <div class="rounded-circle bg-primary text-secondary mr-3 d-flex align-items-center justify-content-center font-weight-bold shadow-sm" style="width: 70px; height: 70px; font-size: 30px; color: #33211D !important; flex-shrink: 0;">
-                                <i class="fa fa-user"></i>
-                            </div>
+                            @if($petani->foto_profil)
+                                <img src="{{ asset('storage/' . $petani->foto_profil) }}" alt="{{ $petani->nama }}" class="rounded-circle mr-3 shadow-sm border border-warning" style="width: 70px; height: 70px; object-fit: cover; flex-shrink: 0;">
+                            @else
+                                <div class="rounded-circle bg-primary text-secondary mr-3 d-flex align-items-center justify-content-center font-weight-bold shadow-sm" style="width: 70px; height: 70px; font-size: 30px; color: #33211D !important; flex-shrink: 0;">
+                                    <i class="fa fa-user"></i>
+                                </div>
+                            @endif
                             <div>
                                 <span class="badge badge-success px-2 py-1 mb-1" style="font-size: 10px;">
                                     <i class="fab fa-whatsapp mr-1"></i> Petani Terverifikasi OTP

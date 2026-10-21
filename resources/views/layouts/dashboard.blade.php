@@ -205,9 +205,13 @@
             @if(Auth::guard('petani')->check())
                 @php $petani = Auth::guard('petani')->user(); @endphp
                 <div class="px-3 py-3 border-bottom border-dark d-flex align-items-center">
-                    <div class="bg-primary text-secondary rounded-circle d-flex align-items-center justify-content-center mr-3 font-weight-bold" style="width: 42px; height: 42px; font-size: 18px; color: #33211D !important;">
-                        <i class="fa fa-user"></i>
-                    </div>
+                    @if($petani->foto_profil)
+                        <img src="{{ asset('storage/' . $petani->foto_profil) }}" alt="{{ $petani->nama }}" class="rounded-circle mr-3 shadow-sm border border-warning" style="width: 42px; height: 42px; object-fit: cover; flex-shrink: 0;">
+                    @else
+                        <div class="bg-primary text-secondary rounded-circle d-flex align-items-center justify-content-center mr-3 font-weight-bold" style="width: 42px; height: 42px; font-size: 18px; color: #33211D !important; flex-shrink: 0;">
+                            <i class="fa fa-user"></i>
+                        </div>
+                    @endif
                     <div style="overflow: hidden;">
                         <div class="text-white font-weight-bold text-truncate" style="font-size: 14px;">{{ $petani->nama }}</div>
                         <span class="badge badge-warning" style="font-size: 10px; background-color: #DA9F5B; color: #111;">
@@ -221,6 +225,11 @@
                     <li class="nav-item">
                         <a href="{{ route('petani.dashboard') }}" class="nav-link {{ request()->routeIs('petani.dashboard') ? 'active' : '' }}">
                             <i class="fa fa-tachometer-alt"></i> Ringkasan Utama
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ route('petani.profile') }}" class="nav-link {{ request()->routeIs('petani.profile') ? 'active' : '' }}">
+                            <i class="fa fa-user-circle"></i> Profil Petani
                         </a>
                     </li>
                     <li class="nav-item">
