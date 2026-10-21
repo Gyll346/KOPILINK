@@ -22,7 +22,7 @@ class DatabaseSeeder extends Seeder
             ['username' => 'roastery_senja'],
             [
                 'password' => Hash::make('KopiLink2026!'),
-                'nama_toko' => 'Senja Roastery & Cafe',
+                'nama_toko' => '101 Coffe House',
             ]
         );
 
