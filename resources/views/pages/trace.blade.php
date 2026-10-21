@@ -95,9 +95,6 @@
                                 </div>
                             @endif
                             <div>
-                                <span class="badge badge-success px-2 py-1 mb-1" style="font-size: 10px;">
-                                    <i class="fab fa-whatsapp mr-1"></i> Petani Terverifikasi OTP
-                                </span>
                                 <h4 class="text-white font-weight-bold m-0">{{ $petani->nama }}</h4>
                                 <small class="text-white-50"><i class="fa fa-map-marker-alt text-primary mr-1"></i> {{ $petani->alamat }}</small>
                             </div>
