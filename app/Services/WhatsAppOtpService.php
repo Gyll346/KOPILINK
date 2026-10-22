@@ -48,30 +48,32 @@ class WhatsAppOtpService
         $message = "Halo {$petani->nama},\n\nKode verifikasi OTP akun KopiLink Anda adalah: *{$otp}*.\nKode ini berlaku selama 5 menit. Jangan bagikan kode ini kepada siapapun.";
 
         $sent = false;
-        if (!empty($this->apiKey) && $this->apiKey !== 'dummy_token') {
-            try {
-                $response = Http::withHeaders([
-                    'Authorization' => $this->apiKey,
-                ])->timeout(5)->post($this->endpoint, [
-                    'target' => (string)$petani->kontak,
-                    'message' => $message,
-                    'countryCode' => '62',
-                ]);
-                $sent = $response->successful();
-            } catch (\Throwable $e) {
-                Log::warning("Gagal mengirim WhatsApp OTP via Gateway: " . $e->getMessage());
-            }
+        try {
+            // Format nomor tujuan WhatsApp (62xxxxxxxx)
+            $target = (string)$this->formatPhoneNumber($petani->kontak);
+            
+            // Kirim pesan teks OTP menggunakan WhatsApp Web Sidecar
+            \Kstmostofa\LaravelWhatsApp\Facades\WhatsApp::web('main')->messages()->sendText(
+                $target,
+                $message
+            );
+            $sent = true;
+        } catch (\Throwable $e) {
+            Log::warning("Gagal mengirim WhatsApp OTP via Web Sidecar: " . $e->getMessage());
         }
 
-        // Simpan ke log sistem untuk kenyamanan pengujian lokal jika gateway tidak dikonfigurasi
-        Log::info("WhatsApp OTP untuk Petani [{$petani->nama} - {$petani->kontak}]: {$otp}");
+        // Catat ke log sistem sebagai audit trail & cadangan lokal
+        Log::info("WhatsApp OTP untuk Petani [{$petani->nama} - {$petani->kontak}]: {$otp} (Terkirim WA: " . ($sent ? 'YA' : 'TIDAK') . ")");
 
         return [
             'success' => true,
             'otp' => $otp,
             'sent_via_gateway' => $sent,
-            'message' => $sent ? 'OTP berhasil dikirim ke WhatsApp Anda.' : "OTP verifikasi telah dibuat (Mode Simulasi Pengujian: {$otp}).",
+            'message' => $sent 
+                ? 'Kode OTP verifikasi berhasil dikirim langsung ke WhatsApp Anda.' 
+                : "OTP telah dibuat. (WhatsApp Sidecar belum terkoneksi: {$otp})",
         ];
+
     }
 
     /**
