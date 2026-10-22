@@ -151,6 +151,12 @@ class PetaniDashboardController extends Controller
         $petani->alamat = $validated['alamat'];
 
         if ($request->hasFile('foto_profil')) {
+            // Hapus foto profil lama jika ada agar tidak memenuhi storage
+            if ($petani->foto_profil && \Illuminate\Support\Facades\Storage::disk('public')->exists($petani->foto_profil)) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($petani->foto_profil);
+            }
+
+            // Kompresi otomatis (resolusi max 1200px, kualitas WebP 75)
             $petani->foto_profil = $this->imageService->compressAndStore($request->file('foto_profil'), 'petani_profil');
         }
 
