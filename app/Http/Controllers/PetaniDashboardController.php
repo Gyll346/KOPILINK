@@ -172,6 +172,64 @@ class PetaniDashboardController extends Controller
             ->with('status', 'Data panen green bean berhasil dicatat dengan status Tersedia!');
     }
 
+    public function produksiEdit($id_produksi)
+    {
+        $petani = Auth::guard('petani')->user();
+        $lahanList = Lahan::where('id_petani', $petani->id_petani)->get();
+        $lahanIds = $lahanList->pluck('id_lahan');
+
+        $produksi = Produksi::where('id_produksi', $id_produksi)
+            ->whereIn('id_lahan', $lahanIds)
+            ->firstOrFail();
+
+        // Guard: Jika status bukan Tersedia (misal sudah diterima oleh Coffee Shop/Admin)
+        if ($produksi->status !== 'Tersedia') {
+            return redirect()->route('petani.produksi.index')
+                ->with('warning', 'Data produksi ini telah diserap/diterima oleh Coffee Shop sehingga tidak dapat diedit kembali demi integritas ketertelusuran.');
+        }
+
+        return view('petani.produksi.edit', compact('petani', 'produksi', 'lahanList'));
+    }
+
+    public function produksiUpdate(Request $request, $id_produksi)
+    {
+        $petani = Auth::guard('petani')->user();
+        $lahanList = Lahan::where('id_petani', $petani->id_petani)->get();
+        $lahanIds = $lahanList->pluck('id_lahan')->toArray();
+
+        $produksi = Produksi::where('id_produksi', $id_produksi)
+            ->whereIn('id_lahan', $lahanIds)
+            ->firstOrFail();
+
+        // Guard: Jika status bukan Tersedia, tolak perubahan
+        if ($produksi->status !== 'Tersedia') {
+            return redirect()->route('petani.produksi.index')
+                ->with('warning', 'Data produksi ini sudah diterima oleh Coffee Shop dan tidak dapat diubah.');
+        }
+
+        $validated = $request->validate([
+            'id_lahan' => 'required|in:' . implode(',', $lahanIds),
+            'jumlah_green_bean' => 'required|numeric|min:0.5',
+            'tanggal_input' => 'required|date',
+            'foto_green_bean' => 'nullable|image|max:10240',
+        ]);
+
+        if ($request->hasFile('foto_green_bean')) {
+            if ($produksi->foto_green_bean && \Illuminate\Support\Facades\Storage::disk('public')->exists($produksi->foto_green_bean)) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($produksi->foto_green_bean);
+            }
+            $produksi->foto_green_bean = $this->imageService->compressAndStore($request->file('foto_green_bean'), 'produksi');
+        }
+
+        $produksi->id_lahan = $validated['id_lahan'];
+        $produksi->jumlah_green_bean = $validated['jumlah_green_bean'];
+        $produksi->tanggal_input = $validated['tanggal_input'];
+        $produksi->save();
+
+        return redirect()->route('petani.produksi.index')
+            ->with('status', "Catatan panen #PRD-{$produksi->id_produksi} berhasil diperbarui!");
+    }
+
     public function profile()
     {
         $petani = Auth::guard('petani')->user();

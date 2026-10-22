@@ -45,6 +45,7 @@
                             <th>Jumlah Green Bean</th>
                             <th>Tanggal Panen</th>
                             <th>Status Rantai Pasok</th>
+                            <th class="text-center pr-4">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -81,6 +82,17 @@
                                     @else
                                         <span class="badge badge-success px-3 py-2 font-weight-bold" style="font-size: 12px;">
                                             <i class="fa fa-check-circle mr-1"></i> Diterima Coffee Shop
+                                        </span>
+                                    @endif
+                                </td>
+                                <td class="text-center pr-4">
+                                    @if($prod->status === 'Tersedia')
+                                        <a href="{{ route('petani.produksi.edit', ['id_produksi' => $prod->id_produksi]) }}" class="btn btn-sm btn-koppee">
+                                            <i class="fa fa-edit mr-1"></i> Edit
+                                        </a>
+                                    @else
+                                        <span class="badge badge-secondary px-2 py-1" title="Data sudah diserap coffee shop dan terkunci">
+                                            <i class="fa fa-lock mr-1"></i> Terkunci
                                         </span>
                                     @endif
                                 </td>
