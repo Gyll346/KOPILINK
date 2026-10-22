@@ -1,4 +1,7 @@
+name: kopilink
+
 services:
+
   # Laravel Application Container
   app:
     build:
