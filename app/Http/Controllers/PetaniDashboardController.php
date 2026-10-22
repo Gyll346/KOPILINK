@@ -79,6 +79,48 @@ class PetaniDashboardController extends Controller
             ->with('status', "Data Lahan {$jenisKopi} berhasil didaftarkan ke sistem KopiLink!");
     }
 
+    public function lahanEdit($id_lahan)
+    {
+        $petani = Auth::guard('petani')->user();
+        $lahan = Lahan::where('id_lahan', $id_lahan)
+            ->where('id_petani', $petani->id_petani)
+            ->firstOrFail();
+
+        return view('petani.lahan.edit', compact('petani', 'lahan'));
+    }
+
+    public function lahanUpdate(Request $request, $id_lahan)
+    {
+        $petani = Auth::guard('petani')->user();
+        $lahan = Lahan::where('id_lahan', $id_lahan)
+            ->where('id_petani', $petani->id_petani)
+            ->firstOrFail();
+
+        $validated = $request->validate([
+            'koordinat_x' => 'required|numeric|between:-180,180',
+            'koordinat_y' => 'required|numeric|between:-90,90',
+            'luas_lahan' => 'required|numeric|min:0.01',
+            'jumlah_tanaman' => 'required|integer|min:1',
+            'foto_lahan' => 'nullable|image|max:10240',
+        ]);
+
+        if ($request->hasFile('foto_lahan')) {
+            if ($lahan->foto_lahan && \Illuminate\Support\Facades\Storage::disk('public')->exists($lahan->foto_lahan)) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($lahan->foto_lahan);
+            }
+            $lahan->foto_lahan = $this->imageService->compressAndStore($request->file('foto_lahan'), 'lahan');
+        }
+
+        $lahan->koordinat_x = $validated['koordinat_x'];
+        $lahan->koordinat_y = $validated['koordinat_y'];
+        $lahan->luas_lahan = $validated['luas_lahan'];
+        $lahan->jumlah_tanaman = $validated['jumlah_tanaman'];
+        $lahan->save();
+
+        return redirect()->route('petani.lahan.index')
+            ->with('status', "Data plot lahan #{$lahan->id_lahan} berhasil diperbarui!");
+    }
+
     public function produksiIndex()
     {
         $petani = Auth::guard('petani')->user();

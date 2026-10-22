@@ -46,6 +46,7 @@
                             <th>Jumlah Tanaman</th>
                             <th>Varietas Kopi (Auto)</th>
                             <th>Peta</th>
+                            <th class="text-center pr-4">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -71,9 +72,14 @@
                                     </span>
                                 </td>
                                 <td>
-                                    <a href="https://www.openstreetmap.org/?mlat={{ $lahan->koordinat_y }}&mlon={{ $lahan->koordinat_x }}#map=16/{{ $lahan->koordinat_y }}/{{ $lahan->koordinat_x }}" 
+                                    <a href="https://maps.google.com/?q={{ $lahan->koordinat_y }},{{ $lahan->koordinat_x }}" 
                                        target="_blank" class="btn btn-sm btn-outline-info">
-                                        <i class="fa fa-map-pin"></i> Lihat OSM
+                                        <i class="fa fa-map-pin"></i> Google Maps
+                                    </a>
+                                </td>
+                                <td class="text-center pr-4">
+                                    <a href="{{ route('petani.lahan.edit', ['id_lahan' => $lahan->id_lahan]) }}" class="btn btn-sm btn-koppee">
+                                        <i class="fa fa-edit mr-1"></i> Edit
                                     </a>
                                 </td>
                             </tr>

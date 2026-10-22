@@ -49,6 +49,8 @@ Route::middleware('auth:petani')->prefix('petani')->name('petani.')->group(funct
     Route::get('/lahan', [PetaniDashboardController::class, 'lahanIndex'])->name('lahan.index');
     Route::get('/lahan/create', [PetaniDashboardController::class, 'lahanCreate'])->name('lahan.create');
     Route::post('/lahan/store', [PetaniDashboardController::class, 'lahanStore'])->name('lahan.store');
+    Route::get('/lahan/{id_lahan}/edit', [PetaniDashboardController::class, 'lahanEdit'])->name('lahan.edit');
+    Route::put('/lahan/{id_lahan}', [PetaniDashboardController::class, 'lahanUpdate'])->name('lahan.update');
 
     // Produksi Green Bean
     Route::get('/produksi', [PetaniDashboardController::class, 'produksiIndex'])->name('produksi.index');
