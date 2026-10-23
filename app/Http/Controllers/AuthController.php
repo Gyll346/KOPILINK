@@ -135,12 +135,30 @@ class AuthController extends Controller
         return back()->withInput()->withErrors(['username' => 'Kredensial Coffee Shop tidak valid.']);
     }
 
+    public function loginAdmin(Request $request)
+    {
+        $validated = $request->validate([
+            'username' => 'required|string',
+            'password' => 'required|string',
+        ]);
+
+        if (Auth::guard('web')->attempt(['username' => $validated['username'], 'password' => $validated['password']])) {
+            $request->session()->regenerate();
+            return redirect()->route('admin.dashboard')
+                ->with('status', 'Selamat datang Super Admin KopiLink!');
+        }
+
+        return back()->withInput()->withErrors(['username' => 'Kredensial Super Admin tidak valid.']);
+    }
+
     public function logout(Request $request)
     {
         if (Auth::guard('petani')->check()) {
             Auth::guard('petani')->logout();
         } elseif (Auth::guard('coffee_shop')->check()) {
             Auth::guard('coffee_shop')->logout();
+        } elseif (Auth::guard('web')->check()) {
+            Auth::guard('web')->logout();
         }
 
         $request->session()->invalidate();

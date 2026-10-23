@@ -38,6 +38,11 @@
                             <i class="fa fa-store mr-2"></i> Coffee Shop / Roastery
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link font-weight-bold py-3 text-uppercase" id="admin-tab" data-toggle="pill" href="#admin" role="tab" style="border-radius: 4px;">
+                            <i class="fa fa-user-shield mr-2"></i> Super Admin
+                        </a>
+                    </li>
                 </ul>
 
                 <div class="tab-content" id="loginTabContent">
@@ -112,9 +117,46 @@
                                     </button>
 
                                     <div class="mt-4 p-3 rounded" style="background: rgba(255,255,255,0.05); border-left: 3px solid #DA9F5B;">
-                                        <small class="text-light d-block mb-1 font-weight-bold">Akun Demo Mitra Roastery:</small>
-                                        <small class="text-muted text-light d-block">Username: <code>roastery_senja</code> | Password: <code>KopiLink2026!</code></small>
-                                        <small class="text-muted text-light d-block">Username: <code>biji_bumi_coffee</code> | Password: <code>BumiHijau2026!</code></small>
+                                         <small class="text-light d-block mb-1 font-weight-bold">Akun Demo Mitra Roastery:</small>
+                                         <small class="text-muted text-light d-block">Username: <code>roastery_senja</code> | Password: <code>KopiLink2026!</code></small>
+                                         <small class="text-muted text-light d-block">Username: <code>biji_bumi_coffee</code> | Password: <code>BumiHijau2026!</code></small>
+                                     </div>
+                                 </form>
+                             </div>
+                         </div>
+                     </div>
+
+                    <!-- Tab Super Admin -->
+                    <div class="tab-pane fade" id="admin" role="tabpanel">
+                        <div class="card border-0 shadow-lg" style="background-color: #33211D; border-radius: 8px;">
+                            <div class="card-body p-4 p-md-5">
+                                <h4 class="text-white text-center font-weight-bold mb-4">Masuk Sebagai Super Admin</h4>
+                                <form action="{{ route('login.admin') }}" method="POST">
+                                    @csrf
+                                    <div class="form-group mb-3">
+                                        <label class="text-white font-weight-bold">Username Super Admin</label>
+                                        <input type="text" name="username" class="form-control p-4 border-0" placeholder="Username Super Admin" required>
+                                    </div>
+
+                                    <div class="form-group mb-4">
+                                        <label class="text-white font-weight-bold">Password</label>
+                                        <div class="input-group">
+                                            <input type="password" name="password" id="password_admin" class="form-control p-4 border-0" placeholder="Kata sandi admin" required>
+                                            <div class="input-group-append">
+                                                <button class="btn btn-light px-3" type="button" onclick="togglePasswordVisibility('password_admin', this)" style="border-radius: 0 4px 4px 0;">
+                                                    <i class="fa fa-eye text-dark"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <button class="btn btn-primary btn-block font-weight-bold py-3 text-secondary text-uppercase" type="submit" style="color: #33211D !important; font-size: 16px;">
+                                        <i class="fa fa-user-shield mr-2"></i> Masuk ke Panel Super Admin
+                                    </button>
+
+                                    <div class="mt-4 p-3 rounded" style="background: rgba(255,255,255,0.05); border-left: 3px solid #DA9F5B;">
+                                        <small class="text-light d-block mb-1 font-weight-bold">Kredensial Super Admin:</small>
+                                        <small class="text-muted text-light d-block">Username: <code>superadmin</code> | Password: <code>AdminKopi2026!</code></small>
                                     </div>
                                 </form>
                             </div>

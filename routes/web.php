@@ -35,7 +35,9 @@ Route::post('/resend-otp/{id_petani}', [AuthController::class, 'resendOtp'])->na
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login/petani', [AuthController::class, 'loginPetani'])->name('login.petani');
 Route::post('/login/coffee-shop', [AuthController::class, 'loginCoffeeShop'])->name('login.coffeeshop');
+Route::post('/login/admin', [AuthController::class, 'loginAdmin'])->name('login.admin');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
 
 /*
 |--------------------------------------------------------------------------
@@ -90,4 +92,19 @@ Route::middleware('auth:coffee_shop')->prefix('coffee-shop')->name('coffeeshop.'
     Route::post('/whatsapp/start', [\App\Http\Controllers\WhatsAppWebController::class, 'start'])->name('whatsapp.start');
     Route::post('/whatsapp/logout', [\App\Http\Controllers\WhatsAppWebController::class, 'logout'])->name('whatsapp.logout');
 });
+
+/*
+|--------------------------------------------------------------------------
+| Portal Super Admin Routes (Monitoring Panen & User Management)
+|--------------------------------------------------------------------------
+*/
+Route::middleware('auth:web')->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/dashboard', [\App\Http\Controllers\AdminDashboardController::class, 'index'])->name('dashboard');
+    Route::get('/users', [\App\Http\Controllers\AdminDashboardController::class, 'usersIndex'])->name('users.index');
+    Route::post('/users', [\App\Http\Controllers\AdminDashboardController::class, 'storeUser'])->name('users.store');
+    Route::post('/users/verify/{id_petani}', [\App\Http\Controllers\AdminDashboardController::class, 'verifyPetani'])->name('users.verify');
+    Route::post('/users/reset-password/{type}/{id}', [\App\Http\Controllers\AdminDashboardController::class, 'resetPassword'])->name('users.reset-password');
+    Route::delete('/users/{type}/{id}', [\App\Http\Controllers\AdminDashboardController::class, 'destroyUser'])->name('users.destroy');
+});
+
 

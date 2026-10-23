@@ -17,6 +17,17 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        // 0. Seed Super Admin
+        \App\Models\User::firstOrCreate(
+            ['username' => 'superadmin'],
+            [
+                'name' => 'Super Administrator KopiLink',
+                'email' => 'admin@kopilink.id',
+                'password' => Hash::make('AdminKopi2026!'),
+                'role' => 'super_admin',
+            ]
+        );
+
         // 1. Seed Coffee Shop Mitra
         $cs1 = CoffeeShop::firstOrCreate(
             ['username' => 'roastery_senja'],

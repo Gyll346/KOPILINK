@@ -286,7 +286,36 @@
                         </a>
                     </li>
                 </ul>
+
+            @elseif(Auth::guard('web')->check())
+                @php $admin = Auth::guard('web')->user(); @endphp
+                <div class="px-3 py-3 border-bottom border-dark d-flex align-items-center">
+                    <div class="bg-warning text-dark rounded-circle d-flex align-items-center justify-content-center mr-3 font-weight-bold" style="width: 42px; height: 42px; font-size: 18px; color: #111 !important;">
+                        <i class="fa fa-user-shield"></i>
+                    </div>
+                    <div style="overflow: hidden;">
+                        <div class="text-white font-weight-bold text-truncate" style="font-size: 14px;">{{ $admin->name }}</div>
+                        <span class="badge badge-warning" style="font-size: 10px; background-color: #DA9F5B; color: #111;">
+                            Super Administrator
+                        </span>
+                    </div>
+                </div>
+
+                <div class="sidebar-heading">Menu Super Admin</div>
+                <ul class="nav flex-column mb-4">
+                    <li class="nav-item">
+                        <a href="{{ route('admin.dashboard') }}" class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
+                            <i class="fa fa-chart-line"></i> Monitoring & Panen
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ route('admin.users.index') }}" class="nav-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
+                            <i class="fa fa-users-cog"></i> Manajemen User
+                        </a>
+                    </li>
+                </ul>
             @endif
+
 
             <div class="sidebar-heading">Tautan Publik</div>
             <ul class="nav flex-column mb-5">
