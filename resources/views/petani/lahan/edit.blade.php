@@ -57,11 +57,36 @@
                         </div>
                     </div>
 
-                    <div class="mb-4">
+                    <div class="mb-3">
                         <button type="button" class="btn btn-outline-dark btn-sm" id="btnGps">
                             <i class="fa fa-crosshairs text-primary mr-1"></i> Perbarui Titik GPS dari Perangkat Ini
                         </button>
                         <span id="gpsStatus" class="ml-2 small text-muted"></span>
+                    </div>
+
+                    <!-- Peta Google Maps Interaktif (Live Coordinates Preview) -->
+                    <div class="card border mb-4 shadow-sm" style="border-radius: 8px; overflow: hidden;">
+                        <div class="card-header bg-light py-2 px-3 d-flex justify-content-between align-items-center">
+                            <span class="small font-weight-bold text-dark">
+                                <i class="fab fa-google text-primary mr-1"></i> Pratinjau Peta Google Maps Lahan #{{ $lahan->id_lahan }}
+                            </span>
+                            <a id="btnGmapsExternal" href="https://maps.google.com/?q={{ $lahan->koordinat_y }},{{ $lahan->koordinat_x }}" target="_blank" class="btn btn-xs btn-outline-primary" style="font-size: 11px;">
+                                <i class="fa fa-external-link-alt mr-1"></i> Buka Layar Penuh
+                            </a>
+                        </div>
+                        <div class="card-body p-0">
+                            <iframe 
+                                id="gmapsIframe"
+                                style="width: 100%; height: 320px; border: 0;"
+                                src="https://maps.google.com/maps?q={{ $lahan->koordinat_y }},{{ $lahan->koordinat_x }}&hl=id&z=15&output=embed"
+                                allowfullscreen="" 
+                                loading="lazy">
+                            </iframe>
+                        </div>
+                        <div class="card-footer bg-white py-2 px-3 small text-muted">
+                            <i class="fa fa-info-circle text-primary mr-1"></i> 
+                            Peta Google Maps otomatis menyesuaikan saat Anda mengubah Garis Lintang / Garis Bujur atau mendeteksi GPS baru.
+                        </div>
                     </div>
 
                     <div class="form-row">
@@ -112,11 +137,32 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    // 1. Geolocation GPS
+    // 1. Geolocation GPS & Google Maps Sync
     const btnGps = document.getElementById('btnGps');
     const latInput = document.getElementById('latInput');
     const longInput = document.getElementById('longInput');
     const gpsStatus = document.getElementById('gpsStatus');
+    const gmapsIframe = document.getElementById('gmapsIframe');
+    const btnGmapsExternal = document.getElementById('btnGmapsExternal');
+
+    function updateGoogleMap() {
+        const lat = latInput.value.trim();
+        const lng = longInput.value.trim();
+        if (lat && lng && !isNaN(lat) && !isNaN(lng)) {
+            const query = `${lat},${lng}`;
+            if (gmapsIframe) {
+                gmapsIframe.src = `https://maps.google.com/maps?q=${query}&hl=id&z=15&output=embed`;
+            }
+            if (btnGmapsExternal) {
+                btnGmapsExternal.href = `https://maps.google.com/?q=${query}`;
+            }
+        }
+    }
+
+    if (latInput && longInput) {
+        latInput.addEventListener('input', updateGoogleMap);
+        longInput.addEventListener('input', updateGoogleMap);
+    }
 
     if (btnGps) {
         btnGps.addEventListener('click', function () {
@@ -130,6 +176,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     latInput.value = position.coords.latitude.toFixed(8);
                     longInput.value = position.coords.longitude.toFixed(8);
                     gpsStatus.innerHTML = `<span class="text-success"><i class="fa fa-check-circle"></i> Berhasil! Akurasi: ±${Math.round(position.coords.accuracy)} meter</span>`;
+                    updateGoogleMap();
                 },
                 function (error) {
                     gpsStatus.innerHTML = `<span class="text-danger"><i class="fa fa-exclamation-triangle"></i> Gagal mengambil GPS: ${error.message}</span>`;
