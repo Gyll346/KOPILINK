@@ -60,6 +60,10 @@
                         <a href="{{ route('coffeeshop.dashboard') }}" class="nav-item nav-link btn btn-primary text-secondary font-weight-bold ml-lg-3 px-3 py-2 mt-2 mt-lg-0" style="color: #33211D !important;">
                             <i class="fa fa-store mr-1"></i> Dashboard Roastery
                         </a>
+                    @elseif(Auth::guard('web')->check())
+                        <a href="{{ route('admin.dashboard') }}" class="nav-item nav-link btn btn-warning text-dark font-weight-bold ml-lg-3 px-3 py-2 mt-2 mt-lg-0" style="color: #111 !important; background-color: #DA9F5B;">
+                            <i class="fa fa-user-shield mr-1"></i> Panel Admin
+                        </a>
                     @else
                         <div class="nav-item dropdown ml-lg-3 mt-2 mt-lg-0">
                             <a href="#" class="nav-link dropdown-toggle btn btn-outline-primary px-3 py-2" data-toggle="dropdown" style="border-radius: 4px;">
