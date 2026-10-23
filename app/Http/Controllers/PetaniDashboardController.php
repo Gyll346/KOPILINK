@@ -243,12 +243,21 @@ class PetaniDashboardController extends Controller
 
         $validated = $request->validate([
             'nama' => 'required|string|max:100',
+            'username' => 'required|string|max:50|unique:petani,username,' . $petani->id_petani . ',id_petani',
+            'kelompok_tani' => 'required|in:Pasak Piang,Padi Jaya',
+            'password' => 'nullable|string|min:6|confirmed',
             'alamat' => 'required|string',
             'foto_profil' => 'nullable|image|max:10240',
         ]);
 
         $petani->nama = $validated['nama'];
+        $petani->username = $validated['username'];
+        $petani->kelompok_tani = $validated['kelompok_tani'];
         $petani->alamat = $validated['alamat'];
+
+        if (!empty($validated['password'])) {
+            $petani->password = \Illuminate\Support\Facades\Hash::make($validated['password']);
+        }
 
         if ($request->hasFile('foto_profil')) {
             // Hapus foto profil lama jika ada agar tidak memenuhi storage
@@ -263,6 +272,6 @@ class PetaniDashboardController extends Controller
         $petani->save();
 
         return redirect()->route('petani.profile')
-            ->with('status', 'Profil dan foto petani berhasil diperbarui!');
+            ->with('status', 'Profil petani berhasil diperbarui!');
     }
 }

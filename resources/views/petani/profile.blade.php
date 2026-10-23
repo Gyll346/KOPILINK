@@ -90,21 +90,55 @@
                     </div>
                 </div>
 
-                <div class="form-group mb-3">
-                    <label class="font-weight-bold text-dark">Nama Lengkap <span class="text-danger">*</span></label>
-                    <input type="text" name="nama" class="form-control" value="{{ old('nama', $petani->nama) }}" required>
+                <div class="row">
+                    <div class="col-md-6 form-group mb-3">
+                        <label class="font-weight-bold text-dark">Nama Lengkap <span class="text-danger">*</span></label>
+                        <input type="text" name="nama" class="form-control" value="{{ old('nama', $petani->nama) }}" required>
+                    </div>
+                    <div class="col-md-6 form-group mb-3">
+                        <label class="font-weight-bold text-dark">Username Akun <span class="text-danger">*</span></label>
+                        <input type="text" name="username" class="form-control" value="{{ old('username', $petani->username) }}" required>
+                        <small class="form-text text-muted">Digunakan saat login akun petani.</small>
+                    </div>
                 </div>
 
                 <div class="row">
                     <div class="col-md-6 form-group mb-3">
-                        <label class="font-weight-bold text-dark">Username Akun</label>
-                        <input type="text" class="form-control bg-light" value="{{ $petani->username }}" readonly>
-                        <small class="form-text text-muted">Username unik tidak dapat diubah.</small>
+                        <label class="font-weight-bold text-dark">Kelompok Tani <span class="text-danger">*</span></label>
+                        <select name="kelompok_tani" class="form-control" required>
+                            <option value="Pasak Piang" {{ old('kelompok_tani', $petani->kelompok_tani) === 'Pasak Piang' ? 'selected' : '' }}>
+                                Pasak Piang (Sentra Robusta)
+                            </option>
+                            <option value="Padi Jaya" {{ old('kelompok_tani', $petani->kelompok_tani) === 'Padi Jaya' ? 'selected' : '' }}>
+                                Padi Jaya (Sentra Liberika)
+                            </option>
+                        </select>
+                        <small class="form-text text-muted">Wilayah binaan agroforestri petani.</small>
                     </div>
                     <div class="col-md-6 form-group mb-3">
-                        <label class="font-weight-bold text-dark">Kelompok Tani</label>
-                        <input type="text" class="form-control bg-light" value="{{ $petani->kelompok_tani }}" readonly>
-                        <small class="form-text text-muted">Terdaftar sesuai wilayah binaan.</small>
+                        <label class="font-weight-bold text-dark">Nomor WhatsApp</label>
+                        <input type="text" class="form-control bg-light" value="+{{ $petani->kontak }}" readonly>
+                        <small class="form-text text-muted">Nomor WhatsApp terverifikasi OTP.</small>
+                    </div>
+                </div>
+
+                <!-- Password Baru (Opsional) -->
+                <div class="card bg-light border-0 p-3 mb-3" style="border-radius: 6px;">
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="fa fa-key text-primary mr-2"></i>
+                        <h6 class="font-weight-bold text-dark mb-0">Ubah Password Akun</h6>
+                    </div>
+                    <p class="small text-muted mb-3">Kosongkan kolom password di bawah ini jika tidak ingin mengubah kata sandi Anda saat ini.</p>
+                    
+                    <div class="row">
+                        <div class="col-md-6 form-group mb-3 mb-md-0">
+                            <label class="font-weight-bold text-dark small">Password Baru</label>
+                            <input type="password" name="password" class="form-control" placeholder="Minimal 6 karakter">
+                        </div>
+                        <div class="col-md-6 form-group mb-0">
+                            <label class="font-weight-bold text-dark small">Konfirmasi Password Baru</label>
+                            <input type="password" name="password_confirmation" class="form-control" placeholder="Ketik ulang password baru">
+                        </div>
                     </div>
                 </div>
 
