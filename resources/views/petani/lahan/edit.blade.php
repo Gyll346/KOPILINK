@@ -3,6 +3,13 @@
 @section('title', 'Edit Lahan - KopiLink')
 @section('page_title', 'Edit Data Lahan Kebun')
 
+@push('styles')
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<style>
+    .leaflet-container { font-family: inherit; }
+</style>
+@endpush
+
 @section('content')
 <div class="row justify-content-center">
     <div class="col-lg-10">
@@ -64,28 +71,29 @@
                         <span id="gpsStatus" class="ml-2 small text-muted"></span>
                     </div>
 
-                    <!-- Peta Google Maps Interaktif (Live Coordinates Preview) -->
+                    <!-- Peta Interaktif Google Maps dengan Pin yang Bisa Digeser (Draggable Marker) -->
                     <div class="card border mb-4 shadow-sm" style="border-radius: 8px; overflow: hidden;">
-                        <div class="card-header bg-light py-2 px-3 d-flex justify-content-between align-items-center">
+                        <div class="card-header bg-light py-2 px-3 d-flex justify-content-between align-items-center flex-wrap">
                             <span class="small font-weight-bold text-dark">
-                                <i class="fab fa-google text-primary mr-1"></i> Pratinjau Peta Google Maps Lahan #{{ $lahan->id_lahan }}
+                                <i class="fa fa-map-marked-alt text-primary mr-1"></i> Peta Satelit Google Lahan #{{ $lahan->id_lahan }}
+                            </span>
+                            <div class="small">
+                                <span class="badge badge-warning text-dark font-weight-bold px-2 py-1">
+                                    <i class="fa fa-hand-pointer mr-1"></i> Klik peta atau geser pin merah
+                                </span>
+                            </div>
+                        </div>
+                        <div class="card-body p-0 position-relative">
+                            <div id="interactiveMap" style="width: 100%; height: 360px; z-index: 1;"></div>
+                        </div>
+                        <div class="card-footer bg-white py-2 px-3 small d-flex justify-content-between align-items-center flex-wrap">
+                            <span class="text-muted">
+                                <i class="fa fa-info-circle text-primary mr-1"></i> 
+                                Geser (drag) pin merah atau klik pada peta untuk mengubah titik koordinat Garis Lintang & Bujur lahan ini.
                             </span>
                             <a id="btnGmapsExternal" href="https://maps.google.com/?q={{ $lahan->koordinat_y }},{{ $lahan->koordinat_x }}" target="_blank" class="btn btn-xs btn-outline-primary" style="font-size: 11px;">
-                                <i class="fa fa-external-link-alt mr-1"></i> Buka Layar Penuh
+                                <i class="fa fa-external-link-alt mr-1"></i> Buka Google Maps
                             </a>
-                        </div>
-                        <div class="card-body p-0">
-                            <iframe 
-                                id="gmapsIframe"
-                                style="width: 100%; height: 320px; border: 0;"
-                                src="https://maps.google.com/maps?q={{ $lahan->koordinat_y }},{{ $lahan->koordinat_x }}&hl=id&z=15&output=embed"
-                                allowfullscreen="" 
-                                loading="lazy">
-                            </iframe>
-                        </div>
-                        <div class="card-footer bg-white py-2 px-3 small text-muted">
-                            <i class="fa fa-info-circle text-primary mr-1"></i> 
-                            Peta Google Maps otomatis menyesuaikan saat Anda mengubah Garis Lintang / Garis Bujur atau mendeteksi GPS baru.
                         </div>
                     </div>
 
@@ -135,35 +143,96 @@
     </div>
 </div>
 
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    // 1. Geolocation GPS & Google Maps Sync
-    const btnGps = document.getElementById('btnGps');
     const latInput = document.getElementById('latInput');
     const longInput = document.getElementById('longInput');
-    const gpsStatus = document.getElementById('gpsStatus');
-    const gmapsIframe = document.getElementById('gmapsIframe');
     const btnGmapsExternal = document.getElementById('btnGmapsExternal');
+    const btnGps = document.getElementById('btnGps');
+    const gpsStatus = document.getElementById('gpsStatus');
 
-    function updateGoogleMap() {
-        const lat = latInput.value.trim();
-        const lng = longInput.value.trim();
-        if (lat && lng && !isNaN(lat) && !isNaN(lng)) {
-            const query = `${lat},${lng}`;
-            if (gmapsIframe) {
-                gmapsIframe.src = `https://maps.google.com/maps?q=${query}&hl=id&z=15&output=embed`;
-            }
-            if (btnGmapsExternal) {
-                btnGmapsExternal.href = `https://maps.google.com/?q=${query}`;
-            }
+    // Koordinat awal lahan saat ini
+    let currentLat = parseFloat(latInput.value) || {{ $lahan->koordinat_y }};
+    let currentLng = parseFloat(longInput.value) || {{ $lahan->koordinat_x }};
+
+    // Inisialisasi Peta Leaflet
+    const map = L.map('interactiveMap').setView([currentLat, currentLng], 15);
+
+    // Layer Google Hybrid / Satellite (Satelit asli Google Maps dengan nama jalan)
+    const googleHybrid = L.tileLayer('https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', {
+        maxZoom: 20,
+        subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
+        attribution: '&copy; Google Maps Satellite'
+    }).addTo(map);
+
+    // Layer Google Streets standar
+    const googleStreets = L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+        maxZoom: 20,
+        subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
+        attribution: '&copy; Google Maps Streets'
+    });
+
+    // Layer switcher kontrol
+    L.control.layers({
+        "Satelit Google (Hybrid)": googleHybrid,
+        "Peta Jalan Google": googleStreets
+    }).addTo(map);
+
+    // Marker yang dapat digeser (Draggable Marker)
+    const marker = L.marker([currentLat, currentLng], {
+        draggable: true,
+        autoPan: true
+    }).addTo(map);
+
+    marker.bindPopup("<b>Lahan #{{ $lahan->id_lahan }}</b><br>Geser pin merah ini untuk mengubah titik koordinat.").openPopup();
+
+    function setCoordinates(lat, lng, syncInput = true, panMap = false) {
+        const roundedLat = parseFloat(lat).toFixed(8);
+        const roundedLng = parseFloat(lng).toFixed(8);
+
+        if (syncInput) {
+            latInput.value = roundedLat;
+            longInput.value = roundedLng;
+        }
+
+        marker.setLatLng([roundedLat, roundedLng]);
+
+        if (panMap) {
+            map.panTo([roundedLat, roundedLng]);
+        }
+
+        if (btnGmapsExternal) {
+            btnGmapsExternal.href = `https://maps.google.com/?q=${roundedLat},${roundedLng}`;
         }
     }
 
+    // 1. Saat marker digeser (dragend) oleh petani
+    marker.on('dragend', function (e) {
+        const pos = marker.getLatLng();
+        setCoordinates(pos.lat, pos.lng, true, false);
+    });
+
+    // 2. Saat petani mengklik area pada peta
+    map.on('click', function (e) {
+        setCoordinates(e.latlng.lat, e.latlng.lng, true, false);
+        marker.openPopup();
+    });
+
+    // 3. Saat petani mengubah manual angka koordinat X & Y
+    function onManualInputChange() {
+        const lat = parseFloat(latInput.value);
+        const lng = parseFloat(longInput.value);
+        if (!isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+            setCoordinates(lat, lng, false, true);
+        }
+    }
     if (latInput && longInput) {
-        latInput.addEventListener('input', updateGoogleMap);
-        longInput.addEventListener('input', updateGoogleMap);
+        latInput.addEventListener('input', onManualInputChange);
+        longInput.addEventListener('input', onManualInputChange);
     }
 
+    // 4. Geolocation GPS Sensor dari HP
     if (btnGps) {
         btnGps.addEventListener('click', function () {
             if (!navigator.geolocation) {
@@ -173,10 +242,11 @@ document.addEventListener('DOMContentLoaded', function () {
             gpsStatus.innerHTML = '<span class="text-info"><i class="fa fa-spinner fa-spin"></i> Mendapatkan koordinat GPS satelit...</span>';
             navigator.geolocation.getCurrentPosition(
                 function (position) {
-                    latInput.value = position.coords.latitude.toFixed(8);
-                    longInput.value = position.coords.longitude.toFixed(8);
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    setCoordinates(lat, lng, true, true);
+                    map.setZoom(16);
                     gpsStatus.innerHTML = `<span class="text-success"><i class="fa fa-check-circle"></i> Berhasil! Akurasi: ±${Math.round(position.coords.accuracy)} meter</span>`;
-                    updateGoogleMap();
                 },
                 function (error) {
                     gpsStatus.innerHTML = `<span class="text-danger"><i class="fa fa-exclamation-triangle"></i> Gagal mengambil GPS: ${error.message}</span>`;
@@ -185,6 +255,9 @@ document.addEventListener('DOMContentLoaded', function () {
             );
         });
     }
+
+    setTimeout(() => { map.invalidateSize(); }, 300);
+
 
     // 2. Client-side Pre-compression Canvas
     const fotoInput = document.getElementById('fotoInput');
