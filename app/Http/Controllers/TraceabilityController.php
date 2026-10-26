@@ -56,7 +56,8 @@ class TraceabilityController extends Controller
         $petani = $lahan->petani;
         $produksi = $kemasan->produksi;
         $coffeeShop = $kemasan->coffeeShop;
+        $panenCeri = $lahan->panenCeri()->latest('tanggal_panen')->first();
 
-        return view('pages.trace', compact('kemasan', 'lahan', 'petani', 'produksi', 'coffeeShop'));
+        return view('pages.trace', compact('kemasan', 'lahan', 'petani', 'produksi', 'coffeeShop', 'panenCeri'));
     }
 }

@@ -133,14 +133,14 @@
                         </div>
 
                         <!-- Dokumentasi Foto Kebun & Foto Hasil Panen dari Petani -->
-                        @if(count($lahan->foto_list) > 0 || count($produksi->foto_list) > 0)
+                        @if(count($lahan->foto_list) > 0 || ($panenCeri && count($panenCeri->foto_list) > 0) || count($produksi->foto_list) > 0)
                             <div class="mt-4 pt-3 border-top border-secondary">
                                 <span class="text-white-50 small d-block font-weight-bold mb-2">
                                     <i class="fa fa-images text-primary mr-1"></i> Dokumentasi Lapangan Petani:
                                 </span>
                                 <div class="row">
                                     @if(count($lahan->foto_list) > 0)
-                                        <div class="col-{{ count($produksi->foto_list) > 0 ? '6' : '12' }} mb-2">
+                                        <div class="col-md-4 col-sm-6 mb-2">
                                             <div class="d-flex flex-wrap" style="gap: 6px;">
                                                 @foreach($lahan->foto_list as $fIdx => $fLahan)
                                                     <a href="{{ asset('storage/' . $fLahan) }}" target="_blank" class="d-block text-decoration-none" style="flex: 1 1 calc(50% - 6px); min-width: 90px;">
@@ -155,15 +155,31 @@
                                             </div>
                                         </div>
                                     @endif
+                                    @if($panenCeri && count($panenCeri->foto_list) > 0)
+                                        <div class="col-md-4 col-sm-6 mb-2">
+                                            <div class="d-flex flex-wrap" style="gap: 6px;">
+                                                @foreach($panenCeri->foto_list as $cIdx => $fCeri)
+                                                    <a href="{{ asset('storage/' . $fCeri) }}" target="_blank" class="d-block text-decoration-none" style="flex: 1 1 calc(50% - 6px); min-width: 90px;">
+                                                        <div class="rounded overflow-hidden border border-secondary position-relative">
+                                                            <img src="{{ asset('storage/' . $fCeri) }}" alt="Foto Panen Ceri" class="w-100" style="height: 100px; object-fit: cover;">
+                                                            <span class="badge badge-danger position-absolute" style="bottom: 4px; left: 4px; font-size: 9px; opacity: 0.9;">
+                                                                <i class="fa fa-apple-alt mr-1"></i> Ceri #{{ $cIdx + 1 }}
+                                                            </span>
+                                                        </div>
+                                                    </a>
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                    @endif
                                     @if(count($produksi->foto_list) > 0)
-                                        <div class="col-{{ count($lahan->foto_list) > 0 ? '6' : '12' }} mb-2">
+                                        <div class="col-md-4 col-sm-6 mb-2">
                                             <div class="d-flex flex-wrap" style="gap: 6px;">
                                                 @foreach($produksi->foto_list as $pIdx => $fBean)
                                                     <a href="{{ asset('storage/' . $fBean) }}" target="_blank" class="d-block text-decoration-none" style="flex: 1 1 calc(50% - 6px); min-width: 90px;">
                                                         <div class="rounded overflow-hidden border border-secondary position-relative">
-                                                            <img src="{{ asset('storage/' . $fBean) }}" alt="Foto Hasil Panen" class="w-100" style="height: 100px; object-fit: cover;">
+                                                            <img src="{{ asset('storage/' . $fBean) }}" alt="Foto Green Bean" class="w-100" style="height: 100px; object-fit: cover;">
                                                             <span class="badge badge-dark position-absolute" style="bottom: 4px; left: 4px; font-size: 9px; opacity: 0.9;">
-                                                                <i class="fa fa-seedling mr-1"></i> Panen #{{ $pIdx + 1 }}
+                                                                <i class="fa fa-seedling mr-1"></i> Bean #{{ $pIdx + 1 }}
                                                             </span>
                                                         </div>
                                                     </a>
@@ -270,10 +286,38 @@
 
                         <div class="timeline-step">
                             <div class="timeline-icon"></div>
-                            <h6 class="font-weight-bold text-dark mb-1">Tahap 2: Panen Green Bean</h6>
+                            <h6 class="font-weight-bold text-dark mb-1">Tahap 2: Panen Ceri Kopi (Buah Merah)</h6>
                             <p class="text-muted small mb-1">
-                                Panen batch seberat <strong>{{ $produksi->jumlah_green_bean }} Kg</strong> dipetik dan dicatat pada tanggal 
-                                <strong>{{ $produksi->tanggal_input->format('d F Y') }}</strong>.
+                                @if($panenCeri)
+                                    Pemetikan buah ceri kopi masak pohon seberat <strong>{{ $panenCeri->jumlah_ceri }} Kg</strong> 
+                                    dilaksanakan pada tanggal <strong>{{ $panenCeri->tanggal_panen->format('d F Y') }}</strong>.
+                                    @if($panenCeri->catatan)
+                                        <span class="d-block text-secondary font-italic mt-1"><i class="fa fa-info-circle mr-1"></i> Catatan: {{ $panenCeri->catatan }}</span>
+                                    @endif
+                                @else
+                                    Pemetikan buah ceri kopi pilihan masak pohon (petik merah) dari petak kebun petani mitra untuk menjaga standar mutu rasa.
+                                @endif
+                            </p>
+                            @if($panenCeri && count($panenCeri->foto_list) > 0)
+                                <div class="mt-2 mb-3">
+                                    <div class="d-flex flex-wrap" style="gap: 8px;">
+                                        @foreach($panenCeri->foto_list as $cIdx => $fCeri)
+                                            <a href="{{ asset('storage/' . $fCeri) }}" target="_blank">
+                                                <img src="{{ asset('storage/' . $fCeri) }}" alt="Foto Panen Ceri {{ $cIdx + 1 }}" class="rounded border shadow-sm" style="height: 90px; width: 110px; object-fit: cover;">
+                                            </a>
+                                        @endforeach
+                                    </div>
+                                    <small class="d-block text-muted mt-1"><i class="fa fa-camera mr-1"></i> Foto Buah Ceri Kopi ({{ count($panenCeri->foto_list) }} foto)</small>
+                                </div>
+                            @endif
+                        </div>
+
+                        <div class="timeline-step">
+                            <div class="timeline-icon"></div>
+                            <h6 class="font-weight-bold text-dark mb-1">Tahap 3: Pengolahan Green Bean (Biji Kering)</h6>
+                            <p class="text-muted small mb-1">
+                                Proses pascapanen menghasilkan batch biji beras (green bean) seberat <strong>{{ $produksi->jumlah_green_bean }} Kg</strong> 
+                                yang dicatat dan siap didistribusikan pada tanggal <strong>{{ $produksi->tanggal_input->format('d F Y') }}</strong>.
                             </p>
                             @if(count($produksi->foto_list) > 0)
                                 <div class="mt-2 mb-3">
@@ -291,7 +335,7 @@
 
                         <div class="timeline-step">
                             <div class="timeline-icon"></div>
-                            <h6 class="font-weight-bold text-dark mb-1">Tahap 3: Penerimaan & Sangrai oleh Roastery Mitra</h6>
+                            <h6 class="font-weight-bold text-dark mb-1">Tahap 4: Penerimaan & Sangrai oleh Roastery Mitra</h6>
                             <p class="text-muted small mb-1">
                                 Biji kopi diserap dan diolah secara profesional oleh <strong>{{ $coffeeShop->nama_toko }}</strong>. Status pasokan telah terverifikasi di inventori mitra.
                             </p>
@@ -299,7 +343,7 @@
 
                         <div class="timeline-step">
                             <div class="timeline-icon"></div>
-                            <h6 class="font-weight-bold text-dark mb-1">Tahap 4: Pengemasan & Penerbitan Label QR Code</h6>
+                            <h6 class="font-weight-bold text-dark mb-1">Tahap 5: Pengemasan & Penerbitan Label QR Code</h6>
                             <p class="text-muted small mb-1">
                                 Kemasan berlabel QR digital resmi <code>{{ $kemasan->qr_code_url }}</code> diterbitkan pada <strong>{{ $kemasan->created_at->format('d F Y, H:i') }} WIB</strong> dan siap dinikmati di cangkir Anda.
                             </p>
