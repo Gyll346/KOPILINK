@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Lahan;
 use App\Models\Produksi;
+use App\Models\PanenCeri;
 use App\Services\ImageOptimizationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -28,7 +29,10 @@ class PetaniDashboardController extends Controller
         $produksiList = Produksi::whereIn('id_lahan', $lahanIds)->latest()->get();
         $totalGreenBean = $produksiList->sum('jumlah_green_bean');
 
-        return view('petani.dashboard', compact('petani', 'lahanList', 'produksiList', 'totalPohon', 'totalLahanHa', 'totalGreenBean'));
+        $ceriList = PanenCeri::whereIn('id_lahan', $lahanIds)->latest()->get();
+        $totalCeri = $ceriList->sum('jumlah_ceri');
+
+        return view('petani.dashboard', compact('petani', 'lahanList', 'produksiList', 'totalPohon', 'totalLahanHa', 'totalGreenBean', 'ceriList', 'totalCeri'));
     }
 
     public function lahanIndex()
@@ -290,6 +294,140 @@ class PetaniDashboardController extends Controller
 
         return redirect()->route('petani.produksi.index')
             ->with('status', "Catatan panen #PRD-{$produksi->id_produksi} berhasil diperbarui!");
+    }
+
+    // ==========================================
+    // PANEN CERI (BUAH KOPI BASAH)
+    // ==========================================
+
+    public function ceriIndex()
+    {
+        $petani = Auth::guard('petani')->user();
+        $lahanIds = Lahan::where('id_petani', $petani->id_petani)->pluck('id_lahan');
+        $ceriList = PanenCeri::whereIn('id_lahan', $lahanIds)->with('lahan')->latest()->get();
+
+        return view('petani.ceri.index', compact('petani', 'ceriList'));
+    }
+
+    public function ceriCreate()
+    {
+        $petani = Auth::guard('petani')->user();
+        $lahanList = Lahan::where('id_petani', $petani->id_petani)->get();
+
+        if ($lahanList->isEmpty()) {
+            return redirect()->route('petani.lahan.create')
+                ->with('warning', 'Harap input data lahan kebun terlebih dahulu sebelum mencatat hasil panen ceri.');
+        }
+
+        return view('petani.ceri.create', compact('petani', 'lahanList'));
+    }
+
+    public function ceriStore(Request $request)
+    {
+        $petani = Auth::guard('petani')->user();
+        $lahanIds = Lahan::where('id_petani', $petani->id_petani)->pluck('id_lahan')->toArray();
+
+        $validated = $request->validate([
+            'id_lahan' => 'required|in:' . implode(',', $lahanIds),
+            'jumlah_ceri' => 'required|numeric|min:0.5',
+            'tanggal_panen' => 'required|date',
+            'catatan' => 'nullable|string|max:500',
+            'foto_ceri' => 'required|array|min:1',
+            'foto_ceri.*' => 'image|max:10240',
+        ], [
+            'foto_ceri.required' => 'Wajib mengunggah minimal 1 foto hasil panen ceri.',
+            'foto_ceri.min' => 'Wajib mengunggah minimal 1 foto hasil panen ceri.',
+        ]);
+
+        $paths = [];
+        if ($request->hasFile('foto_ceri')) {
+            foreach ($request->file('foto_ceri') as $file) {
+                if ($file && $file->isValid()) {
+                    $paths[] = $this->imageService->compressAndStore($file, 'ceri');
+                }
+            }
+        }
+
+        PanenCeri::create([
+            'id_lahan' => $validated['id_lahan'],
+            'jumlah_ceri' => $validated['jumlah_ceri'],
+            'tanggal_panen' => $validated['tanggal_panen'],
+            'catatan' => $validated['catatan'] ?? null,
+            'foto_ceri' => !empty($paths) ? json_encode($paths) : null,
+        ]);
+
+        return redirect()->route('petani.ceri.index')
+            ->with('status', 'Data panen ceri kopi berhasil dicatat!');
+    }
+
+    public function ceriEdit($id_panen_ceri)
+    {
+        $petani = Auth::guard('petani')->user();
+        $lahanList = Lahan::where('id_petani', $petani->id_petani)->get();
+        $lahanIds = $lahanList->pluck('id_lahan');
+
+        $ceri = PanenCeri::where('id_panen_ceri', $id_panen_ceri)
+            ->whereIn('id_lahan', $lahanIds)
+            ->firstOrFail();
+
+        return view('petani.ceri.edit', compact('petani', 'ceri', 'lahanList'));
+    }
+
+    public function ceriUpdate(Request $request, $id_panen_ceri)
+    {
+        $petani = Auth::guard('petani')->user();
+        $lahanList = Lahan::where('id_petani', $petani->id_petani)->get();
+        $lahanIds = $lahanList->pluck('id_lahan')->toArray();
+
+        $ceri = PanenCeri::where('id_panen_ceri', $id_panen_ceri)
+            ->whereIn('id_lahan', $lahanIds)
+            ->firstOrFail();
+
+        $existingFotos = $ceri->foto_list;
+        $rules = [
+            'id_lahan' => 'required|in:' . implode(',', $lahanIds),
+            'jumlah_ceri' => 'required|numeric|min:0.5',
+            'tanggal_panen' => 'required|date',
+            'catatan' => 'nullable|string|max:500',
+        ];
+
+        if (empty($existingFotos)) {
+            $rules['foto_ceri'] = 'required|array|min:1';
+            $rules['foto_ceri.*'] = 'image|max:10240';
+        } else {
+            $rules['foto_ceri'] = 'nullable|array';
+            $rules['foto_ceri.*'] = 'image|max:10240';
+        }
+
+        $validated = $request->validate($rules, [
+            'foto_ceri.required' => 'Wajib mengunggah minimal 1 foto hasil panen ceri.',
+            'foto_ceri.min' => 'Wajib mengunggah minimal 1 foto hasil panen ceri.',
+        ]);
+
+        if ($request->hasFile('foto_ceri')) {
+            foreach ($existingFotos as $oldPath) {
+                if ($oldPath && \Illuminate\Support\Facades\Storage::disk('public')->exists($oldPath)) {
+                    \Illuminate\Support\Facades\Storage::disk('public')->delete($oldPath);
+                }
+            }
+
+            $paths = [];
+            foreach ($request->file('foto_ceri') as $file) {
+                if ($file && $file->isValid()) {
+                    $paths[] = $this->imageService->compressAndStore($file, 'ceri');
+                }
+            }
+            $ceri->foto_ceri = !empty($paths) ? json_encode($paths) : null;
+        }
+
+        $ceri->id_lahan = $validated['id_lahan'];
+        $ceri->jumlah_ceri = $validated['jumlah_ceri'];
+        $ceri->tanggal_panen = $validated['tanggal_panen'];
+        $ceri->catatan = $validated['catatan'] ?? null;
+        $ceri->save();
+
+        return redirect()->route('petani.ceri.index')
+            ->with('status', "Catatan panen ceri #CRI-{$ceri->id_panen_ceri} berhasil diperbarui!");
     }
 
     public function profile()

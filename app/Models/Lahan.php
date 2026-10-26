@@ -72,4 +72,9 @@ class Lahan extends Model
     {
         return $this->hasMany(Produksi::class, 'id_lahan', 'id_lahan');
     }
+
+    public function panenCeri()
+    {
+        return $this->hasMany(PanenCeri::class, 'id_lahan', 'id_lahan');
+    }
 }

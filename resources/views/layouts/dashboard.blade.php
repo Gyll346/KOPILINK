@@ -238,6 +238,11 @@
                         </a>
                     </li>
                     <li class="nav-item">
+                        <a href="{{ route('petani.ceri.index') }}" class="nav-link {{ request()->routeIs('petani.ceri.*') ? 'active' : '' }}">
+                            <i class="fa fa-apple-alt"></i> Panen Ceri Kopi
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a href="{{ route('petani.produksi.index') }}" class="nav-link {{ request()->routeIs('petani.produksi.*') ? 'active' : '' }}">
                             <i class="fa fa-seedling"></i> Produksi Green Bean
                         </a>

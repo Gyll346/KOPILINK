@@ -61,6 +61,13 @@ Route::middleware('auth:petani')->prefix('petani')->name('petani.')->group(funct
     Route::get('/produksi/{id_produksi}/edit', [PetaniDashboardController::class, 'produksiEdit'])->name('produksi.edit');
     Route::put('/produksi/{id_produksi}', [PetaniDashboardController::class, 'produksiUpdate'])->name('produksi.update');
 
+    // Panen Ceri
+    Route::get('/ceri', [PetaniDashboardController::class, 'ceriIndex'])->name('ceri.index');
+    Route::get('/ceri/create', [PetaniDashboardController::class, 'ceriCreate'])->name('ceri.create');
+    Route::post('/ceri/store', [PetaniDashboardController::class, 'ceriStore'])->name('ceri.store');
+    Route::get('/ceri/{id_panen_ceri}/edit', [PetaniDashboardController::class, 'ceriEdit'])->name('ceri.edit');
+    Route::put('/ceri/{id_panen_ceri}', [PetaniDashboardController::class, 'ceriUpdate'])->name('ceri.update');
+
     // Profil Petani
     Route::get('/profile', [PetaniDashboardController::class, 'profile'])->name('profile');
     Route::post('/profile', [PetaniDashboardController::class, 'profileUpdate'])->name('profile.update');

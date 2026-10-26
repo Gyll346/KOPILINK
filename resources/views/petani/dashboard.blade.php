@@ -19,8 +19,11 @@
                     <a href="{{ route('petani.lahan.create') }}" class="btn btn-koppee mr-2 mb-2 mb-sm-0">
                         <i class="fa fa-plus-circle mr-1"></i> Input Lahan
                     </a>
+                    <a href="{{ route('petani.ceri.create') }}" class="btn btn-outline-warning mr-2 mb-2 mb-sm-0">
+                        <i class="fa fa-apple-alt mr-1"></i> Panen Ceri
+                    </a>
                     <a href="{{ route('petani.produksi.create') }}" class="btn btn-outline-light mb-2 mb-sm-0">
-                        <i class="fa fa-plus-circle mr-1"></i> Input Produksi
+                        <i class="fa fa-plus-circle mr-1"></i> Input Green Bean
                     </a>
                 </div>
             </div>
@@ -30,41 +33,54 @@
 
 <!-- Stat Cards -->
 <div class="row mb-4">
-    <div class="col-md-4 mb-3">
+    <div class="col-md-3 mb-3">
         <div class="card card-stat p-3">
             <div class="d-flex align-items-center">
-                <div class="rounded-circle d-flex align-items-center justify-content-center mr-3" style="width: 54px; height: 54px; background: rgba(218, 159, 91, 0.2); color: #DA9F5B;">
+                <div class="rounded-circle d-flex align-items-center justify-content-center mr-3" style="width: 50px; height: 50px; background: rgba(218, 159, 91, 0.2); color: #DA9F5B;">
                     <i class="fa fa-map-marked-alt fa-2x"></i>
                 </div>
                 <div>
-                    <small class="text-muted font-weight-bold text-uppercase">Total Lahan Terdata</small>
-                    <h3 class="m-0 font-weight-bold text-dark">{{ $lahanList->count() }} <small style="font-size: 14px;" class="text-muted">Plot ({{ number_format($totalLahanHa, 2) }} Ha)</small></h3>
+                    <small class="text-muted font-weight-bold text-uppercase">Total Lahan</small>
+                    <h4 class="m-0 font-weight-bold text-dark">{{ $lahanList->count() }} <small style="font-size: 13px;" class="text-muted">Plot ({{ number_format($totalLahanHa, 2) }} Ha)</small></h4>
                 </div>
             </div>
         </div>
     </div>
-    <div class="col-md-4 mb-3">
+    <div class="col-md-3 mb-3">
         <div class="card card-stat p-3">
             <div class="d-flex align-items-center">
-                <div class="rounded-circle d-flex align-items-center justify-content-center mr-3" style="width: 54px; height: 54px; background: rgba(40, 167, 69, 0.2); color: #28a745;">
+                <div class="rounded-circle d-flex align-items-center justify-content-center mr-3" style="width: 50px; height: 50px; background: rgba(40, 167, 69, 0.2); color: #28a745;">
                     <i class="fa fa-tree fa-2x"></i>
                 </div>
                 <div>
-                    <small class="text-muted font-weight-bold text-uppercase">Populasi Pohon Kopi</small>
-                    <h3 class="m-0 font-weight-bold text-dark">{{ number_format($totalPohon) }} <small style="font-size: 14px;" class="text-muted">Batang</small></h3>
+                    <small class="text-muted font-weight-bold text-uppercase">Populasi Pohon</small>
+                    <h4 class="m-0 font-weight-bold text-dark">{{ number_format($totalPohon) }} <small style="font-size: 13px;" class="text-muted">Pohon</small></h4>
                 </div>
             </div>
         </div>
     </div>
-    <div class="col-md-4 mb-3">
+    <div class="col-md-3 mb-3">
         <div class="card card-stat p-3">
             <div class="d-flex align-items-center">
-                <div class="rounded-circle d-flex align-items-center justify-content-center mr-3" style="width: 54px; height: 54px; background: rgba(23, 162, 184, 0.2); color: #17a2b8;">
+                <div class="rounded-circle d-flex align-items-center justify-content-center mr-3" style="width: 50px; height: 50px; background: rgba(220, 53, 69, 0.2); color: #dc3545;">
+                    <i class="fa fa-apple-alt fa-2x"></i>
+                </div>
+                <div>
+                    <small class="text-muted font-weight-bold text-uppercase">Panen Ceri Basah</small>
+                    <h4 class="m-0 font-weight-bold text-dark">{{ number_format($totalCeri, 1) }} <small style="font-size: 13px;" class="text-muted">Kg</small></h4>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card card-stat p-3">
+            <div class="d-flex align-items-center">
+                <div class="rounded-circle d-flex align-items-center justify-content-center mr-3" style="width: 50px; height: 50px; background: rgba(23, 162, 184, 0.2); color: #17a2b8;">
                     <i class="fa fa-weight-hanging fa-2x"></i>
                 </div>
                 <div>
-                    <small class="text-muted font-weight-bold text-uppercase">Total Panen Green Bean</small>
-                    <h3 class="m-0 font-weight-bold text-dark">{{ number_format($totalGreenBean, 1) }} <small style="font-size: 14px;" class="text-muted">Kg</small></h3>
+                    <small class="text-muted font-weight-bold text-uppercase">Panen Green Bean</small>
+                    <h4 class="m-0 font-weight-bold text-dark">{{ number_format($totalGreenBean, 1) }} <small style="font-size: 13px;" class="text-muted">Kg</small></h4>
                 </div>
             </div>
         </div>
