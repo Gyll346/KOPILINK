@@ -117,52 +117,6 @@
                                         </form>
                                     </div>
 
-                                    <!-- Modal Detail Pesan -->
-                                    <div class="modal fade" id="modalBacaPesan{{ $msg->id_pesan }}" tabindex="-1" role="dialog" aria-hidden="true">
-                                        <div class="modal-dialog modal-dialog-centered" role="document">
-                                            <div class="modal-content border-0 shadow text-left">
-                                                <div class="modal-header text-white" style="background-color: #33211D;">
-                                                    <h5 class="modal-title font-weight-bold text-white">
-                                                        <i class="fa fa-envelope-open mr-2 text-warning"></i> Detail Pesan Masuk
-                                                    </h5>
-                                                    <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
-                                                </div>
-                                                <div class="modal-body p-4">
-                                                    <div class="mb-3 border-bottom pb-2">
-                                                        <label class="text-muted small mb-0 d-block">PENGIRIM</label>
-                                                        <h5 class="font-weight-bold text-dark mb-1">{{ $msg->nama }}</h5>
-                                                        <a href="mailto:{{ $msg->email }}" class="text-primary small">
-                                                            <i class="fa fa-envelope mr-1"></i>{{ $msg->email }}
-                                                        </a>
-                                                        <span class="text-muted small ml-2">&bull; {{ $msg->created_at->format('d F Y, H:i:s') }}</span>
-                                                    </div>
-                                                    <div class="mb-3">
-                                                        <label class="text-muted small mb-0 d-block">SUBJEK</label>
-                                                        <strong class="text-dark" style="font-size: 15px;">{{ $msg->subjek }}</strong>
-                                                    </div>
-                                                    <div class="p-3 bg-light rounded border">
-                                                        <label class="text-muted small mb-1 d-block font-weight-bold">ISI PESAN:</label>
-                                                        <p class="text-dark mb-0 font-weight-normal leading-relaxed" style="white-space: pre-line;">{{ $msg->pesan }}</p>
-                                                    </div>
-                                                </div>
-                                                <div class="modal-footer border-top-0 pt-0">
-                                                    <a href="mailto:{{ $msg->email }}?subject=Balasan: {{ rawurlencode($msg->subjek) }}" class="btn btn-primary text-dark font-weight-bold" style="background-color: #DA9F5B; border-color: #DA9F5B;">
-                                                        <i class="fa fa-reply mr-1"></i> Balas Email
-                                                    </a>
-                                                    @if(!$msg->is_read)
-                                                        <form action="{{ route('admin.pesan.toggle-read', ['id_pesan' => $msg->id_pesan]) }}" method="POST" class="d-inline">
-                                                            @csrf
-                                                            <button type="submit" class="btn btn-outline-success">
-                                                                <i class="fa fa-check mr-1"></i> Tandai Sudah Dibaca
-                                                            </button>
-                                                        </form>
-                                                    @endif
-                                                    <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Tutup</button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <!-- End Modal Detail Pesan -->
                                 </td>
                             </tr>
                         @endforeach
@@ -172,6 +126,54 @@
         @endif
     </div>
 </div>
+
+{{-- Render semua Modal di luar elemen .card-stat dan <table> agar tidak terpengaruh CSS transform: translateY saat hover --}}
+@foreach($pesanList as $msg)
+    <div class="modal fade" id="modalBacaPesan{{ $msg->id_pesan }}" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content border-0 shadow text-left">
+                <div class="modal-header text-white" style="background-color: #33211D;">
+                    <h5 class="modal-title font-weight-bold text-white">
+                        <i class="fa fa-envelope-open mr-2 text-warning"></i> Detail Pesan Masuk
+                    </h5>
+                    <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="mb-3 border-bottom pb-2">
+                        <label class="text-muted small mb-0 d-block">PENGIRIM</label>
+                        <h5 class="font-weight-bold text-dark mb-1">{{ $msg->nama }}</h5>
+                        <a href="mailto:{{ $msg->email }}" class="text-primary small">
+                            <i class="fa fa-envelope mr-1"></i>{{ $msg->email }}
+                        </a>
+                        <span class="text-muted small ml-2">&bull; {{ $msg->created_at->format('d F Y, H:i:s') }}</span>
+                    </div>
+                    <div class="mb-3">
+                        <label class="text-muted small mb-0 d-block">SUBJEK</label>
+                        <strong class="text-dark" style="font-size: 15px;">{{ $msg->subjek }}</strong>
+                    </div>
+                    <div class="p-3 bg-light rounded border">
+                        <label class="text-muted small mb-1 d-block font-weight-bold">ISI PESAN:</label>
+                        <p class="text-dark mb-0 font-weight-normal leading-relaxed" style="white-space: pre-line;">{{ $msg->pesan }}</p>
+                    </div>
+                </div>
+                <div class="modal-footer border-top-0 pt-0">
+                    <a href="mailto:{{ $msg->email }}?subject=Balasan: {{ rawurlencode($msg->subjek) }}" class="btn btn-primary text-dark font-weight-bold" style="background-color: #DA9F5B; border-color: #DA9F5B;">
+                        <i class="fa fa-reply mr-1"></i> Balas Email
+                    </a>
+                    @if(!$msg->is_read)
+                        <form action="{{ route('admin.pesan.toggle-read', ['id_pesan' => $msg->id_pesan]) }}" method="POST" class="d-inline">
+                            @csrf
+                            <button type="submit" class="btn btn-outline-success">
+                                <i class="fa fa-check mr-1"></i> Tandai Sudah Dibaca
+                            </button>
+                        </form>
+                    @endif
+                    <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Tutup</button>
+                </div>
+            </div>
+        </div>
+    </div>
+@endforeach
 
 <script>
 function filterPesanTable() {
