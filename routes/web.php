@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [TraceabilityController::class, 'index'])->name('home');
 Route::get('/about', [TraceabilityController::class, 'about'])->name('about');
 Route::get('/service', [TraceabilityController::class, 'service'])->name('service');
+Route::get('/donasi', [TraceabilityController::class, 'donasi'])->name('donasi');
 Route::get('/menu', [TraceabilityController::class, 'menu'])->name('menu');
 Route::get('/contact', [TraceabilityController::class, 'contact'])->name('contact');
 

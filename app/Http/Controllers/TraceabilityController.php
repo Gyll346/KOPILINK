@@ -32,9 +32,14 @@ class TraceabilityController extends Controller
         return view('pages.service');
     }
 
+    public function donasi()
+    {
+        return view('pages.donasi');
+    }
+
     public function menu()
     {
-        return view('pages.menu');
+        return redirect()->route('donasi');
     }
 
     public function contact()
