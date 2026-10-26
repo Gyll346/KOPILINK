@@ -45,6 +45,16 @@
                 <div class="card border-0 shadow-lg text-white p-4" style="background-color: #33211D; border-radius: 8px;">
                     <div class="card-body">
                         <h4 class="text-white mb-3">Kirim Pesan Kemitraan</h4>
+
+                        @if(session('status'))
+                            <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm mb-4" role="alert" style="background-color: #DA9F5B; color: #111;">
+                                <i class="fa fa-check-circle mr-2"></i> {{ session('status') }}
+                                <button type="button" class="close text-dark" data-dismiss="alert" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                        @endif
+
                         <form action="{{ route('contact.send') }}" method="POST">
                             @csrf
                             <div class="form-group">

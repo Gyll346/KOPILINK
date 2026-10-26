@@ -82,7 +82,7 @@
     <!-- Navbar End -->
 
     <!-- Flash Message Container -->
-    @if(session('status'))
+    @if(session('status') && !request()->routeIs('contact'))
         <div class="container mt-4">
             <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm" role="alert" style="background-color: #DA9F5B; color: #111;">
                 <i class="fa fa-check-circle mr-2"></i> {{ session('status') }}
