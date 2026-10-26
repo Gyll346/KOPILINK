@@ -47,6 +47,9 @@
                     <a href="{{ route('scan') }}" class="nav-item nav-link {{ request()->routeIs('scan') ? 'active' : '' }}">
                         <i class="fa fa-qrcode text-primary mr-1"></i> Scan QR Kopi
                     </a>
+                    <a href="{{ url('/#donasi') }}" class="nav-item nav-link text-warning font-weight-bold">
+                        <i class="fa fa-heart text-danger mr-1"></i> Donasi
+                    </a>
                     <a href="{{ route('about') }}" class="nav-item nav-link {{ request()->routeIs('about') ? 'active' : '' }}">Tentang</a>
                     <a href="{{ route('service') }}" class="nav-item nav-link {{ request()->routeIs('service') ? 'active' : '' }}">Layanan</a>
                     <a href="{{ route('menu') }}" class="nav-item nav-link {{ request()->routeIs('menu') ? 'active' : '' }}">Menu</a>
