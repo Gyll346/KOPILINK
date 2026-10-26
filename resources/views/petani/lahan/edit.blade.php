@@ -108,26 +108,44 @@
                         </div>
                     </div>
 
-                    <!-- Foto Lahan & Pratinjau -->
+                    <!-- Foto Lahan & Pratinjau (Multi-Foto) -->
                     <div class="form-group mb-4">
-                        <label class="font-weight-bold">Foto Kebun / Tanaman Kopi</label>
-                        @if($lahan->foto_lahan)
+                        <label class="font-weight-bold">
+                            Foto Kebun / Tanaman Kopi
+                            @if(count($lahan->foto_list) === 0)
+                                <span class="text-danger">*</span>
+                            @endif
+                        </label>
+                        @if(count($lahan->foto_list) > 0)
                             <div class="mb-3">
-                                <span class="small font-weight-bold text-muted d-block mb-1">Foto Lahan Saat Ini:</span>
-                                <img src="{{ asset('storage/' . $lahan->foto_lahan) }}" alt="Foto Lahan Saat Ini" class="rounded border shadow-sm" style="max-height: 140px; object-fit: cover;">
+                                <span class="small font-weight-bold text-muted d-block mb-1">
+                                    <i class="fa fa-images mr-1"></i> Foto Lahan Saat Ini ({{ count($lahan->foto_list) }} foto):
+                                </span>
+                                <div class="d-flex flex-wrap" style="gap: 10px;">
+                                    @foreach($lahan->foto_list as $idx => $fPath)
+                                        <div class="position-relative rounded border overflow-hidden shadow-sm" style="width: 120px; height: 95px;">
+                                            <a href="{{ asset('storage/' . $fPath) }}" target="_blank">
+                                                <img src="{{ asset('storage/' . $fPath) }}" alt="Foto Lahan {{ $idx + 1 }}" class="w-100 h-100" style="object-fit: cover;">
+                                            </a>
+                                            <span class="badge badge-dark position-absolute" style="bottom: 2px; left: 2px; font-size: 9px;">
+                                                Foto {{ $idx + 1 }}
+                                            </span>
+                                        </div>
+                                    @endforeach
+                                </div>
                             </div>
                         @endif
 
-                        <input type="file" id="fotoInput" accept="image/*" class="form-control-file">
-                        <input type="file" name="foto_lahan" id="compressedFoto" class="d-none">
+                        <input type="file" id="fotoInput" accept="image/*" class="form-control-file" multiple>
+                        <input type="file" name="foto_lahan[]" id="compressedFoto" class="d-none" multiple>
                         <small class="text-muted d-block mt-1">
-                            <i class="fa fa-compress-arrows-alt text-primary mr-1"></i> 
-                            Pilih gambar baru untuk mengganti foto lama. Gambar otomatis dikompresi agar hemat kuota internet.
+                            <i class="fa fa-info-circle text-primary mr-1"></i> 
+                            Pilih gambar baru jika ingin mengganti seluruh foto kebun. Bisa pilih lebih dari 1 foto (foto pertama wajib, tambahan opsional).
                         </small>
                         <div id="compressionInfo" class="mt-2 small text-success font-weight-bold"></div>
                         <div id="previewContainer" class="mt-2 d-none">
-                            <span class="small font-weight-bold text-muted d-block mb-1">Pratinjau Foto Baru:</span>
-                            <img id="imgPreview" src="" alt="Pratinjau Foto Baru" class="rounded border" style="max-height: 180px;">
+                            <span class="small font-weight-bold text-muted d-block mb-1">Pratinjau Foto Pengganti:</span>
+                            <div id="previewGrid" class="d-flex flex-wrap" style="gap: 10px;"></div>
                         </div>
                     </div>
 
@@ -259,64 +277,98 @@ document.addEventListener('DOMContentLoaded', function () {
     setTimeout(() => { map.invalidateSize(); }, 300);
 
 
-    // 2. Client-side Pre-compression Canvas
+    // 2. Client-side Pre-compression Canvas (Multi-Files)
     const fotoInput = document.getElementById('fotoInput');
     const compressedFoto = document.getElementById('compressedFoto');
-    const imgPreview = document.getElementById('imgPreview');
+    const previewGrid = document.getElementById('previewGrid');
     const previewContainer = document.getElementById('previewContainer');
     const compressionInfo = document.getElementById('compressionInfo');
 
     if (fotoInput) {
         fotoInput.addEventListener('change', function (e) {
-            const file = e.target.files[0];
-            if (!file) return;
+            const files = Array.from(e.target.files);
+            if (!files || files.length === 0) return;
 
-            const originalSizeKB = (file.size / 1024).toFixed(1);
-            compressionInfo.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Mengompresi gambar...';
+            previewGrid.innerHTML = '';
+            compressionInfo.innerHTML = `<i class="fa fa-spinner fa-spin"></i> Mengompresi ${files.length} foto...`;
 
-            const reader = new FileReader();
-            reader.onload = function (event) {
-                const img = new Image();
-                img.onload = function () {
-                    const canvas = document.createElement('canvas');
-                    let width = img.width;
-                    let height = img.height;
-                    const maxDim = 1200;
+            const dataTransfer = new DataTransfer();
+            let processedCount = 0;
+            let totalOriginalSize = 0;
+            let totalNewSize = 0;
 
-                    if (width > maxDim || height > maxDim) {
-                        if (width > height) {
-                            height = Math.round((height * maxDim) / width);
-                            width = maxDim;
-                        } else {
-                            width = Math.round((width * maxDim) / height);
-                            height = maxDim;
+            files.forEach((file, index) => {
+                totalOriginalSize += file.size;
+                const reader = new FileReader();
+                reader.onload = function (event) {
+                    const img = new Image();
+                    img.onload = function () {
+                        const canvas = document.createElement('canvas');
+                        let width = img.width;
+                        let height = img.height;
+                        const maxDim = 1200;
+
+                        if (width > maxDim || height > maxDim) {
+                            if (width > height) {
+                                height = Math.round((height * maxDim) / width);
+                                width = maxDim;
+                            } else {
+                                width = Math.round((width * maxDim) / height);
+                                height = maxDim;
+                            }
                         }
-                    }
 
-                    canvas.width = width;
-                    canvas.height = height;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, width, height);
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
 
-                    canvas.toBlob(function (blob) {
-                        const newSizeKB = (blob.size / 1024).toFixed(1);
-                        const compressedFile = new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".webp", {
-                            type: 'image/webp',
-                            lastModified: Date.now()
-                        });
+                        canvas.toBlob(function (blob) {
+                            totalNewSize += blob.size;
+                            const compressedFile = new File([blob], file.name.replace(/\.[^/.]+$/, ".jpg"), {
+                                type: 'image/jpeg',
+                                lastModified: Date.now()
+                            });
 
-                        const dataTransfer = new DataTransfer();
-                        dataTransfer.items.add(compressedFile);
-                        compressedFoto.files = dataTransfer.files;
+                            dataTransfer.items.add(compressedFile);
 
-                        imgPreview.src = URL.createObjectURL(blob);
-                        previewContainer.classList.remove('d-none');
-                        compressionInfo.innerHTML = `<i class="fa fa-check-circle"></i> Terkompresi: ${originalSizeKB} KB &rarr; ${newSizeKB} KB (Format WebP)`;
-                    }, 'image/webp', 0.8);
+                            // Buat thumbnail pratinjau
+                            const thumbWrapper = document.createElement('div');
+                            thumbWrapper.className = 'position-relative rounded border overflow-hidden shadow-sm';
+                            thumbWrapper.style.width = '120px';
+                            thumbWrapper.style.height = '100px';
+
+                            const thumbImg = document.createElement('img');
+                            thumbImg.src = canvas.toDataURL('image/jpeg', 0.8);
+                            thumbImg.className = 'w-100 h-100';
+                            thumbImg.style.objectFit = 'cover';
+
+                            const badge = document.createElement('span');
+                            badge.className = 'badge badge-dark position-absolute';
+                            badge.style.bottom = '2px';
+                            badge.style.left = '2px';
+                            badge.style.fontSize = '9px';
+                            badge.textContent = `Foto ${index + 1}`;
+
+                            thumbWrapper.appendChild(thumbImg);
+                            thumbWrapper.appendChild(badge);
+                            previewGrid.appendChild(thumbWrapper);
+
+                            processedCount++;
+                            if (processedCount === files.length) {
+                                compressedFoto.files = dataTransfer.files;
+                                const origKb = (totalOriginalSize / 1024).toFixed(1);
+                                const newKb = (totalNewSize / 1024).toFixed(1);
+                                const saving = totalOriginalSize > 0 ? (100 - (totalNewSize / totalOriginalSize) * 100).toFixed(0) : 0;
+                                compressionInfo.innerHTML = `<i class="fa fa-check-circle"></i> Terkompresi ${files.length} foto: ${origKb} KB &rarr; ${newKb} KB (Hemat ${saving}%)`;
+                                previewContainer.classList.remove('d-none');
+                            }
+                        }, 'image/jpeg', 0.75);
+                    };
+                    img.src = event.target.result;
                 };
-                img.src = event.target.result;
-            };
-            reader.readAsDataURL(file);
+                reader.readAsDataURL(file);
+            });
         });
     }
 });

@@ -45,6 +45,24 @@ class Lahan extends Model
         });
     }
 
+    public function getFotoListAttribute(): array
+    {
+        if (!$this->foto_lahan) {
+            return [];
+        }
+        $decoded = json_decode($this->foto_lahan, true);
+        if (is_array($decoded)) {
+            return $decoded;
+        }
+        return [$this->foto_lahan];
+    }
+
+    public function getFotoPertamaAttribute(): ?string
+    {
+        $list = $this->foto_list;
+        return count($list) > 0 ? $list[0] : null;
+    }
+
     public function petani()
     {
         return $this->belongsTo(Petani::class, 'id_petani', 'id_petani');

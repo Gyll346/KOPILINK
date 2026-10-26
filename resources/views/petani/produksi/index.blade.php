@@ -53,8 +53,17 @@
                             <tr>
                                 <td class="pl-4 font-weight-bold">#PRD-{{ $prod->id_produksi }}</td>
                                 <td>
-                                    @if($prod->foto_green_bean)
-                                        <img src="{{ asset('storage/' . $prod->foto_green_bean) }}" alt="Foto Biji Kopi" class="rounded" style="width: 50px; height: 50px; object-fit: cover;">
+                                    @if($prod->foto_pertama)
+                                        <div class="position-relative d-inline-block">
+                                            <a href="{{ asset('storage/' . $prod->foto_pertama) }}" target="_blank">
+                                                <img src="{{ asset('storage/' . $prod->foto_pertama) }}" alt="Foto Biji Kopi" class="rounded border shadow-sm" style="width: 50px; height: 50px; object-fit: cover;">
+                                            </a>
+                                            @if(count($prod->foto_list) > 1)
+                                                <span class="badge badge-dark position-absolute" style="top: -5px; right: -5px; font-size: 10px; border-radius: 10px; padding: 2px 5px;" title="{{ count($prod->foto_list) }} Foto Tersedia">
+                                                    +{{ count($prod->foto_list) }}
+                                                </span>
+                                            @endif
+                                        </div>
                                     @else
                                         <div class="bg-light rounded d-flex align-items-center justify-content-center text-muted" style="width: 50px; height: 50px;">
                                             <i class="fa fa-seedling"></i>

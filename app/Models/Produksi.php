@@ -25,6 +25,24 @@ class Produksi extends Model
         'tanggal_input' => 'date',
     ];
 
+    public function getFotoListAttribute(): array
+    {
+        if (!$this->foto_green_bean) {
+            return [];
+        }
+        $decoded = json_decode($this->foto_green_bean, true);
+        if (is_array($decoded)) {
+            return $decoded;
+        }
+        return [$this->foto_green_bean];
+    }
+
+    public function getFotoPertamaAttribute(): ?string
+    {
+        $list = $this->foto_list;
+        return count($list) > 0 ? $list[0] : null;
+    }
+
     public function lahan()
     {
         return $this->belongsTo(Lahan::class, 'id_lahan', 'id_lahan');

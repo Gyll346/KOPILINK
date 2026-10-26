@@ -133,34 +133,42 @@
                         </div>
 
                         <!-- Dokumentasi Foto Kebun & Foto Hasil Panen dari Petani -->
-                        @if($lahan->foto_lahan || $produksi->foto_green_bean)
+                        @if(count($lahan->foto_list) > 0 || count($produksi->foto_list) > 0)
                             <div class="mt-4 pt-3 border-top border-secondary">
                                 <span class="text-white-50 small d-block font-weight-bold mb-2">
                                     <i class="fa fa-images text-primary mr-1"></i> Dokumentasi Lapangan Petani:
                                 </span>
                                 <div class="row">
-                                    @if($lahan->foto_lahan)
-                                        <div class="col-{{ $produksi->foto_green_bean ? '6' : '12' }} mb-2">
-                                            <a href="{{ asset('storage/' . $lahan->foto_lahan) }}" target="_blank" class="d-block text-decoration-none">
-                                                <div class="rounded overflow-hidden border border-secondary position-relative">
-                                                    <img src="{{ asset('storage/' . $lahan->foto_lahan) }}" alt="Foto Kebun Kopi" class="w-100" style="height: 120px; object-fit: cover;">
-                                                    <span class="badge badge-dark position-absolute" style="bottom: 4px; left: 4px; font-size: 10px; opacity: 0.9;">
-                                                        <i class="fa fa-tree mr-1"></i> Foto Kebun
-                                                    </span>
-                                                </div>
-                                            </a>
+                                    @if(count($lahan->foto_list) > 0)
+                                        <div class="col-{{ count($produksi->foto_list) > 0 ? '6' : '12' }} mb-2">
+                                            <div class="d-flex flex-wrap" style="gap: 6px;">
+                                                @foreach($lahan->foto_list as $fIdx => $fLahan)
+                                                    <a href="{{ asset('storage/' . $fLahan) }}" target="_blank" class="d-block text-decoration-none" style="flex: 1 1 calc(50% - 6px); min-width: 90px;">
+                                                        <div class="rounded overflow-hidden border border-secondary position-relative">
+                                                            <img src="{{ asset('storage/' . $fLahan) }}" alt="Foto Kebun Kopi" class="w-100" style="height: 100px; object-fit: cover;">
+                                                            <span class="badge badge-dark position-absolute" style="bottom: 4px; left: 4px; font-size: 9px; opacity: 0.9;">
+                                                                <i class="fa fa-tree mr-1"></i> Kebun #{{ $fIdx + 1 }}
+                                                            </span>
+                                                        </div>
+                                                    </a>
+                                                @endforeach
+                                            </div>
                                         </div>
                                     @endif
-                                    @if($produksi->foto_green_bean)
-                                        <div class="col-{{ $lahan->foto_lahan ? '6' : '12' }} mb-2">
-                                            <a href="{{ asset('storage/' . $produksi->foto_green_bean) }}" target="_blank" class="d-block text-decoration-none">
-                                                <div class="rounded overflow-hidden border border-secondary position-relative">
-                                                    <img src="{{ asset('storage/' . $produksi->foto_green_bean) }}" alt="Foto Hasil Panen" class="w-100" style="height: 120px; object-fit: cover;">
-                                                    <span class="badge badge-dark position-absolute" style="bottom: 4px; left: 4px; font-size: 10px; opacity: 0.9;">
-                                                        <i class="fa fa-seedling mr-1"></i> Biji Panen
-                                                    </span>
-                                                </div>
-                                            </a>
+                                    @if(count($produksi->foto_list) > 0)
+                                        <div class="col-{{ count($lahan->foto_list) > 0 ? '6' : '12' }} mb-2">
+                                            <div class="d-flex flex-wrap" style="gap: 6px;">
+                                                @foreach($produksi->foto_list as $pIdx => $fBean)
+                                                    <a href="{{ asset('storage/' . $fBean) }}" target="_blank" class="d-block text-decoration-none" style="flex: 1 1 calc(50% - 6px); min-width: 90px;">
+                                                        <div class="rounded overflow-hidden border border-secondary position-relative">
+                                                            <img src="{{ asset('storage/' . $fBean) }}" alt="Foto Hasil Panen" class="w-100" style="height: 100px; object-fit: cover;">
+                                                            <span class="badge badge-dark position-absolute" style="bottom: 4px; left: 4px; font-size: 9px; opacity: 0.9;">
+                                                                <i class="fa fa-seedling mr-1"></i> Panen #{{ $pIdx + 1 }}
+                                                            </span>
+                                                        </div>
+                                                    </a>
+                                                @endforeach
+                                            </div>
                                         </div>
                                     @endif
                                 </div>
@@ -246,12 +254,16 @@
                                 Dikelola oleh <strong>{{ $petani->nama }}</strong> di <strong>Desa {{ $petani->kelompok_tani }}</strong>. 
                                 Populasi: {{ number_format($lahan->jumlah_tanaman) }} pohon di atas lahan seluas {{ $lahan->luas_lahan }} Ha.
                             </p>
-                            @if($lahan->foto_lahan)
+                            @if(count($lahan->foto_list) > 0)
                                 <div class="mt-2 mb-3">
-                                    <a href="{{ asset('storage/' . $lahan->foto_lahan) }}" target="_blank">
-                                        <img src="{{ asset('storage/' . $lahan->foto_lahan) }}" alt="Foto Kebun" class="rounded border shadow-sm" style="height: 110px; max-width: 100%; object-fit: cover;">
-                                    </a>
-                                    <small class="d-block text-muted mt-1"><i class="fa fa-camera mr-1"></i> Foto Kebun Agroforestri</small>
+                                    <div class="d-flex flex-wrap" style="gap: 8px;">
+                                        @foreach($lahan->foto_list as $fIdx => $fLahan)
+                                            <a href="{{ asset('storage/' . $fLahan) }}" target="_blank">
+                                                <img src="{{ asset('storage/' . $fLahan) }}" alt="Foto Kebun {{ $fIdx + 1 }}" class="rounded border shadow-sm" style="height: 90px; width: 110px; object-fit: cover;">
+                                            </a>
+                                        @endforeach
+                                    </div>
+                                    <small class="d-block text-muted mt-1"><i class="fa fa-camera mr-1"></i> Foto Kebun Agroforestri ({{ count($lahan->foto_list) }} foto)</small>
                                 </div>
                             @endif
                         </div>
@@ -263,12 +275,16 @@
                                 Panen batch seberat <strong>{{ $produksi->jumlah_green_bean }} Kg</strong> dipetik dan dicatat pada tanggal 
                                 <strong>{{ $produksi->tanggal_input->format('d F Y') }}</strong>.
                             </p>
-                            @if($produksi->foto_green_bean)
+                            @if(count($produksi->foto_list) > 0)
                                 <div class="mt-2 mb-3">
-                                    <a href="{{ asset('storage/' . $produksi->foto_green_bean) }}" target="_blank">
-                                        <img src="{{ asset('storage/' . $produksi->foto_green_bean) }}" alt="Foto Biji Kopi" class="rounded border shadow-sm" style="height: 110px; max-width: 100%; object-fit: cover;">
-                                    </a>
-                                    <small class="d-block text-muted mt-1"><i class="fa fa-camera mr-1"></i> Foto Biji Kopi (Green Bean)</small>
+                                    <div class="d-flex flex-wrap" style="gap: 8px;">
+                                        @foreach($produksi->foto_list as $pIdx => $fBean)
+                                            <a href="{{ asset('storage/' . $fBean) }}" target="_blank">
+                                                <img src="{{ asset('storage/' . $fBean) }}" alt="Foto Biji Kopi {{ $pIdx + 1 }}" class="rounded border shadow-sm" style="height: 90px; width: 110px; object-fit: cover;">
+                                            </a>
+                                        @endforeach
+                                    </div>
+                                    <small class="d-block text-muted mt-1"><i class="fa fa-camera mr-1"></i> Foto Biji Kopi / Green Bean ({{ count($produksi->foto_list) }} foto)</small>
                                 </div>
                             @endif
                         </div>

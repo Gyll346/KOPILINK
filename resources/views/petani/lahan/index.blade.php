@@ -54,8 +54,17 @@
                             <tr>
                                 <td class="pl-4 font-weight-bold">#{{ $lahan->id_lahan }}</td>
                                 <td>
-                                    @if($lahan->foto_lahan)
-                                        <img src="{{ asset('storage/' . $lahan->foto_lahan) }}" alt="Foto Lahan" class="rounded" style="width: 50px; height: 50px; object-fit: cover;">
+                                    @if($lahan->foto_pertama)
+                                        <div class="position-relative d-inline-block">
+                                            <a href="{{ asset('storage/' . $lahan->foto_pertama) }}" target="_blank">
+                                                <img src="{{ asset('storage/' . $lahan->foto_pertama) }}" alt="Foto Lahan" class="rounded border shadow-sm" style="width: 50px; height: 50px; object-fit: cover;">
+                                            </a>
+                                            @if(count($lahan->foto_list) > 1)
+                                                <span class="badge badge-dark position-absolute" style="top: -5px; right: -5px; font-size: 10px; border-radius: 10px; padding: 2px 5px;" title="{{ count($lahan->foto_list) }} Foto Tersedia">
+                                                    +{{ count($lahan->foto_list) }}
+                                                </span>
+                                            @endif
+                                        </div>
                                     @else
                                         <div class="bg-light rounded d-flex align-items-center justify-content-center text-muted" style="width: 50px; height: 50px;">
                                             <i class="fa fa-image"></i>

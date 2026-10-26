@@ -54,12 +54,20 @@ class PetaniDashboardController extends Controller
             'koordinat_y' => 'required|numeric|between:-90,90',
             'luas_lahan' => 'required|numeric|min:0.01',
             'jumlah_tanaman' => 'required|integer|min:1',
-            'foto_lahan' => 'nullable|image|max:10240', // Max 10MB sebelum kompresi
+            'foto_lahan' => 'required|array|min:1',
+            'foto_lahan.*' => 'image|max:10240',
+        ], [
+            'foto_lahan.required' => 'Wajib mengunggah minimal 1 foto lahan/kebun.',
+            'foto_lahan.min' => 'Wajib mengunggah minimal 1 foto lahan/kebun.',
         ]);
 
-        $fotoPath = null;
+        $paths = [];
         if ($request->hasFile('foto_lahan')) {
-            $fotoPath = $this->imageService->compressAndStore($request->file('foto_lahan'), 'lahan');
+            foreach ($request->file('foto_lahan') as $file) {
+                if ($file && $file->isValid()) {
+                    $paths[] = $this->imageService->compressAndStore($file, 'lahan');
+                }
+            }
         }
 
         // Auto-assign jenis kopi sesuai aturan bisnis
@@ -72,7 +80,7 @@ class PetaniDashboardController extends Controller
             'luas_lahan' => $validated['luas_lahan'],
             'jumlah_tanaman' => $validated['jumlah_tanaman'],
             'jenis_kopi' => $jenisKopi,
-            'foto_lahan' => $fotoPath,
+            'foto_lahan' => !empty($paths) ? json_encode($paths) : null,
         ]);
 
         return redirect()->route('petani.lahan.index')
@@ -96,19 +104,43 @@ class PetaniDashboardController extends Controller
             ->where('id_petani', $petani->id_petani)
             ->firstOrFail();
 
-        $validated = $request->validate([
+        // Jika lahan belum punya foto sama sekali, wajib unggah min 1
+        $existingFotos = $lahan->foto_list;
+        $rules = [
             'koordinat_x' => 'required|numeric|between:-180,180',
             'koordinat_y' => 'required|numeric|between:-90,90',
             'luas_lahan' => 'required|numeric|min:0.01',
             'jumlah_tanaman' => 'required|integer|min:1',
-            'foto_lahan' => 'nullable|image|max:10240',
+        ];
+
+        if (empty($existingFotos)) {
+            $rules['foto_lahan'] = 'required|array|min:1';
+            $rules['foto_lahan.*'] = 'image|max:10240';
+        } else {
+            $rules['foto_lahan'] = 'nullable|array';
+            $rules['foto_lahan.*'] = 'image|max:10240';
+        }
+
+        $validated = $request->validate($rules, [
+            'foto_lahan.required' => 'Wajib mengunggah minimal 1 foto lahan/kebun.',
+            'foto_lahan.min' => 'Wajib mengunggah minimal 1 foto lahan/kebun.',
         ]);
 
         if ($request->hasFile('foto_lahan')) {
-            if ($lahan->foto_lahan && \Illuminate\Support\Facades\Storage::disk('public')->exists($lahan->foto_lahan)) {
-                \Illuminate\Support\Facades\Storage::disk('public')->delete($lahan->foto_lahan);
+            // Hapus file lama jika ada foto baru yang diunggah
+            foreach ($existingFotos as $oldPath) {
+                if ($oldPath && \Illuminate\Support\Facades\Storage::disk('public')->exists($oldPath)) {
+                    \Illuminate\Support\Facades\Storage::disk('public')->delete($oldPath);
+                }
             }
-            $lahan->foto_lahan = $this->imageService->compressAndStore($request->file('foto_lahan'), 'lahan');
+
+            $paths = [];
+            foreach ($request->file('foto_lahan') as $file) {
+                if ($file && $file->isValid()) {
+                    $paths[] = $this->imageService->compressAndStore($file, 'lahan');
+                }
+            }
+            $lahan->foto_lahan = !empty($paths) ? json_encode($paths) : null;
         }
 
         $lahan->koordinat_x = $validated['koordinat_x'];
@@ -152,12 +184,20 @@ class PetaniDashboardController extends Controller
             'id_lahan' => 'required|in:' . implode(',', $lahanIds),
             'jumlah_green_bean' => 'required|numeric|min:0.5',
             'tanggal_input' => 'required|date',
-            'foto_green_bean' => 'nullable|image|max:10240',
+            'foto_green_bean' => 'required|array|min:1',
+            'foto_green_bean.*' => 'image|max:10240',
+        ], [
+            'foto_green_bean.required' => 'Wajib mengunggah minimal 1 foto hasil panen green bean.',
+            'foto_green_bean.min' => 'Wajib mengunggah minimal 1 foto hasil panen green bean.',
         ]);
 
-        $fotoPath = null;
+        $paths = [];
         if ($request->hasFile('foto_green_bean')) {
-            $fotoPath = $this->imageService->compressAndStore($request->file('foto_green_bean'), 'produksi');
+            foreach ($request->file('foto_green_bean') as $file) {
+                if ($file && $file->isValid()) {
+                    $paths[] = $this->imageService->compressAndStore($file, 'produksi');
+                }
+            }
         }
 
         Produksi::create([
@@ -165,7 +205,7 @@ class PetaniDashboardController extends Controller
             'jumlah_green_bean' => $validated['jumlah_green_bean'],
             'tanggal_input' => $validated['tanggal_input'],
             'status' => 'Tersedia',
-            'foto_green_bean' => $fotoPath,
+            'foto_green_bean' => !empty($paths) ? json_encode($paths) : null,
         ]);
 
         return redirect()->route('petani.produksi.index')
@@ -207,18 +247,40 @@ class PetaniDashboardController extends Controller
                 ->with('warning', 'Data produksi ini sudah diterima oleh Coffee Shop dan tidak dapat diubah.');
         }
 
-        $validated = $request->validate([
+        $existingFotos = $produksi->foto_list;
+        $rules = [
             'id_lahan' => 'required|in:' . implode(',', $lahanIds),
             'jumlah_green_bean' => 'required|numeric|min:0.5',
             'tanggal_input' => 'required|date',
-            'foto_green_bean' => 'nullable|image|max:10240',
+        ];
+
+        if (empty($existingFotos)) {
+            $rules['foto_green_bean'] = 'required|array|min:1';
+            $rules['foto_green_bean.*'] = 'image|max:10240';
+        } else {
+            $rules['foto_green_bean'] = 'nullable|array';
+            $rules['foto_green_bean.*'] = 'image|max:10240';
+        }
+
+        $validated = $request->validate($rules, [
+            'foto_green_bean.required' => 'Wajib mengunggah minimal 1 foto hasil panen green bean.',
+            'foto_green_bean.min' => 'Wajib mengunggah minimal 1 foto hasil panen green bean.',
         ]);
 
         if ($request->hasFile('foto_green_bean')) {
-            if ($produksi->foto_green_bean && \Illuminate\Support\Facades\Storage::disk('public')->exists($produksi->foto_green_bean)) {
-                \Illuminate\Support\Facades\Storage::disk('public')->delete($produksi->foto_green_bean);
+            foreach ($existingFotos as $oldPath) {
+                if ($oldPath && \Illuminate\Support\Facades\Storage::disk('public')->exists($oldPath)) {
+                    \Illuminate\Support\Facades\Storage::disk('public')->delete($oldPath);
+                }
             }
-            $produksi->foto_green_bean = $this->imageService->compressAndStore($request->file('foto_green_bean'), 'produksi');
+
+            $paths = [];
+            foreach ($request->file('foto_green_bean') as $file) {
+                if ($file && $file->isValid()) {
+                    $paths[] = $this->imageService->compressAndStore($file, 'produksi');
+                }
+            }
+            $produksi->foto_green_bean = !empty($paths) ? json_encode($paths) : null;
         }
 
         $produksi->id_lahan = $validated['id_lahan'];
