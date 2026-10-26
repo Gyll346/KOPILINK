@@ -91,6 +91,7 @@ Route::middleware('auth:coffee_shop')->prefix('coffee-shop')->name('coffeeshop.'
 
     // Kemasan Ber-QR & Label Printing
     Route::get('/kemasan', [CoffeeShopDashboardController::class, 'kemasanIndex'])->name('kemasan.index');
+    Route::post('/kemasan/{id_kemasan}/toggle', [CoffeeShopDashboardController::class, 'toggleStatus'])->name('kemasan.toggle');
     Route::get('/kemasan/print/{id_kemasan}', [CoffeeShopDashboardController::class, 'printLabel'])->name('kemasan.print');
 
     // WhatsApp Gateway Management (Sidecar QR Pairing)

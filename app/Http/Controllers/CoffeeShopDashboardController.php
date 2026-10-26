@@ -97,6 +97,23 @@ class CoffeeShopDashboardController extends Controller
         return view('coffeeshop.kemasan.index', compact('coffeeShop', 'kemasanList'));
     }
 
+    public function toggleStatus($id_kemasan)
+    {
+        $coffeeShop = Auth::guard('coffee_shop')->user();
+        $kemasan = KemasanKopi::where('id_coffee_shop', $coffeeShop->id_coffee_shop)
+            ->findOrFail($id_kemasan);
+
+        $kemasan->is_active = !$kemasan->is_active;
+        $kemasan->save();
+
+        $statusMsg = $kemasan->is_active
+            ? "Tampilan QR kemasan [{$kemasan->qr_code_url}] berhasil diaktifkan kembali di publik."
+            : "Tampilan QR kemasan [{$kemasan->qr_code_url}] dinonaktifkan dari publik. Petani mitra kini dapat mengedit/mengoreksi data produksi terkait.";
+
+        return redirect()->route('coffeeshop.kemasan.index')
+            ->with('status', $statusMsg);
+    }
+
     public function printLabel($id_kemasan)
     {
         $coffeeShop = Auth::guard('coffee_shop')->user();

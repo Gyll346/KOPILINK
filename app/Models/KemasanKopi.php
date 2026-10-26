@@ -16,6 +16,11 @@ class KemasanKopi extends Model
         'id_coffee_shop',
         'id_produksi',
         'qr_code_url',
+        'is_active',
+    ];
+
+    protected $casts = [
+        'is_active' => 'boolean',
     ];
 
     public function coffeeShop()

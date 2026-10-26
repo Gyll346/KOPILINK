@@ -161,7 +161,7 @@ class PetaniDashboardController extends Controller
     {
         $petani = Auth::guard('petani')->user();
         $lahanIds = Lahan::where('id_petani', $petani->id_petani)->pluck('id_lahan');
-        $produksiList = Produksi::whereIn('id_lahan', $lahanIds)->with('lahan')->latest()->get();
+        $produksiList = Produksi::whereIn('id_lahan', $lahanIds)->with(['lahan', 'kemasan'])->latest()->get();
 
         return view('petani.produksi.index', compact('petani', 'produksiList'));
     }
@@ -226,10 +226,13 @@ class PetaniDashboardController extends Controller
             ->whereIn('id_lahan', $lahanIds)
             ->firstOrFail();
 
-        // Guard: Jika status bukan Tersedia (misal sudah diterima oleh Coffee Shop/Admin)
+        // Guard: Jika status bukan Tersedia, cek apakah Coffee Shop menonaktifkan kemasan untuk revisi data
         if ($produksi->status !== 'Tersedia') {
-            return redirect()->route('petani.produksi.index')
-                ->with('warning', 'Data produksi ini telah diserap/diterima oleh Coffee Shop sehingga tidak dapat diedit kembali demi integritas ketertelusuran.');
+            $hasActiveKemasan = $produksi->kemasan()->where('is_active', true)->exists();
+            if ($hasActiveKemasan) {
+                return redirect()->route('petani.produksi.index')
+                    ->with('warning', 'Data produksi ini telah diserap oleh Coffee Shop dan tampilan QR publik sedang aktif sehingga tidak dapat diedit langsung. Silakan hubungi Coffee Shop terkait jika memerlukan revisi data.');
+            }
         }
 
         return view('petani.produksi.edit', compact('petani', 'produksi', 'lahanList'));
@@ -245,10 +248,13 @@ class PetaniDashboardController extends Controller
             ->whereIn('id_lahan', $lahanIds)
             ->firstOrFail();
 
-        // Guard: Jika status bukan Tersedia, tolak perubahan
+        // Guard: Jika status bukan Tersedia, cek apakah Coffee Shop menonaktifkan kemasan untuk revisi data
         if ($produksi->status !== 'Tersedia') {
-            return redirect()->route('petani.produksi.index')
-                ->with('warning', 'Data produksi ini sudah diterima oleh Coffee Shop dan tidak dapat diubah.');
+            $hasActiveKemasan = $produksi->kemasan()->where('is_active', true)->exists();
+            if ($hasActiveKemasan) {
+                return redirect()->route('petani.produksi.index')
+                    ->with('warning', 'Perubahan ditolak: Data produksi ini terkunci karena label QR publik sedang aktif.');
+            }
         }
 
         $existingFotos = $produksi->foto_list;

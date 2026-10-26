@@ -84,9 +84,19 @@
                                 </td>
                                 <td>{{ $prod->tanggal_input->format('d F Y') }}</td>
                                 <td>
+                                    @php
+                                        $hasActiveQr = $prod->kemasan->where('is_active', true)->count() > 0;
+                                        $hasKemasan = $prod->kemasan->count() > 0;
+                                        $canEdit = ($prod->status === 'Tersedia') || ($hasKemasan && !$hasActiveQr);
+                                    @endphp
+
                                     @if($prod->status === 'Tersedia')
                                         <span class="badge badge-info px-3 py-2 font-weight-bold" style="font-size: 12px;">
                                             <i class="fa fa-clock mr-1"></i> Tersedia Untuk Roastery
+                                        </span>
+                                    @elseif($hasKemasan && !$hasActiveQr)
+                                        <span class="badge badge-warning px-3 py-2 font-weight-bold text-dark" style="font-size: 12px; background-color: #ffd166;">
+                                            <i class="fa fa-edit mr-1"></i> Mode Revisi (QR Dinonaktifkan)
                                         </span>
                                     @else
                                         <span class="badge badge-success px-3 py-2 font-weight-bold" style="font-size: 12px;">
@@ -95,12 +105,12 @@
                                     @endif
                                 </td>
                                 <td class="text-center pr-4">
-                                    @if($prod->status === 'Tersedia')
-                                        <a href="{{ route('petani.produksi.edit', ['id_produksi' => $prod->id_produksi]) }}" class="btn btn-sm btn-koppee">
+                                    @if($canEdit)
+                                        <a href="{{ route('petani.produksi.edit', ['id_produksi' => $prod->id_produksi]) }}" class="btn btn-sm btn-koppee" title="Edit data produksi">
                                             <i class="fa fa-edit mr-1"></i> Edit
                                         </a>
                                     @else
-                                        <span class="badge badge-secondary px-2 py-1" title="Data sudah diserap coffee shop dan terkunci">
+                                        <span class="badge badge-secondary px-2 py-1" title="Data sudah berlabel QR aktif di publik. Minta Coffee Shop menonaktifkan QR jika perlu revisi data.">
                                             <i class="fa fa-lock mr-1"></i> Terkunci
                                         </span>
                                     @endif

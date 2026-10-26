@@ -44,19 +44,26 @@
                             <th>Petani Mitra</th>
                             <th>Kelompok Tani</th>
                             <th>Batch Panen</th>
+                            <th>Status Publik</th>
                             <th>Diterbitkan Pada</th>
-                            <th>Aksi Label</th>
+                            <th class="text-center pr-4">Aksi Label</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach($kemasanList as $kem)
                             @php
                                 $publicUrl = url('/trace/' . $kem->qr_code_url);
+                                $isActive = $kem->is_active ?? true;
                             @endphp
-                            <tr>
+                            <tr class="{{ !$isActive ? 'table-light text-muted' : '' }}">
                                 <td class="pl-4">
-                                    <div class="p-1 bg-white border rounded d-inline-block text-center" style="width: 68px; height: 68px;">
-                                        {!! \SimpleSoftwareIO\QrCode\Facades\QrCode::size(58)->margin(0)->generate($publicUrl) !!}
+                                    <div class="p-1 bg-white border rounded d-inline-block text-center position-relative" style="width: 68px; height: 68px;">
+                                        <div style="{{ !$isActive ? 'filter: grayscale(100%); opacity: 0.5;' : '' }}">
+                                            {!! \SimpleSoftwareIO\QrCode\Facades\QrCode::size(58)->margin(0)->generate($publicUrl) !!}
+                                        </div>
+                                        @if(!$isActive)
+                                            <span class="badge badge-danger position-absolute" style="top: 2px; right: 2px; font-size: 9px;" title="QR Nonaktif di Publik">OFF</span>
+                                        @endif
                                     </div>
                                 </td>
                                 <td>
@@ -72,14 +79,42 @@
                                 <td><strong>{{ $kem->produksi->lahan->petani->nama }}</strong></td>
                                 <td>{{ $kem->produksi->lahan->petani->kelompok_tani }}</td>
                                 <td>#PRD-{{ $kem->id_produksi }} ({{ $kem->produksi->jumlah_green_bean }} Kg)</td>
-                                <td>{{ $kem->created_at->format('d M Y, H:i') }}</td>
                                 <td>
-                                    <div class="btn-group" role="group">
+                                    @if($isActive)
+                                        <span class="badge badge-success px-2 py-1" style="font-size: 11px;">
+                                            <i class="fa fa-eye mr-1"></i> Tampil di Publik
+                                        </span>
+                                    @else
+                                        <span class="badge badge-secondary px-2 py-1" style="font-size: 11px;">
+                                            <i class="fa fa-eye-slash mr-1"></i> Dinonaktifkan
+                                        </span>
+                                        <small class="d-block text-warning font-weight-bold mt-1" style="font-size: 10px;">
+                                            <i class="fa fa-info-circle"></i> Petani dapat edit
+                                        </small>
+                                    @endif
+                                </td>
+                                <td>{{ $kem->created_at->format('d M Y, H:i') }}</td>
+                                <td class="text-center pr-4">
+                                    <div class="d-flex justify-content-center align-items-center flex-wrap" style="gap: 5px;">
+                                        {{-- Toggle Status Button --}}
+                                        <form action="{{ route('coffeeshop.kemasan.toggle', ['id_kemasan' => $kem->id_kemasan]) }}" method="POST" class="d-inline" onsubmit="return confirm('{{ $isActive ? 'Nonaktifkan tampilan QR di publik? Petani akan dapat mengoreksi/mengedit data panen terkait.' : 'Aktifkan kembali tampilan QR di halaman publik?' }}');">
+                                            @csrf
+                                            @if($isActive)
+                                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Nonaktifkan QR di publik agar petani bisa edit data yang salah">
+                                                    <i class="fa fa-toggle-on mr-1"></i> Nonaktifkan
+                                                </button>
+                                            @else
+                                                <button type="submit" class="btn btn-sm btn-outline-success" title="Aktifkan kembali QR ke halaman publik">
+                                                    <i class="fa fa-toggle-off mr-1"></i> Aktifkan
+                                                </button>
+                                            @endif
+                                        </form>
+
                                         <a href="{{ $publicUrl }}" target="_blank" class="btn btn-sm btn-outline-primary" title="Buka Halaman Jejak Kopi">
-                                            <i class="fa fa-external-link-alt mr-1"></i> Jejak Kopi
+                                            <i class="fa fa-external-link-alt"></i>
                                         </a>
                                         <a href="{{ route('coffeeshop.kemasan.print', ['id_kemasan' => $kem->id_kemasan]) }}" target="_blank" class="btn btn-sm btn-koppee" title="Cetak Stiker Label Kemasan 5x5 cm">
-                                            <i class="fa fa-print mr-1"></i> Cetak Label
+                                            <i class="fa fa-print"></i>
                                         </a>
                                     </div>
                                 </td>
