@@ -42,8 +42,8 @@
                         Menyediakan 1 bibit tanaman kopi varietas unggul (Robusta Pasak Piang / Liberika Padi Jaya) bersertifikat untuk ditanam petani di lahan kebun agroforestri ramah lingkungan demi konservasi gambut dan tanah.
                     </p>
                     <div class="mt-auto">
-                        <button type="button" class="btn btn-koppee btn-block font-weight-bold py-2" data-toggle="modal" data-target="#modalDonasiHalaman" data-program="Donasi Bibit Kopi ($1 = 1 Seedling)">
-                            <i class="fa fa-heart mr-1 text-danger"></i> Donasi Bibit
+                        <button type="button" class="btn btn-primary btn-block font-weight-bold py-2 text-dark shadow-sm" style="background-color: #DA9F5B; border-color: #DA9F5B; border-radius: 6px;" data-toggle="modal" data-target="#modalDonasiHalaman" data-program="Donasi Bibit Kopi ($1 = 1 Seedling)">
+                            <i class="fa fa-heart mr-1 text-danger"></i> Donasi Bibit Sekarang
                         </button>
                     </div>
                 </div>
@@ -63,8 +63,8 @@
                         Donasi mikro Rp 200 dari setiap cangkir kopi yang dinikmati disisihkan sebagai dana abadi kesejahteraan sosial petani, dana darurat panen, dan perbaikan fasilitas sangrai mitra kebun.
                     </p>
                     <div class="mt-auto">
-                        <button type="button" class="btn btn-koppee btn-block font-weight-bold py-2" data-toggle="modal" data-target="#modalDonasiHalaman" data-program="Cup of Coffee (Rp 200 = 1 Cup of Coffee)">
-                            <i class="fa fa-mug-hot mr-1"></i> Donasi Per Cangkir
+                        <button type="button" class="btn btn-primary btn-block font-weight-bold py-2 text-dark shadow-sm" style="background-color: #DA9F5B; border-color: #DA9F5B; border-radius: 6px;" data-toggle="modal" data-target="#modalDonasiHalaman" data-program="Cup of Coffee (Rp 200 = 1 Cup of Coffee)">
+                            <i class="fa fa-mug-hot mr-1 text-secondary"></i> Donasi Per Cangkir
                         </button>
                     </div>
                 </div>
@@ -152,7 +152,7 @@
             </div>
             <div class="modal-footer border-top-0 pt-0">
                 <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Tutup</button>
-                <button type="button" class="btn btn-koppee px-4" onclick="submitDonasiHalaman()">
+                <button type="button" class="btn btn-primary font-weight-bold px-4 py-2 text-dark" style="background-color: #DA9F5B; border-color: #DA9F5B;" onclick="submitDonasiHalaman()">
                     <i class="fa fa-check mr-1"></i> Kirim Donasi Sekarang
                 </button>
             </div>
