@@ -17,6 +17,7 @@ Route::get('/service', [TraceabilityController::class, 'service'])->name('servic
 Route::get('/donasi', [TraceabilityController::class, 'donasi'])->name('donasi');
 Route::get('/menu', [TraceabilityController::class, 'menu'])->name('menu');
 Route::get('/contact', [TraceabilityController::class, 'contact'])->name('contact');
+Route::post('/contact', [TraceabilityController::class, 'contactSend'])->name('contact.send');
 
 Route::get('/scan', [TraceabilityController::class, 'scan'])->name('scan');
 Route::get('/trace/{slug}', [TraceabilityController::class, 'show'])->name('trace.show');
@@ -115,6 +116,11 @@ Route::middleware('auth:web')->prefix('admin')->name('admin.')->group(function (
     Route::post('/users/toggle-status/{type}/{id}', [\App\Http\Controllers\AdminDashboardController::class, 'toggleUserStatus'])->name('users.toggle-status');
     Route::post('/users/reset-password/{type}/{id}', [\App\Http\Controllers\AdminDashboardController::class, 'resetPassword'])->name('users.reset-password');
     Route::delete('/users/{type}/{id}', [\App\Http\Controllers\AdminDashboardController::class, 'destroyUser'])->name('users.destroy');
+
+    // Kotak Masuk Pesan Kontak Pengunjung
+    Route::get('/pesan', [\App\Http\Controllers\AdminDashboardController::class, 'pesanIndex'])->name('pesan.index');
+    Route::post('/pesan/{id_pesan}/toggle-read', [\App\Http\Controllers\AdminDashboardController::class, 'pesanToggleRead'])->name('pesan.toggle-read');
+    Route::delete('/pesan/{id_pesan}', [\App\Http\Controllers\AdminDashboardController::class, 'pesanDestroy'])->name('pesan.destroy');
 });
 
 

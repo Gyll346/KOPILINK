@@ -45,21 +45,24 @@
                 <div class="card border-0 shadow-lg text-white p-4" style="background-color: #33211D; border-radius: 8px;">
                     <div class="card-body">
                         <h4 class="text-white mb-3">Kirim Pesan Kemitraan</h4>
-                        <form onsubmit="alert('Terima kasih! Pesan Anda telah terkirim.'); return false;">
+                        <form action="{{ route('contact.send') }}" method="POST">
+                            @csrf
                             <div class="form-group">
-                                <input type="text" class="form-control p-4 border-0" placeholder="Nama Anda" required="required" />
+                                <input type="text" name="nama" class="form-control p-4 border-0" placeholder="Nama Lengkap Anda" value="{{ old('nama') }}" required="required" />
                             </div>
                             <div class="form-group">
-                                <input type="email" class="form-control p-4 border-0" placeholder="Email Anda" required="required" />
+                                <input type="email" name="email" class="form-control p-4 border-0" placeholder="Alamat Email Anda" value="{{ old('email') }}" required="required" />
                             </div>
                             <div class="form-group">
-                                <input type="text" class="form-control p-4 border-0" placeholder="Subjek Kemitraan" required="required" />
+                                <input type="text" name="subjek" class="form-control p-4 border-0" placeholder="Subjek Kemitraan / Pertanyaan" value="{{ old('subjek') }}" required="required" />
                             </div>
                             <div class="form-group">
-                                <textarea class="form-control border-0 p-3" rows="4" placeholder="Pesan Anda" required="required"></textarea>
+                                <textarea name="pesan" class="form-control border-0 p-3" rows="4" placeholder="Tuliskan pesan lengkap Anda di sini..." required="required">{{ old('pesan') }}</textarea>
                             </div>
                             <div>
-                                <button class="btn btn-primary font-weight-bold py-3 px-5 text-secondary" type="submit" style="color: #33211D !important;">Kirim Pesan</button>
+                                <button class="btn btn-primary font-weight-bold py-3 px-5 text-secondary" type="submit" style="color: #33211D !important;">
+                                    <i class="fa fa-paper-plane mr-2"></i> Kirim Pesan
+                                </button>
                             </div>
                         </form>
                     </div>

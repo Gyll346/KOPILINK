@@ -1,11 +1,10 @@
 <?php
 
-namespace App\Services;
-
 namespace App\Http\Controllers;
 
 use App\Models\Petani;
 use App\Models\CoffeeShop;
+use App\Models\User;
 use App\Services\WhatsAppOtpService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;

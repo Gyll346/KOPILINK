@@ -7,6 +7,7 @@ use App\Models\Lahan;
 use App\Models\Petani;
 use App\Models\Produksi;
 use App\Models\User;
+use App\Models\KontakPesan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -207,5 +208,41 @@ class AdminDashboardController extends Controller
         }
 
         return back()->withErrors(['error' => 'Tipe user tidak valid!']);
+    }
+
+    /**
+     * Halaman Kotak Masuk Pesan Pengunjung / Kontak Kami
+     */
+    public function pesanIndex()
+    {
+        $pesanList = KontakPesan::orderBy('created_at', 'desc')->get();
+        $unreadCount = KontakPesan::where('is_read', false)->count();
+
+        return view('admin.pesan', compact('pesanList', 'unreadCount'));
+    }
+
+    /**
+     * Tandai Pesan Telah Dibaca / Belum Dibaca
+     */
+    public function pesanToggleRead($id_pesan)
+    {
+        $pesan = KontakPesan::findOrFail($id_pesan);
+        $pesan->is_read = !$pesan->is_read;
+        $pesan->save();
+
+        $statusText = $pesan->is_read ? 'ditandai sudah dibaca' : 'ditandai belum dibaca';
+        return back()->with('status', "Pesan dari {$pesan->nama} berhasil {$statusText}.");
+    }
+
+    /**
+     * Hapus Pesan Kontak
+     */
+    public function pesanDestroy($id_pesan)
+    {
+        $pesan = KontakPesan::findOrFail($id_pesan);
+        $nama = $pesan->nama;
+        $pesan->delete();
+
+        return back()->with('status', "Pesan dari {$nama} berhasil dihapus.");
     }
 }

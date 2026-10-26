@@ -318,6 +318,19 @@
                             <i class="fa fa-users-cog"></i> Manajemen User
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a href="{{ route('admin.pesan.index') }}" class="nav-link {{ request()->routeIs('admin.pesan.*') ? 'active' : '' }}">
+                            <i class="fa fa-envelope-open-text"></i> Pesan Masuk
+                            @php
+                                $unreadMsgCount = \App\Models\KontakPesan::where('is_read', false)->count();
+                            @endphp
+                            @if($unreadMsgCount > 0)
+                                <span class="badge badge-warning float-right text-dark font-weight-bold" style="background-color: #DA9F5B;">
+                                    {{ $unreadMsgCount }}
+                                </span>
+                            @endif
+                        </a>
+                    </li>
                 </ul>
             @endif
 
