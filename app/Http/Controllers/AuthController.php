@@ -106,6 +106,10 @@ class AuthController extends Controller
             return back()->withInput()->withErrors(['username' => 'Username atau password salah!']);
         }
 
+        if (!$petani->is_active) {
+            return back()->withInput()->withErrors(['username' => 'Akun Petani Anda telah dinonaktifkan oleh Administrator. Silakan hubungi admin.']);
+        }
+
         if (!$petani->is_verified) {
             $this->otpService->sendOtp($petani);
             return redirect()->route('otp.verify.form', ['id_petani' => $petani->id_petani])
@@ -126,13 +130,20 @@ class AuthController extends Controller
             'password' => 'required|string',
         ]);
 
-        if (Auth::guard('coffee_shop')->attempt($validated)) {
-            $request->session()->regenerate();
-            return redirect()->route('coffeeshop.dashboard')
-                ->with('status', 'Selamat datang di Portal Coffee Shop / Roastery Mitra!');
+        $cs = CoffeeShop::where('username', $validated['username'])->first();
+
+        if (!$cs || !Hash::check($validated['password'], $cs->password)) {
+            return back()->withInput()->withErrors(['username' => 'Kredensial Coffee Shop tidak valid.']);
         }
 
-        return back()->withInput()->withErrors(['username' => 'Kredensial Coffee Shop tidak valid.']);
+        if (!$cs->is_active) {
+            return back()->withInput()->withErrors(['username' => 'Akun Coffee Shop Anda telah dinonaktifkan oleh Administrator.']);
+        }
+
+        Auth::guard('coffee_shop')->login($cs);
+        $request->session()->regenerate();
+        return redirect()->route('coffeeshop.dashboard')
+            ->with('status', 'Selamat datang di Portal Coffee Shop / Roastery Mitra!');
     }
 
     public function loginAdmin(Request $request)
@@ -142,13 +153,20 @@ class AuthController extends Controller
             'password' => 'required|string',
         ]);
 
-        if (Auth::guard('web')->attempt(['username' => $validated['username'], 'password' => $validated['password']])) {
-            $request->session()->regenerate();
-            return redirect()->route('admin.dashboard')
-                ->with('status', 'Selamat datang Super Admin KopiLink!');
+        $admin = User::where('username', $validated['username'])->first();
+
+        if (!$admin || !Hash::check($validated['password'], $admin->password)) {
+            return back()->withInput()->withErrors(['username' => 'Kredensial Super Admin tidak valid.']);
         }
 
-        return back()->withInput()->withErrors(['username' => 'Kredensial Super Admin tidak valid.']);
+        if (!$admin->is_active) {
+            return back()->withInput()->withErrors(['username' => 'Akun Admin Anda telah dinonaktifkan.']);
+        }
+
+        Auth::guard('web')->login($admin);
+        $request->session()->regenerate();
+        return redirect()->route('admin.dashboard')
+            ->with('status', 'Selamat datang Super Admin KopiLink!');
     }
 
     public function logout(Request $request)

@@ -177,4 +177,35 @@ class AdminDashboardController extends Controller
 
         return back()->with('status', 'User berhasil dihapus dari sistem.');
     }
+
+    /**
+     * Aktifkan / Nonaktifkan Akun User (Petani, Coffee Shop, atau Admin)
+     */
+    public function toggleUserStatus($type, $id)
+    {
+        if ($type === 'petani') {
+            $user = Petani::findOrFail($id);
+            $user->is_active = !$user->is_active;
+            $user->save();
+            $statusText = $user->is_active ? 'diaktifkan' : 'dinonaktifkan';
+            return back()->with('status', "Akun Petani {$user->nama} berhasil {$statusText}!");
+        } elseif ($type === 'coffeeshop') {
+            $user = CoffeeShop::findOrFail($id);
+            $user->is_active = !$user->is_active;
+            $user->save();
+            $statusText = $user->is_active ? 'diaktifkan' : 'dinonaktifkan';
+            return back()->with('status', "Akun Coffee Shop {$user->nama_toko} berhasil {$statusText}!");
+        } elseif ($type === 'admin') {
+            $user = User::findOrFail($id);
+            if ($user->id === auth('web')->id()) {
+                return back()->withErrors(['error' => 'Anda tidak dapat menonaktifkan akun Anda sendiri!']);
+            }
+            $user->is_active = !$user->is_active;
+            $user->save();
+            $statusText = $user->is_active ? 'diaktifkan' : 'dinonaktifkan';
+            return back()->with('status', "Akun Admin {$user->name} berhasil {$statusText}!");
+        }
+
+        return back()->withErrors(['error' => 'Tipe user tidak valid!']);
+    }
 }

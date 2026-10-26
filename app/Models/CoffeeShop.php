@@ -17,10 +17,15 @@ class CoffeeShop extends Authenticatable
         'username',
         'password',
         'nama_toko',
+        'is_active',
     ];
 
     protected $hidden = [
         'password',
+    ];
+
+    protected $casts = [
+        'is_active' => 'boolean',
     ];
 
     public function kemasan()

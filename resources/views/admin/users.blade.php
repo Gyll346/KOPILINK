@@ -55,13 +55,14 @@
                                 <th>WhatsApp</th>
                                 <th>Kelompok Tani</th>
                                 <th>Status Verifikasi</th>
+                                <th>Status Akun</th>
                                 <th>Lahan</th>
                                 <th class="text-center">Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
                             @forelse($petanis as $idx => $p)
-                                <tr>
+                                <tr class="{{ !$p->is_active ? 'table-secondary text-muted' : '' }}">
                                     <td>{{ $idx + 1 }}</td>
                                     <td>
                                         <div class="font-weight-bold text-dark">{{ $p->nama }}</div>
@@ -77,8 +78,23 @@
                                             <span class="badge badge-warning px-2 py-1" style="background-color: #DA9F5B; color: #111;">Pending OTP</span>
                                         @endif
                                     </td>
+                                    <td>
+                                        @if($p->is_active)
+                                            <span class="badge badge-success px-2 py-1"><i class="fa fa-user-check mr-1"></i>Aktif</span>
+                                        @else
+                                            <span class="badge badge-danger px-2 py-1"><i class="fa fa-user-slash mr-1"></i>Nonaktif</span>
+                                        @endif
+                                    </td>
                                     <td>{{ $p->lahan_count }} Kebun</td>
                                     <td class="text-center">
+                                        <!-- Tombol Aktif / Nonaktifkan -->
+                                        <form action="{{ route('admin.users.toggle-status', ['type' => 'petani', 'id' => $p->id_petani]) }}" method="POST" class="d-inline">
+                                            @csrf
+                                            <button type="submit" class="btn btn-sm {{ $p->is_active ? 'btn-outline-warning' : 'btn-outline-success' }} mr-1" title="{{ $p->is_active ? 'Nonaktifkan Akun' : 'Aktifkan Akun' }}" onclick="return confirm('Apakah Anda yakin ingin {{ $p->is_active ? 'menonaktifkan' : 'mengaktifkan' }} akun petani {{ $p->nama }}?')">
+                                                <i class="fa {{ $p->is_active ? 'fa-ban' : 'fa-check' }}"></i> {{ $p->is_active ? 'Nonaktifkan' : 'Aktifkan' }}
+                                            </button>
+                                        </form>
+
                                         @if(!$p->is_verified)
                                             <form action="{{ route('admin.users.verify', $p->id_petani) }}" method="POST" class="d-inline">
                                                 @csrf
@@ -89,7 +105,7 @@
                                         @endif
                                         
                                         <!-- Tombol Reset Password -->
-                                        <button type="button" class="btn btn-sm btn-outline-secondary mr-1" data-toggle="modal" data-target="#modalResetPass" data-type="petani" data-id="{{ $p->id_petani }}" data-name="{{ $p->nama }}">
+                                        <button type="button" class="btn btn-sm btn-outline-secondary mr-1" data-toggle="modal" data-target="#modalResetPass" data-type="petani" data-id="{{ $p->id_petani }}" data-name="{{ $p->nama }}" title="Reset Password">
                                             <i class="fa fa-key"></i>
                                         </button>
 
@@ -105,7 +121,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="8" class="text-center py-4 text-muted">Belum ada data petani.</td>
+                                    <td colspan="9" class="text-center py-4 text-muted">Belum ada data petani.</td>
                                 </tr>
                             @endforelse
                         </tbody>
@@ -122,6 +138,7 @@
                                 <th>No</th>
                                 <th>Nama Coffee Shop / Roastery</th>
                                 <th>Username</th>
+                                <th>Status Akun</th>
                                 <th>Kemasan Diterbitkan</th>
                                 <th>Tanggal Bergabung</th>
                                 <th class="text-center">Aksi</th>
@@ -129,20 +146,35 @@
                         </thead>
                         <tbody>
                             @forelse($coffeeShops as $idx => $cs)
-                                <tr>
+                                <tr class="{{ !$cs->is_active ? 'table-secondary text-muted' : '' }}">
                                     <td>{{ $idx + 1 }}</td>
                                     <td class="font-weight-bold text-dark">{{ $cs->nama_toko }}</td>
                                     <td><code>{{ $cs->username }}</code></td>
+                                    <td>
+                                        @if($cs->is_active)
+                                            <span class="badge badge-success px-2 py-1"><i class="fa fa-store mr-1"></i>Aktif</span>
+                                        @else
+                                            <span class="badge badge-danger px-2 py-1"><i class="fa fa-ban mr-1"></i>Nonaktif</span>
+                                        @endif
+                                    </td>
                                     <td><span class="badge badge-info">{{ $cs->kemasan_count }} Produk QR</span></td>
                                     <td>{{ $cs->created_at->format('d M Y') }}</td>
                                     <td class="text-center">
-                                        <button type="button" class="btn btn-sm btn-outline-secondary mr-1" data-toggle="modal" data-target="#modalResetPass" data-type="coffeeshop" data-id="{{ $cs->id_coffee_shop }}" data-name="{{ $cs->nama_toko }}">
-                                            <i class="fa fa-key"></i> Reset Sandi
+                                        <!-- Tombol Aktif / Nonaktifkan -->
+                                        <form action="{{ route('admin.users.toggle-status', ['type' => 'coffeeshop', 'id' => $cs->id_coffee_shop]) }}" method="POST" class="d-inline">
+                                            @csrf
+                                            <button type="submit" class="btn btn-sm {{ $cs->is_active ? 'btn-outline-warning' : 'btn-outline-success' }} mr-1" title="{{ $cs->is_active ? 'Nonaktifkan Akun' : 'Aktifkan Akun' }}" onclick="return confirm('Apakah Anda yakin ingin {{ $cs->is_active ? 'menonaktifkan' : 'mengaktifkan' }} toko {{ $cs->nama_toko }}?')">
+                                                <i class="fa {{ $cs->is_active ? 'fa-ban' : 'fa-check' }}"></i> {{ $cs->is_active ? 'Nonaktifkan' : 'Aktifkan' }}
+                                            </button>
+                                        </form>
+
+                                        <button type="button" class="btn btn-sm btn-outline-secondary mr-1" data-toggle="modal" data-target="#modalResetPass" data-type="coffeeshop" data-id="{{ $cs->id_coffee_shop }}" data-name="{{ $cs->nama_toko }}" title="Reset Password">
+                                            <i class="fa fa-key"></i>
                                         </button>
                                         <form action="{{ route('admin.users.destroy', ['type' => 'coffeeshop', 'id' => $cs->id_coffee_shop]) }}" method="POST" class="d-inline" onsubmit="return confirm('Hapus toko {{ $cs->nama_toko }}?')">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Hapus User">
                                                 <i class="fa fa-trash"></i>
                                             </button>
                                         </form>
@@ -150,7 +182,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="6" class="text-center py-4 text-muted">Belum ada akun coffee shop.</td>
+                                    <td colspan="7" class="text-center py-4 text-muted">Belum ada akun coffee shop.</td>
                                 </tr>
                             @endforelse
                         </tbody>
@@ -169,26 +201,44 @@
                                 <th>Username</th>
                                 <th>Email</th>
                                 <th>Role</th>
+                                <th>Status Akun</th>
                                 <th class="text-center">Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach($admins as $idx => $adm)
-                                <tr>
+                                <tr class="{{ !$adm->is_active ? 'table-secondary text-muted' : '' }}">
                                     <td>{{ $idx + 1 }}</td>
                                     <td class="font-weight-bold text-dark">{{ $adm->name }}</td>
                                     <td><code>{{ $adm->username }}</code></td>
                                     <td>{{ $adm->email }}</td>
                                     <td><span class="badge badge-warning" style="background-color: #DA9F5B; color: #111;">Super Admin</span></td>
+                                    <td>
+                                        @if($adm->is_active)
+                                            <span class="badge badge-success px-2 py-1"><i class="fa fa-check mr-1"></i>Aktif</span>
+                                        @else
+                                            <span class="badge badge-danger px-2 py-1"><i class="fa fa-ban mr-1"></i>Nonaktif</span>
+                                        @endif
+                                    </td>
                                     <td class="text-center">
-                                        <button type="button" class="btn btn-sm btn-outline-secondary mr-1" data-toggle="modal" data-target="#modalResetPass" data-type="admin" data-id="{{ $adm->id }}" data-name="{{ $adm->name }}">
-                                            <i class="fa fa-key"></i> Reset Sandi
+                                        @if($adm->id !== auth('web')->id())
+                                            <!-- Tombol Aktif / Nonaktifkan -->
+                                            <form action="{{ route('admin.users.toggle-status', ['type' => 'admin', 'id' => $adm->id]) }}" method="POST" class="d-inline">
+                                                @csrf
+                                                <button type="submit" class="btn btn-sm {{ $adm->is_active ? 'btn-outline-warning' : 'btn-outline-success' }} mr-1" title="{{ $adm->is_active ? 'Nonaktifkan Akun' : 'Aktifkan Akun' }}" onclick="return confirm('Apakah Anda yakin ingin {{ $adm->is_active ? 'menonaktifkan' : 'mengaktifkan' }} admin {{ $adm->name }}?')">
+                                                    <i class="fa {{ $adm->is_active ? 'fa-ban' : 'fa-check' }}"></i> {{ $adm->is_active ? 'Nonaktifkan' : 'Aktifkan' }}
+                                                </button>
+                                            </form>
+                                        @endif
+
+                                        <button type="button" class="btn btn-sm btn-outline-secondary mr-1" data-toggle="modal" data-target="#modalResetPass" data-type="admin" data-id="{{ $adm->id }}" data-name="{{ $adm->name }}" title="Reset Password">
+                                            <i class="fa fa-key"></i>
                                         </button>
                                         @if($adm->id !== auth('web')->id())
                                             <form action="{{ route('admin.users.destroy', ['type' => 'admin', 'id' => $adm->id]) }}" method="POST" class="d-inline" onsubmit="return confirm('Hapus admin {{ $adm->name }}?')">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Hapus User">
                                                     <i class="fa fa-trash"></i>
                                                 </button>
                                             </form>

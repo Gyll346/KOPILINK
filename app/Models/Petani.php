@@ -24,6 +24,7 @@ class Petani extends Authenticatable
         'otp_code',
         'otp_expired_at',
         'is_verified',
+        'is_active',
     ];
 
     protected $hidden = [
@@ -33,6 +34,7 @@ class Petani extends Authenticatable
 
     protected $casts = [
         'is_verified' => 'boolean',
+        'is_active' => 'boolean',
         'otp_expired_at' => 'datetime',
         'kontak' => 'integer',
     ];

@@ -110,6 +110,7 @@ Route::middleware('auth:web')->prefix('admin')->name('admin.')->group(function (
     Route::get('/users', [\App\Http\Controllers\AdminDashboardController::class, 'usersIndex'])->name('users.index');
     Route::post('/users', [\App\Http\Controllers\AdminDashboardController::class, 'storeUser'])->name('users.store');
     Route::post('/users/verify/{id_petani}', [\App\Http\Controllers\AdminDashboardController::class, 'verifyPetani'])->name('users.verify');
+    Route::post('/users/toggle-status/{type}/{id}', [\App\Http\Controllers\AdminDashboardController::class, 'toggleUserStatus'])->name('users.toggle-status');
     Route::post('/users/reset-password/{type}/{id}', [\App\Http\Controllers\AdminDashboardController::class, 'resetPassword'])->name('users.reset-password');
     Route::delete('/users/{type}/{id}', [\App\Http\Controllers\AdminDashboardController::class, 'destroyUser'])->name('users.destroy');
 });
