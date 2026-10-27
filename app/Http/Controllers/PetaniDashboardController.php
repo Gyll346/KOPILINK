@@ -465,6 +465,28 @@ class PetaniDashboardController extends Controller
             ->with('status', "Catatan panen ceri #CRI-{$ceri->id_panen_ceri} berhasil diperbarui!");
     }
 
+    public function ceriDestroy($id_panen_ceri)
+    {
+        $petani = Auth::guard('petani')->user();
+        $lahanIds = Lahan::where('id_petani', $petani->id_petani)->pluck('id_lahan');
+
+        $ceri = PanenCeri::where('id_panen_ceri', $id_panen_ceri)
+            ->whereIn('id_lahan', $lahanIds)
+            ->firstOrFail();
+
+        // Hapus foto terkait dari disk public jika ada
+        foreach ($ceri->foto_list as $fotoPath) {
+            if ($fotoPath && \Illuminate\Support\Facades\Storage::disk('public')->exists($fotoPath)) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($fotoPath);
+            }
+        }
+
+        $ceri->delete();
+
+        return redirect()->route('petani.ceri.index')
+            ->with('status', "Data catatan panen ceri #CRI-{$id_panen_ceri} berhasil dihapus.");
+    }
+
     public function profile()
     {
         $petani = Auth::guard('petani')->user();

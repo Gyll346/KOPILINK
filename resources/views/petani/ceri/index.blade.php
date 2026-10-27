@@ -87,9 +87,18 @@
                                     <small class="text-muted">{{ $ceri->catatan ?: '-' }}</small>
                                 </td>
                                 <td class="text-center pr-4">
-                                    <a href="{{ route('petani.ceri.edit', ['id_panen_ceri' => $ceri->id_panen_ceri]) }}" class="btn btn-sm btn-koppee">
-                                        <i class="fa fa-edit mr-1"></i> Edit
-                                    </a>
+                                    <div class="d-flex justify-content-center align-items-center" style="gap: 5px;">
+                                        <a href="{{ route('petani.ceri.edit', ['id_panen_ceri' => $ceri->id_panen_ceri]) }}" class="btn btn-sm btn-koppee">
+                                            <i class="fa fa-edit mr-1"></i> Edit
+                                        </a>
+                                        <form action="{{ route('petani.ceri.destroy', ['id_panen_ceri' => $ceri->id_panen_ceri]) }}" method="POST" class="d-inline" onsubmit="return confirm('Apakah Anda yakin ingin menghapus catatan panen ceri #CRI-{{ $ceri->id_panen_ceri }}?');">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Hapus Catatan Panen Ceri">
+                                                <i class="fa fa-trash-alt mr-1"></i> Hapus
+                                            </button>
+                                        </form>
+                                    </div>
                                 </td>
                             </tr>
                         @endforeach
