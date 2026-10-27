@@ -1,17 +1,21 @@
 (function ($) {
     "use strict";
     
-    // Dropdown on mouse hover
+    // Dropdown on mouse hover (Clean & No-flicker)
     $(document).ready(function () {
         function toggleNavbarMethod() {
             if ($(window).width() > 992) {
-                $('.navbar .dropdown').on('mouseover', function () {
-                    $('.dropdown-toggle', this).trigger('click');
-                }).on('mouseout', function () {
-                    $('.dropdown-toggle', this).trigger('click').blur();
+                $('.navbar .dropdown').on('mouseenter', function () {
+                    $(this).addClass('show');
+                    $(this).find('.dropdown-toggle').attr('aria-expanded', 'true');
+                    $(this).find('.dropdown-menu').addClass('show');
+                }).on('mouseleave', function () {
+                    $(this).removeClass('show');
+                    $(this).find('.dropdown-toggle').attr('aria-expanded', 'false');
+                    $(this).find('.dropdown-menu').removeClass('show');
                 });
             } else {
-                $('.navbar .dropdown').off('mouseover').off('mouseout');
+                $('.navbar .dropdown').off('mouseenter mouseleave');
             }
         }
         toggleNavbarMethod();
