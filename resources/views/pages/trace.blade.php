@@ -339,6 +339,18 @@
                             <p class="text-muted small mb-1">
                                 Biji kopi diserap dan diolah secara profesional oleh <strong>{{ $coffeeShop->nama_toko }}</strong>. Status pasokan telah terverifikasi di inventori mitra.
                             </p>
+                            @if(count($kemasan->foto_sangrai_list) > 0)
+                                <div class="mt-2 mb-3">
+                                    <div class="d-flex flex-wrap" style="gap: 8px;">
+                                        @foreach($kemasan->foto_sangrai_list as $sIdx => $fSangrai)
+                                            <a href="{{ asset('storage/' . $fSangrai) }}" target="_blank">
+                                                <img src="{{ asset('storage/' . $fSangrai) }}" alt="Foto Sangrai {{ $sIdx + 1 }}" class="rounded border shadow-sm" style="height: 90px; width: 110px; object-fit: cover;">
+                                            </a>
+                                        @endforeach
+                                    </div>
+                                    <small class="d-block text-muted mt-1"><i class="fa fa-fire text-warning mr-1"></i> Foto Green Bean Hasil Sangrai / Roasting ({{ count($kemasan->foto_sangrai_list) }} foto)</small>
+                                </div>
+                            @endif
                         </div>
 
                         <div class="timeline-step">

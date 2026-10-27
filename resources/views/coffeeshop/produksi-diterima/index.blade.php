@@ -69,12 +69,9 @@
                                     @endif
                                 </td>
                                 <td>
-                                    <form action="{{ route('coffeeshop.generate.qr', ['id_produksi' => $prod->id_produksi]) }}" method="POST">
-                                        @csrf
-                                        <button type="submit" class="btn btn-koppee btn-sm px-3 font-weight-bold">
-                                            <i class="fa fa-qrcode mr-1"></i> Generate QR Code
-                                        </button>
-                                    </form>
+                                    <button type="button" class="btn btn-koppee btn-sm px-3 font-weight-bold" data-toggle="modal" data-target="#modalSangrai{{ $prod->id_produksi }}">
+                                        <i class="fa fa-fire mr-1"></i> Sangrai & Generate QR
+                                    </button>
                                 </td>
                             </tr>
                         @endforeach
@@ -84,6 +81,60 @@
         @endif
     </div>
 </div>
+
+{{-- Render semua Modal di luar elemen .card-stat dan <table> agar tidak terpengaruh CSS transform: translateY saat hover pointer --}}
+@foreach($produksiList as $prod)
+    <div class="modal fade" id="modalSangrai{{ $prod->id_produksi }}" tabindex="-1" role="dialog" aria-labelledby="modalSangraiLabel{{ $prod->id_produksi }}" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-dark text-white">
+                    <h6 class="modal-title font-weight-bold" id="modalSangraiLabel{{ $prod->id_produksi }}">
+                        <i class="fa fa-fire text-warning mr-2"></i> Sangrai Green Bean #PRD-{{ $prod->id_produksi }}
+                    </h6>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form action="{{ route('coffeeshop.generate.qr', ['id_produksi' => $prod->id_produksi]) }}" method="POST" enctype="multipart/form-data">
+                    @csrf
+                    <div class="modal-body p-4 text-left">
+                        <div class="alert alert-light border small mb-3">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span class="text-muted">Petani Asal:</span>
+                                <strong>{{ $prod->lahan->petani->nama }} ({{ $prod->lahan->petani->kelompok_tani }})</strong>
+                            </div>
+                            <div class="d-flex justify-content-between mb-1">
+                                <span class="text-muted">Varietas Biji:</span>
+                                <span class="badge badge-warning text-dark font-weight-bold">{{ $prod->lahan->jenis_kopi }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span class="text-muted">Kuantitas Pasokan:</span>
+                                <strong>{{ $prod->jumlah_green_bean }} Kg</strong>
+                            </div>
+                        </div>
+
+                        <div class="form-group mb-0">
+                            <label class="font-weight-bold text-dark">
+                                <i class="fa fa-camera text-primary mr-1"></i> Foto Green Bean Hasil Sangrai <span class="text-danger">*</span>
+                            </label>
+                            <input type="file" name="foto_sangrai[]" class="form-control-file border p-2 rounded bg-light" accept="image/*" multiple required id="inputSangrai{{ $prod->id_produksi }}" onchange="previewSangraiFiles(this, {{ $prod->id_produksi }})">
+                            <small class="form-text text-muted">
+                                Unggah bukti foto biji kopi setelah selesai disangrai (roasting). Anda dapat memilih lebih dari 1 foto (maks. 10MB/foto).
+                            </small>
+                            <div id="previewSangraiContainer{{ $prod->id_produksi }}" class="d-flex flex-wrap mt-2" style="gap: 8px;"></div>
+                        </div>
+                    </div>
+                    <div class="modal-footer bg-light border-0">
+                        <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-koppee btn-sm font-weight-bold">
+                            <i class="fa fa-qrcode mr-1"></i> Simpan Sangrai & Terbitkan QR
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+@endforeach
 
 <script>
 function filterDiterimaTable() {
@@ -96,6 +147,29 @@ function filterDiterimaTable() {
     for (let i = 0; i < tr.length; i++) {
         const text = tr[i].textContent || tr[i].innerText;
         tr[i].style.display = text.toLowerCase().indexOf(filter) > -1 ? "" : "none";
+    }
+}
+
+function previewSangraiFiles(input, id) {
+    const container = document.getElementById('previewSangraiContainer' + id);
+    if (!container) return;
+    container.innerHTML = '';
+
+    if (input.files) {
+        Array.from(input.files).forEach(file => {
+            if (!file.type.startsWith('image/')) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                img.className = 'rounded border shadow-sm';
+                img.style.width = '70px';
+                img.style.height = '70px';
+                img.style.objectFit = 'cover';
+                container.appendChild(img);
+            };
+            reader.readAsDataURL(file);
+        });
     }
 }
 </script>

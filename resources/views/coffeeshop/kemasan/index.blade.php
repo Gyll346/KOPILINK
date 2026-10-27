@@ -78,7 +78,16 @@
                                 </td>
                                 <td><strong>{{ $kem->produksi->lahan->petani->nama }}</strong></td>
                                 <td>{{ $kem->produksi->lahan->petani->kelompok_tani }}</td>
-                                <td>#PRD-{{ $kem->id_produksi }} ({{ $kem->produksi->jumlah_green_bean }} Kg)</td>
+                                <td>
+                                    <div>#PRD-{{ $kem->id_produksi }} ({{ $kem->produksi->jumlah_green_bean }} Kg)</div>
+                                    @if(count($kem->foto_sangrai_list) > 0)
+                                        <div class="mt-1">
+                                            <a href="{{ asset('storage/' . $kem->foto_sangrai_pertama) }}" target="_blank" class="badge badge-info text-white font-weight-normal px-2 py-1">
+                                                <i class="fa fa-fire mr-1"></i> {{ count($kem->foto_sangrai_list) }} Foto Sangrai
+                                            </a>
+                                        </div>
+                                    @endif
+                                </td>
                                 <td>
                                     @if($isActive)
                                         <span class="badge badge-success px-2 py-1" style="font-size: 11px;">

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\CoffeeShop;
 use App\Models\KemasanKopi;
 use App\Models\Produksi;
+use App\Services\ImageOptimizationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
@@ -12,6 +13,12 @@ use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class CoffeeShopDashboardController extends Controller
 {
+    protected ImageOptimizationService $imageService;
+
+    public function __construct(ImageOptimizationService $imageService)
+    {
+        $this->imageService = $imageService;
+    }
     public function index()
     {
         $coffeeShop = Auth::guard('coffee_shop')->user();
@@ -67,6 +74,25 @@ class CoffeeShopDashboardController extends Controller
         $coffeeShop = Auth::guard('coffee_shop')->user();
         $produksi = Produksi::where('status', 'Diterima Coffee Shop')->with('lahan')->findOrFail($id_produksi);
 
+        $request->validate([
+            'foto_sangrai' => 'required|array|min:1',
+            'foto_sangrai.*' => 'image|max:10240',
+        ], [
+            'foto_sangrai.required' => 'Wajib mengunggah minimal 1 foto green bean yang telah disangrai (roasting).',
+            'foto_sangrai.min' => 'Wajib mengunggah minimal 1 foto green bean yang telah disangrai (roasting).',
+            'foto_sangrai.*.image' => 'File harus berupa gambar valid (JPG, PNG, JPEG, WEBP).',
+            'foto_sangrai.*.max' => 'Ukuran gambar maksimal adalah 10MB.',
+        ]);
+
+        $paths = [];
+        if ($request->hasFile('foto_sangrai')) {
+            foreach ($request->file('foto_sangrai') as $file) {
+                if ($file && $file->isValid()) {
+                    $paths[] = $this->imageService->compressAndStore($file, 'sangrai');
+                }
+            }
+        }
+
         // Buat slug unik: misal KPL-ROB-A89B atau KPL-LIB-X12Y
         $prefix = ($produksi->lahan->jenis_kopi === 'Robusta') ? 'KPL-ROB' : 'KPL-LIB';
         $slug = $prefix . '-' . date('Y') . '-' . strtoupper(Str::random(6));
@@ -80,10 +106,11 @@ class CoffeeShopDashboardController extends Controller
             'id_coffee_shop' => $coffeeShop->id_coffee_shop,
             'id_produksi' => $produksi->id_produksi,
             'qr_code_url' => $slug,
+            'foto_sangrai' => !empty($paths) ? json_encode($paths) : null,
         ]);
 
         return redirect()->route('coffeeshop.kemasan.index')
-            ->with('status', "Label QR Code berhasil diterbitkan dengan kode unik: {$slug}");
+            ->with('status', "Label QR Code berhasil diterbitkan dengan kode unik: {$slug} beserta dokumentasi sangrai.");
     }
 
     public function kemasanIndex()

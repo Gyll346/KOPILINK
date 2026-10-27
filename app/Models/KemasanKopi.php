@@ -16,12 +16,31 @@ class KemasanKopi extends Model
         'id_coffee_shop',
         'id_produksi',
         'qr_code_url',
+        'foto_sangrai',
         'is_active',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
     ];
+
+    public function getFotoSangraiListAttribute(): array
+    {
+        if (!$this->foto_sangrai) {
+            return [];
+        }
+        $decoded = json_decode($this->foto_sangrai, true);
+        if (is_array($decoded)) {
+            return $decoded;
+        }
+        return [$this->foto_sangrai];
+    }
+
+    public function getFotoSangraiPertamaAttribute(): ?string
+    {
+        $list = $this->foto_sangrai_list;
+        return count($list) > 0 ? $list[0] : null;
+    }
 
     public function coffeeShop()
     {
