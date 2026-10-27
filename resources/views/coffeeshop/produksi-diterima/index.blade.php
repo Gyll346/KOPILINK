@@ -117,16 +117,21 @@
                             <label class="font-weight-bold text-dark">
                                 <i class="fa fa-camera text-primary mr-1"></i> Foto Green Bean Hasil Sangrai <span class="text-danger">*</span>
                             </label>
-                            <input type="file" name="foto_sangrai[]" class="form-control-file border p-2 rounded bg-light" accept="image/*" multiple required id="inputSangrai{{ $prod->id_produksi }}" onchange="previewSangraiFiles(this, {{ $prod->id_produksi }})">
+                            {{-- Input file mentah yang dipilih user --}}
+                            <input type="file" class="form-control-file border p-2 rounded bg-light" accept="image/*" multiple id="rawInputSangrai{{ $prod->id_produksi }}" onchange="handleSangraiCompression(this, {{ $prod->id_produksi }})">
+                            {{-- Input file terkompresi yang akan dikirim ke server --}}
+                            <input type="file" name="foto_sangrai[]" id="compressedInputSangrai{{ $prod->id_produksi }}" class="d-none" multiple required>
+                            
+                            <div id="sangraiCompressStatus{{ $prod->id_produksi }}" class="mt-2 small text-success font-weight-bold"></div>
                             <small class="form-text text-muted">
-                                Unggah bukti foto biji kopi setelah selesai disangrai (roasting). Anda dapat memilih lebih dari 1 foto (maks. 10MB/foto).
+                                Foto otomatis dikompresi langsung di browser secara instan demi kecepatan upload.
                             </small>
                             <div id="previewSangraiContainer{{ $prod->id_produksi }}" class="d-flex flex-wrap mt-2" style="gap: 8px;"></div>
                         </div>
                     </div>
                     <div class="modal-footer bg-light border-0">
                         <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Batal</button>
-                        <button type="submit" class="btn btn-koppee btn-sm font-weight-bold">
+                        <button type="submit" class="btn btn-koppee btn-sm font-weight-bold" id="btnSubmitSangrai{{ $prod->id_produksi }}">
                             <i class="fa fa-qrcode mr-1"></i> Simpan Sangrai & Terbitkan QR
                         </button>
                     </div>
@@ -150,26 +155,95 @@ function filterDiterimaTable() {
     }
 }
 
-function previewSangraiFiles(input, id) {
+// Kompresi otomatis gambar sangrai di sisi browser (Client-side HTML5 Canvas Pre-compression)
+function handleSangraiCompression(input, id) {
+    const statusEl = document.getElementById('sangraiCompressStatus' + id);
     const container = document.getElementById('previewSangraiContainer' + id);
-    if (!container) return;
-    container.innerHTML = '';
+    const hiddenInput = document.getElementById('compressedInputSangrai' + id);
+    const submitBtn = document.getElementById('btnSubmitSangrai' + id);
 
-    if (input.files) {
-        Array.from(input.files).forEach(file => {
-            if (!file.type.startsWith('image/')) return;
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const img = document.createElement('img');
-                img.src = e.target.result;
-                img.className = 'rounded border shadow-sm';
-                img.style.width = '70px';
-                img.style.height = '70px';
-                img.style.objectFit = 'cover';
-                container.appendChild(img);
+    if (!input.files || input.files.length === 0) return;
+
+    const files = Array.from(input.files);
+    container.innerHTML = '';
+    statusEl.innerHTML = `<span class="text-info"><i class="fa fa-spinner fa-spin mr-1"></i> Sedang mengompresi ${files.length} foto secara otomatis...</span>`;
+    if (submitBtn) submitBtn.disabled = true;
+
+    const dataTransfer = new DataTransfer();
+    let processedCount = 0;
+    let totalOrig = 0;
+    let totalComp = 0;
+
+    files.forEach((file, index) => {
+        totalOrig += file.size;
+
+        if (!file.type.startsWith('image/')) {
+            processedCount++;
+            if (processedCount === files.length) finalizeCompression();
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const img = new Image();
+            img.onload = function() {
+                const canvas = document.createElement('canvas');
+                let width = img.width;
+                let height = img.height;
+                const maxDim = 1200; // Standar resolusi optimal
+
+                if (width > maxDim || height > maxDim) {
+                    if (width > height) {
+                        height = Math.round((height * maxDim) / width);
+                        width = maxDim;
+                    } else {
+                        width = Math.round((width * maxDim) / height);
+                        height = maxDim;
+                    }
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+
+                canvas.toBlob(function(blob) {
+                    totalComp += blob.size;
+                    const compressedFile = new File([blob], file.name.replace(/\.[^/.]+$/, ".jpg"), {
+                        type: 'image/jpeg',
+                        lastModified: Date.now()
+                    });
+                    dataTransfer.items.add(compressedFile);
+
+                    // Buat pratinjau thumbnail
+                    const thumb = document.createElement('img');
+                    thumb.src = canvas.toDataURL('image/jpeg', 0.8);
+                    thumb.className = 'rounded border shadow-sm';
+                    thumb.style.width = '70px';
+                    thumb.style.height = '70px';
+                    thumb.style.objectFit = 'cover';
+                    container.appendChild(thumb);
+
+                    processedCount++;
+                    if (processedCount === files.length) {
+                        finalizeCompression();
+                    }
+                }, 'image/jpeg', 0.8);
             };
-            reader.readAsDataURL(file);
-        });
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    });
+
+    function finalizeCompression() {
+        hiddenInput.files = dataTransfer.files;
+        if (submitBtn) submitBtn.disabled = false;
+
+        const origKb = (totalOrig / 1024).toFixed(0);
+        const compKb = (totalComp / 1024).toFixed(0);
+        const saving = totalOrig > 0 ? (100 - (totalComp / totalOrig) * 100).toFixed(0) : 0;
+
+        statusEl.innerHTML = `<span class="text-success"><i class="fa fa-check-circle mr-1"></i> Berhasil dikompresi: ${origKb} KB &rarr; ${compKb} KB (Hemat ${saving}%)</span>`;
     }
 }
 </script>

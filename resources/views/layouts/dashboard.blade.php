@@ -438,8 +438,36 @@
             });
         });
 
-        // Mencegah akses kembali via tombol Back / Undo browser setelah sesi logout
+        // Mencegah double submit / data ganda jika tombol save diklik berkali-kali
+        document.addEventListener('submit', function (e) {
+            const form = e.target;
+            if (form.dataset.submitting === 'true') {
+                e.preventDefault();
+                return false;
+            }
+            form.dataset.submitting = 'true';
+
+            const submitBtns = form.querySelectorAll('button[type="submit"], input[type="submit"]');
+            submitBtns.forEach(function (btn) {
+                btn.disabled = true;
+                if (btn.tagName === 'BUTTON') {
+                    btn.setAttribute('data-original-html', btn.innerHTML);
+                    btn.innerHTML = '<i class="fa fa-spinner fa-spin mr-1"></i> Menyimpan...';
+                }
+            });
+        }, true);
+
+        // Reset status submitting jika halaman di-load kembali (misal tombol back browser)
         window.addEventListener('pageshow', function (event) {
+            document.querySelectorAll('form').forEach(function (form) {
+                delete form.dataset.submitting;
+                const submitBtns = form.querySelectorAll('button[type="submit"], input[type="submit"]');
+                submitBtns.forEach(function (btn) {
+                    btn.disabled = false;
+                    const orig = btn.getAttribute('data-original-html');
+                    if (orig) btn.innerHTML = orig;
+                });
+            });
             if (event.persisted || (window.performance && window.performance.navigation && window.performance.navigation.type === 2)) {
                 window.location.reload();
             }
