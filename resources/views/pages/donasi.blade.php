@@ -146,7 +146,17 @@
                     <label class="font-weight-bold text-dark">Pesan Semangat untuk Petani</label>
                     <textarea id="donasiHalamanPesan" class="form-control" rows="2" placeholder="Tuliskan kata motivasi untuk petani kopi Kalimantan Barat..."></textarea>
                 </div>
-                <div class="p-3 bg-light rounded text-center small text-muted">
+                @if(isset($rekeningAktif) && $rekeningAktif)
+                    <div class="card bg-light border-0 p-3 mb-3 text-center">
+                        <small class="text-muted font-weight-bold text-uppercase">Tujuan Transfer Resmi KopiLink:</small>
+                        <h5 class="font-weight-bold text-dark my-1">{{ $rekeningAktif->nama_bank }}</h5>
+                        <div class="badge badge-dark p-2 font-weight-bold text-monospace mx-auto my-1" style="font-size: 14px; letter-spacing: 1px;">
+                            {{ $rekeningAktif->nomor_rekening }}
+                        </div>
+                        <small class="text-muted">a.n <strong>{{ $rekeningAktif->atas_nama }}</strong></small>
+                    </div>
+                @endif
+                <div class="p-2 bg-white border rounded text-center small text-muted">
                     <i class="fa fa-shield-alt text-success mr-1"></i> 100% donasi dialokasikan langsung kepada kelompok tani <strong>Pasak Piang & Padi Jaya</strong>.
                 </div>
             </div>

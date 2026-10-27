@@ -124,6 +124,14 @@ Route::middleware('auth:web')->prefix('admin')->name('admin.')->group(function (
     Route::get('/whatsapp/status', [\App\Http\Controllers\WhatsAppWebController::class, 'status'])->name('whatsapp.status');
     Route::post('/whatsapp/start', [\App\Http\Controllers\WhatsAppWebController::class, 'start'])->name('whatsapp.start');
     Route::post('/whatsapp/logout', [\App\Http\Controllers\WhatsAppWebController::class, 'logout'])->name('whatsapp.logout');
+
+    // Manajemen Donasi & Pengaturan Rekening
+    Route::get('/donasi', [\App\Http\Controllers\AdminDashboardController::class, 'donasiIndex'])->name('donasi.index');
+    Route::post('/donasi/rekening', [\App\Http\Controllers\AdminDashboardController::class, 'rekeningStore'])->name('donasi.rekening.store');
+    Route::post('/donasi/rekening/{id_rekening}/toggle', [\App\Http\Controllers\AdminDashboardController::class, 'rekeningToggle'])->name('donasi.rekening.toggle');
+    Route::delete('/donasi/rekening/{id_rekening}', [\App\Http\Controllers\AdminDashboardController::class, 'rekeningDestroy'])->name('donasi.rekening.destroy');
+    Route::post('/donasi/transaksi', [\App\Http\Controllers\AdminDashboardController::class, 'donasiTransaksiStore'])->name('donasi.transaksi.store');
+    Route::delete('/donasi/transaksi/{id_transaksi}', [\App\Http\Controllers\AdminDashboardController::class, 'donasiTransaksiDestroy'])->name('donasi.transaksi.destroy');
 });
 
 

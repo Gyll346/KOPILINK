@@ -35,7 +35,8 @@ class TraceabilityController extends Controller
 
     public function donasi()
     {
-        return view('pages.donasi');
+        $rekeningAktif = \App\Models\RekeningDonasi::where('is_active', true)->first();
+        return view('pages.donasi', compact('rekeningAktif'));
     }
 
     public function menu()

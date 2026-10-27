@@ -8,12 +8,22 @@ use App\Models\Petani;
 use App\Models\Produksi;
 use App\Models\User;
 use App\Models\KontakPesan;
+use App\Models\RekeningDonasi;
+use App\Models\DonasiTransaksi;
+use App\Services\ImageOptimizationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 
 class AdminDashboardController extends Controller
 {
+    protected ImageOptimizationService $imageService;
+
+    public function __construct(ImageOptimizationService $imageService)
+    {
+        $this->imageService = $imageService;
+    }
     /**
      * Dashboard Super Admin: Statistik Ringkasan & Grafik Perkembangan Panen
      */
@@ -244,5 +254,119 @@ class AdminDashboardController extends Controller
         $pesan->delete();
 
         return back()->with('status', "Pesan dari {$nama} berhasil dihapus.");
+    }
+
+    /**
+     * Halaman Khusus Donasi & Arus Kas Donasi Super Admin
+     */
+    public function donasiIndex()
+    {
+        $rekeningList = RekeningDonasi::orderBy('is_active', 'desc')->latest()->get();
+        $transaksiList = DonasiTransaksi::with('rekening')->orderBy('tanggal', 'desc')->latest()->get();
+
+        $totalMasuk = DonasiTransaksi::where('jenis', 'masuk')->sum('nominal');
+        $totalKeluar = DonasiTransaksi::where('jenis', 'keluar')->sum('nominal');
+        $saldoKas = $totalMasuk - $totalKeluar;
+
+        return view('admin.donasi', compact(
+            'rekeningList',
+            'transaksiList',
+            'totalMasuk',
+            'totalKeluar',
+            'saldoKas'
+        ));
+    }
+
+    /**
+     * Simpan Rekening Donasi Baru
+     */
+    public function rekeningStore(Request $request)
+    {
+        $validated = $request->validate([
+            'nama_bank' => 'required|string|max:50',
+            'nomor_rekening' => 'required|string|max:50',
+            'atas_nama' => 'required|string|max:100',
+            'keterangan' => 'nullable|string|max:255',
+        ]);
+
+        // Jika dipilih sebagai rekening aktif, matikan rekening lainnya
+        if ($request->has('is_active') && $request->is_active) {
+            RekeningDonasi::where('is_active', true)->update(['is_active' => false]);
+            $validated['is_active'] = true;
+        } else {
+            $validated['is_active'] = RekeningDonasi::count() === 0;
+        }
+
+        RekeningDonasi::create($validated);
+
+        return back()->with('status', 'Rekening penerima donasi berhasil ditambahkan!');
+    }
+
+    /**
+     * Toggle Rekening Tujuan Utama (Set Rekening Aktif)
+     */
+    public function rekeningToggle($id_rekening)
+    {
+        $rekening = RekeningDonasi::findOrFail($id_rekening);
+        
+        // Jadikan rekening ini aktif, dan nonaktifkan lainnya
+        RekeningDonasi::where('id_rekening', '!=', $id_rekening)->update(['is_active' => false]);
+        $rekening->is_active = true;
+        $rekening->save();
+
+        return back()->with('status', "Rekening [{$rekening->nama_bank} - {$rekening->nomor_rekening} a.n {$rekening->atas_nama}] diatur sebagai rekening penerima donasi utama.");
+    }
+
+    /**
+     * Hapus Rekening Donasi
+     */
+    public function rekeningDestroy($id_rekening)
+    {
+        $rekening = RekeningDonasi::findOrFail($id_rekening);
+        $rekening->delete();
+
+        return back()->with('status', 'Rekening tujuan donasi berhasil dihapus.');
+    }
+
+    /**
+     * Simpan Transaksi Kas Donasi (Uang Masuk / Keluar)
+     */
+    public function donasiTransaksiStore(Request $request)
+    {
+        $validated = $request->validate([
+            'jenis' => 'required|in:masuk,keluar',
+            'nominal' => 'required|numeric|min:1000',
+            'tanggal' => 'required|date',
+            'nama_pihak' => 'required|string|max:150',
+            'id_rekening' => 'nullable|exists:rekening_donasi,id_rekening',
+            'kategori' => 'nullable|string|max:100',
+            'keterangan' => 'nullable|string|max:500',
+            'bukti_transfer' => 'nullable|image|max:10240',
+        ]);
+
+        if ($request->hasFile('bukti_transfer')) {
+            $validated['bukti_transfer'] = $this->imageService->compressAndStore($request->file('bukti_transfer'), 'donasi');
+        }
+
+        DonasiTransaksi::create($validated);
+
+        $label = $validated['jenis'] === 'masuk' ? 'Uang Masuk (Donasi Diterima)' : 'Uang Keluar (Penyaluran Donasi)';
+        return back()->with('status', "Catatan transaksi {$label} sebesar Rp " . number_format($validated['nominal'], 0, ',', '.') . " berhasil disimpan!");
+    }
+
+    /**
+     * Hapus Catatan Transaksi Kas Donasi
+     */
+    public function donasiTransaksiDestroy($id_transaksi)
+    {
+        $transaksi = DonasiTransaksi::findOrFail($id_transaksi);
+        
+        if ($transaksi->bukti_transfer && Storage::disk('public')->exists($transaksi->bukti_transfer)) {
+            Storage::disk('public')->delete($transaksi->bukti_transfer);
+        }
+
+        $transaksi->delete();
+
+        return back()->with('status', 'Catatan transaksi kas donasi berhasil dihapus.');
     }
 }
