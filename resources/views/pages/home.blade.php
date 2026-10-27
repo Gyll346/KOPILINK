@@ -179,7 +179,7 @@
 
 <!-- Kemasan Ber-QR Terbaru -->
 @if($recentTraces->isNotEmpty())
-<div class="container-fluid py-5">
+<div class="container-fluid py-5" id="seksi-kemasan-qr">
     <div class="container">
         <div class="section-title">
             <h4 class="text-primary text-uppercase" style="letter-spacing: 5px;">Kemasan Ber-QR Terbaru</h4>
@@ -222,6 +222,7 @@
 document.addEventListener('DOMContentLoaded', function () {
     const items = Array.from(document.querySelectorAll('.recent-trace-item'));
     const paginationUl = document.getElementById('recent-traces-pagination');
+    const sectionEl = document.getElementById('seksi-kemasan-qr');
     if (!items.length || !paginationUl) return;
 
     let currentPage = 1;
@@ -230,10 +231,11 @@ document.addEventListener('DOMContentLoaded', function () {
         return window.innerWidth >= 768 ? 6 : 3;
     }
 
-    function render() {
+    function render(shouldScroll = false) {
         const perPage = getItemsPerPage();
         const totalPages = Math.ceil(items.length / perPage);
         if (currentPage > totalPages) currentPage = totalPages || 1;
+        if (currentPage < 1) currentPage = 1;
 
         items.forEach((el, idx) => {
             const start = (currentPage - 1) * perPage;
@@ -262,6 +264,10 @@ document.addEventListener('DOMContentLoaded', function () {
                  </li>`;
 
         paginationUl.innerHTML = html;
+
+        if (shouldScroll && sectionEl) {
+            sectionEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
     }
 
     paginationUl.addEventListener('click', function (e) {
@@ -269,16 +275,16 @@ document.addEventListener('DOMContentLoaded', function () {
         if (!link || link.parentElement.classList.contains('disabled')) return;
         e.preventDefault();
         currentPage = parseInt(link.getAttribute('data-page'), 10);
-        render();
+        render(true);
     });
 
     let resizeTimer;
     window.addEventListener('resize', function () {
         clearTimeout(resizeTimer);
-        resizeTimer = setTimeout(render, 150);
+        resizeTimer = setTimeout(() => render(false), 150);
     });
 
-    render();
+    render(false);
 });
 </script>
 @endif
