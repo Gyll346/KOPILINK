@@ -87,9 +87,18 @@
                                     </a>
                                 </td>
                                 <td class="text-center pr-4">
-                                    <a href="{{ route('petani.lahan.edit', ['id_lahan' => $lahan->id_lahan]) }}" class="btn btn-sm btn-koppee">
-                                        <i class="fa fa-edit mr-1"></i> Edit
-                                    </a>
+                                    <div class="d-flex justify-content-center align-items-center" style="gap: 5px;">
+                                        <a href="{{ route('petani.lahan.edit', ['id_lahan' => $lahan->id_lahan]) }}" class="btn btn-sm btn-koppee">
+                                            <i class="fa fa-edit mr-1"></i> Edit
+                                        </a>
+                                        <form action="{{ route('petani.lahan.destroy', ['id_lahan' => $lahan->id_lahan]) }}" method="POST" class="d-inline" onsubmit="return confirm('Apakah Anda yakin ingin menghapus plot lahan #{{ $lahan->id_lahan }}?');">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Hapus Lahan">
+                                                <i class="fa fa-trash-alt mr-1"></i> Hapus
+                                            </button>
+                                        </form>
+                                    </div>
                                 </td>
                             </tr>
                         @endforeach

@@ -157,6 +157,35 @@ class PetaniDashboardController extends Controller
             ->with('status', "Data plot lahan #{$lahan->id_lahan} berhasil diperbarui!");
     }
 
+    public function lahanDestroy($id_lahan)
+    {
+        $petani = Auth::guard('petani')->user();
+        $lahan = Lahan::where('id_lahan', $id_lahan)
+            ->where('id_petani', $petani->id_petani)
+            ->firstOrFail();
+
+        // Cek apakah lahan terikat dengan panen ceri atau produksi
+        $hasProduksi = $lahan->produksi()->exists();
+        $hasCeri = $lahan->panenCeri()->exists();
+
+        if ($hasProduksi || $hasCeri) {
+            return redirect()->route('petani.lahan.index')
+                ->with('warning', "Lahan #{$lahan->id_lahan} tidak dapat dihapus karena sudah memiliki riwayat catatan panen ceri atau green bean.");
+        }
+
+        // Hapus foto terkait dari disk public jika ada
+        foreach ($lahan->foto_list as $fotoPath) {
+            if ($fotoPath && \Illuminate\Support\Facades\Storage::disk('public')->exists($fotoPath)) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($fotoPath);
+            }
+        }
+
+        $lahan->delete();
+
+        return redirect()->route('petani.lahan.index')
+            ->with('status', "Data plot lahan #{$id_lahan} berhasil dihapus.");
+    }
+
     public function produksiIndex()
     {
         $petani = Auth::guard('petani')->user();
