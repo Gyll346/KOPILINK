@@ -285,11 +285,6 @@
                             <i class="fa fa-qrcode"></i> Kemasan & Label QR
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <a href="{{ route('coffeeshop.whatsapp.index') }}" class="nav-link {{ request()->routeIs('coffeeshop.whatsapp.*') ? 'active' : '' }}">
-                            <i class="fab fa-whatsapp text-success"></i> WhatsApp Gateway OTP
-                        </a>
-                    </li>
                 </ul>
 
             @elseif(Auth::guard('web')->check())
@@ -329,6 +324,11 @@
                                     {{ $unreadMsgCount }}
                                 </span>
                             @endif
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ route('admin.whatsapp.index') }}" class="nav-link {{ request()->routeIs('admin.whatsapp.*') ? 'active' : '' }}">
+                            <i class="fab fa-whatsapp text-success"></i> WhatsApp Gateway OTP
                         </a>
                     </li>
                 </ul>

@@ -1,6 +1,6 @@
 @extends('layouts.dashboard')
 
-@section('title', 'WhatsApp Gateway Web Sidecar - KopiLink')
+@section('title', 'WhatsApp Gateway Web Sidecar - Super Admin')
 @section('page_title', 'WhatsApp Gateway & QR Pairing')
 
 @section('content')
@@ -14,7 +14,7 @@
                             <i class="fab fa-whatsapp text-success mr-2"></i> WhatsApp Web Sidecar Gateway
                         </h4>
                         <p class="mb-0 text-white-50" style="font-size: 14px;">
-                            Hubungkan nomor WhatsApp Admin/Roastery untuk pengiriman OTP asli kepada Petani kopi.
+                            Hubungkan nomor WhatsApp Admin KopiLink untuk pengiriman OTP asli kepada Petani saat pendaftaran.
                         </p>
                     </div>
                     <span id="badge-status" class="badge badge-secondary px-3 py-2" style="font-size: 13px;">
@@ -111,7 +111,7 @@
     let pollInterval = null;
 
     function checkStatus() {
-        fetch("{{ route('coffeeshop.whatsapp.status') }}")
+        fetch("{{ route('admin.whatsapp.status') }}")
             .then(res => res.json())
             .then(data => {
                 const statusBadge = document.getElementById('badge-status');
@@ -172,7 +172,7 @@
             btnStart.addEventListener('click', function() {
                 this.disabled = true;
                 this.innerHTML = '<i class="fa fa-spinner fa-spin mr-1"></i> Menyiapkan...';
-                fetch("{{ route('coffeeshop.whatsapp.start') }}", {
+                fetch("{{ route('admin.whatsapp.start') }}", {
                     method: 'POST',
                     headers: {
                         'X-CSRF-TOKEN': '{{ csrf_token() }}',
@@ -195,7 +195,7 @@
             btnLogout.addEventListener('click', function() {
                 if (!confirm('Apakah Anda yakin ingin memutuskan tautan WhatsApp?')) return;
                 this.disabled = true;
-                fetch("{{ route('coffeeshop.whatsapp.logout') }}", {
+                fetch("{{ route('admin.whatsapp.logout') }}", {
                     method: 'POST',
                     headers: {
                         'X-CSRF-TOKEN': '{{ csrf_token() }}',

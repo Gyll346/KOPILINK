@@ -95,12 +95,6 @@ Route::middleware('auth:coffee_shop')->prefix('coffee-shop')->name('coffeeshop.'
     Route::get('/kemasan', [CoffeeShopDashboardController::class, 'kemasanIndex'])->name('kemasan.index');
     Route::post('/kemasan/{id_kemasan}/toggle', [CoffeeShopDashboardController::class, 'toggleStatus'])->name('kemasan.toggle');
     Route::get('/kemasan/print/{id_kemasan}', [CoffeeShopDashboardController::class, 'printLabel'])->name('kemasan.print');
-
-    // WhatsApp Gateway Management (Sidecar QR Pairing)
-    Route::get('/whatsapp', [\App\Http\Controllers\WhatsAppWebController::class, 'index'])->name('whatsapp.index');
-    Route::get('/whatsapp/status', [\App\Http\Controllers\WhatsAppWebController::class, 'status'])->name('whatsapp.status');
-    Route::post('/whatsapp/start', [\App\Http\Controllers\WhatsAppWebController::class, 'start'])->name('whatsapp.start');
-    Route::post('/whatsapp/logout', [\App\Http\Controllers\WhatsAppWebController::class, 'logout'])->name('whatsapp.logout');
 });
 
 /*
@@ -121,6 +115,12 @@ Route::middleware('auth:web')->prefix('admin')->name('admin.')->group(function (
     Route::get('/pesan', [\App\Http\Controllers\AdminDashboardController::class, 'pesanIndex'])->name('pesan.index');
     Route::post('/pesan/{id_pesan}/toggle-read', [\App\Http\Controllers\AdminDashboardController::class, 'pesanToggleRead'])->name('pesan.toggle-read');
     Route::delete('/pesan/{id_pesan}', [\App\Http\Controllers\AdminDashboardController::class, 'pesanDestroy'])->name('pesan.destroy');
+
+    // WhatsApp Gateway Management (Sidecar QR Pairing)
+    Route::get('/whatsapp', [\App\Http\Controllers\WhatsAppWebController::class, 'index'])->name('whatsapp.index');
+    Route::get('/whatsapp/status', [\App\Http\Controllers\WhatsAppWebController::class, 'status'])->name('whatsapp.status');
+    Route::post('/whatsapp/start', [\App\Http\Controllers\WhatsAppWebController::class, 'start'])->name('whatsapp.start');
+    Route::post('/whatsapp/logout', [\App\Http\Controllers\WhatsAppWebController::class, 'logout'])->name('whatsapp.logout');
 });
 
 

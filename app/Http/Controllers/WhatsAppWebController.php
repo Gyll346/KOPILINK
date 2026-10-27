@@ -13,7 +13,7 @@ class WhatsAppWebController extends Controller
      */
     public function index()
     {
-        return view('coffeeshop.whatsapp_web');
+        return view('admin.whatsapp_web');
     }
 
     /**
