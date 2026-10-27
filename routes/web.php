@@ -35,6 +35,7 @@ Route::post('/verify-otp', [AuthController::class, 'verifyOtp'])->name('otp.veri
 Route::post('/resend-otp/{id_petani}', [AuthController::class, 'resendOtp'])->name('otp.resend');
 
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
+Route::post('/login', [AuthController::class, 'login'])->name('login.submit');
 Route::post('/login/petani', [AuthController::class, 'loginPetani'])->name('login.petani');
 Route::post('/login/coffee-shop', [AuthController::class, 'loginCoffeeShop'])->name('login.coffeeshop');
 Route::post('/login/admin', [AuthController::class, 'loginAdmin'])->name('login.admin');

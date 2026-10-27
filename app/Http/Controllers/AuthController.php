@@ -92,80 +92,81 @@ class AuthController extends Controller
         return view('auth.login');
     }
 
-    public function loginPetani(Request $request)
+
+
+    public function login(Request $request)
     {
         $validated = $request->validate([
             'username' => 'required|string',
             'password' => 'required|string',
+        ], [
+            'username.required' => 'Username atau email wajib diisi.',
+            'password.required' => 'Password wajib diisi.',
         ]);
 
-        $petani = Petani::where('username', $validated['username'])->first();
+        $username = trim($validated['username']);
+        $password = $validated['password'];
 
-        if (!$petani || !Hash::check($validated['password'], $petani->password)) {
-            return back()->withInput()->withErrors(['username' => 'Username atau password salah!']);
+        // 1. Coba autentikasi sebagai Super Admin (User)
+        $admin = User::where('username', $username)->first();
+        if ($admin && Hash::check($password, $admin->password)) {
+            if (!$admin->is_active) {
+                return back()->withInput()->withErrors(['username' => 'Akun Super Admin Anda telah dinonaktifkan.']);
+            }
+            Auth::guard('web')->login($admin);
+            $request->session()->regenerate();
+            return redirect()->route('admin.dashboard')
+                ->with('status', 'Selamat datang Super Admin KopiLink!');
         }
 
-        if (!$petani->is_active) {
-            return back()->withInput()->withErrors(['username' => 'Akun Petani Anda telah dinonaktifkan oleh Administrator. Silakan hubungi admin.']);
+        // 2. Coba autentikasi sebagai Coffee Shop / Roastery Mitra
+        $cs = CoffeeShop::where('username', $username)->first();
+        if ($cs && Hash::check($password, $cs->password)) {
+            if (!$cs->is_active) {
+                return back()->withInput()->withErrors(['username' => 'Akun Coffee Shop Anda telah dinonaktifkan oleh Administrator.']);
+            }
+            Auth::guard('coffee_shop')->login($cs);
+            $request->session()->regenerate();
+            return redirect()->route('coffeeshop.dashboard')
+                ->with('status', 'Selamat datang di Portal Coffee Shop / Roastery Mitra!');
         }
 
-        if (!$petani->is_verified) {
-            $this->otpService->sendOtp($petani);
-            return redirect()->route('otp.verify.form', ['id_petani' => $petani->id_petani])
-                ->with('warning', 'Akun belum diverifikasi via WhatsApp OTP. Kode OTP baru telah dikirimkan!');
+        // 3. Coba autentikasi sebagai Petani Kopi
+        $petani = Petani::where('username', $username)->first();
+        if ($petani && Hash::check($password, $petani->password)) {
+            if (!$petani->is_active) {
+                return back()->withInput()->withErrors(['username' => 'Akun Petani Anda telah dinonaktifkan oleh Administrator.']);
+            }
+
+            if (!$petani->is_verified) {
+                $this->otpService->sendOtp($petani);
+                return redirect()->route('otp.verify.form', ['id_petani' => $petani->id_petani])
+                    ->with('warning', 'Akun belum diverifikasi via WhatsApp OTP. Kode OTP baru telah dikirimkan!');
+            }
+
+            Auth::guard('petani')->login($petani);
+            $request->session()->regenerate();
+            return redirect()->route('petani.dashboard')
+                ->with('status', 'Selamat datang kembali, ' . $petani->nama . '!');
         }
 
-        Auth::guard('petani')->login($petani);
-        $request->session()->regenerate();
+        // Kredensial tidak cocok pada ketiga aktor
+        return back()->withInput()->withErrors(['username' => 'Username atau kata sandi tidak cocok. Silakan periksa kembali.']);
+    }
 
-        return redirect()->route('petani.dashboard')
-            ->with('status', 'Selamat datang kembali, ' . $petani->nama . '!');
+    public function loginPetani(Request $request)
+    {
+        return $this->login($request);
     }
 
     public function loginCoffeeShop(Request $request)
     {
-        $validated = $request->validate([
-            'username' => 'required|string',
-            'password' => 'required|string',
-        ]);
-
-        $cs = CoffeeShop::where('username', $validated['username'])->first();
-
-        if (!$cs || !Hash::check($validated['password'], $cs->password)) {
-            return back()->withInput()->withErrors(['username' => 'Kredensial Coffee Shop tidak valid.']);
-        }
-
-        if (!$cs->is_active) {
-            return back()->withInput()->withErrors(['username' => 'Akun Coffee Shop Anda telah dinonaktifkan oleh Administrator.']);
-        }
-
-        Auth::guard('coffee_shop')->login($cs);
-        $request->session()->regenerate();
-        return redirect()->route('coffeeshop.dashboard')
-            ->with('status', 'Selamat datang di Portal Coffee Shop / Roastery Mitra!');
+        return $this->login($request);
     }
 
     public function loginAdmin(Request $request)
     {
-        $validated = $request->validate([
-            'username' => 'required|string',
-            'password' => 'required|string',
-        ]);
-
-        $admin = User::where('username', $validated['username'])->first();
-
-        if (!$admin || !Hash::check($validated['password'], $admin->password)) {
-            return back()->withInput()->withErrors(['username' => 'Kredensial Super Admin tidak valid.']);
-        }
-
-        if (!$admin->is_active) {
-            return back()->withInput()->withErrors(['username' => 'Akun Admin Anda telah dinonaktifkan.']);
-        }
-
-        Auth::guard('web')->login($admin);
-        $request->session()->regenerate();
-        return redirect()->route('admin.dashboard')
-            ->with('status', 'Selamat datang Super Admin KopiLink!');
+        return $this->login($request);
     }
 
     public function logout(Request $request)

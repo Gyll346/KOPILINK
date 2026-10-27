@@ -6,7 +6,7 @@
 <!-- Page Header Start -->
 <div class="container-fluid page-header mb-5 position-relative overlay-bottom">
     <div class="d-flex flex-column align-items-center justify-content-center pt-0 pt-lg-5" style="min-height: 400px">
-        <h1 class="display-4 mb-3 mt-0 mt-lg-5 text-white text-uppercase">Masuk Akun</h1>
+        <h1 class="display-4 mb-3 mt-0 mt-lg-5 text-white text-uppercase">Portal Masuk</h1>
         <div class="d-inline-flex mb-lg-5">
             <p class="m-0 text-white"><a class="text-white" href="{{ route('home') }}">Home</a></p>
             <p class="m-0 text-white px-2">/</p>
@@ -19,148 +19,73 @@
 <div class="container-fluid py-5">
     <div class="container">
         <div class="section-title text-center mb-5">
-            <h4 class="text-primary text-uppercase" style="letter-spacing: 5px;">Autentikasi Sistem</h4>
+            <h4 class="text-primary text-uppercase" style="letter-spacing: 5px;">Satu Pintu Akses</h4>
             <h1 class="display-4">Masuk ke Portal KopiLink</h1>
-            <p class="text-muted">Pilih peran akun Anda untuk mengelola rantai pasok kopi dari hulu ke hilir.</p>
+            <p class="text-muted">Satu portal terintegrasi untuk Petani Kopi, Mitra Coffee Shop / Roastery, dan Super Administrator.</p>
         </div>
 
         <div class="row justify-content-center">
-            <div class="col-lg-7 col-md-9">
-                <!-- Nav Tabs -->
-                <ul class="nav nav-pills nav-justified mb-4" id="loginTab" role="tablist">
-                    <li class="nav-item">
-                        <a class="nav-link active font-weight-bold py-3 text-uppercase" id="petani-tab" data-toggle="pill" href="#petani" role="tab" style="border-radius: 4px;">
-                            <i class="fa fa-user mr-2"></i> Portal Petani
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link font-weight-bold py-3 text-uppercase" id="coffeeshop-tab" data-toggle="pill" href="#coffeeshop" role="tab" style="border-radius: 4px;">
-                            <i class="fa fa-store mr-2"></i> Coffee Shop / Roastery
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link font-weight-bold py-3 text-uppercase" id="admin-tab" data-toggle="pill" href="#admin" role="tab" style="border-radius: 4px;">
-                            <i class="fa fa-user-shield mr-2"></i> Super Admin
-                        </a>
-                    </li>
-                </ul>
-
-                <div class="tab-content" id="loginTabContent">
-                    <!-- Tab Petani -->
-                    <div class="tab-pane fade show active" id="petani" role="tabpanel">
-                        <div class="card border-0 shadow-lg" style="background-color: #33211D; border-radius: 8px;">
-                            <div class="card-body p-4 p-md-5">
-                                <h4 class="text-white text-center font-weight-bold mb-4">Masuk Sebagai Petani Kopi</h4>
-                                <form action="{{ route('login.petani') }}" method="POST">
-                                    @csrf
-                                    <div class="form-group mb-3">
-                                        <label class="text-white font-weight-bold">Username Petani</label>
-                                        <input type="text" name="username" class="form-control p-4 border-0" placeholder="Username Anda" value="{{ old('username') }}" required autofocus>
-                                    </div>
-
-                                    <div class="form-group mb-4">
-                                        <label class="text-white font-weight-bold">Password</label>
-                                        <div class="input-group">
-                                            <input type="password" name="password" id="password_petani" class="form-control p-4 border-0" placeholder="Kata sandi" required>
-                                            <div class="input-group-append">
-                                                <button class="btn btn-light px-3" type="button" onclick="togglePasswordVisibility('password_petani', this)" style="border-radius: 0 4px 4px 0;">
-                                                    <i class="fa fa-eye text-dark"></i>
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <button class="btn btn-primary btn-block font-weight-bold py-3 text-secondary text-uppercase" type="submit" style="color: #33211D !important; font-size: 16px;">
-                                        <i class="fa fa-sign-in-alt mr-2"></i> Masuk ke Dashboard Petani
-                                    </button>
-
-                                    <div class="text-center mt-4">
-                                        <p class="text-white mb-0">Belum memiliki akun petani? <a href="{{ route('register.petani') }}" class="text-primary font-weight-bold">Daftar sekarang</a></p>
-                                    </div>
-
-                                    <div class="mt-4 p-3 rounded" style="background: rgba(255,255,255,0.05); border-left: 3px solid #DA9F5B;">
-                                        <small class="text-light d-block mb-1 font-weight-bold">Akun Demo Petani:</small>
-                                        <small class="text-muted text-light d-block">Username: <code>petani_pasak</code> | Password: <code>password123</code> (Robusta)</small>
-                                        <small class="text-muted text-light d-block">Username: <code>petani_padi</code> | Password: <code>password123</code> (Liberika)</small>
-                                    </div>
-                                </form>
-                            </div>
+            <div class="col-lg-6 col-md-8">
+                <div class="card border-0 shadow-lg text-white" style="background-color: #33211D; border-radius: 12px; overflow: hidden;">
+                    <div class="card-header border-0 text-center pt-4 pb-0" style="background: transparent;">
+                        <div class="d-inline-flex align-items-center justify-content-center rounded-circle mb-3" style="width: 70px; height: 70px; background: rgba(218, 159, 91, 0.2); color: #DA9F5B; font-size: 30px;">
+                            <i class="fa fa-user-lock"></i>
                         </div>
+                        <h4 class="text-white font-weight-bold mb-1">Login Akun</h4>
+                        <p class="text-white-50 small mb-0">Sistem akan secara otomatis mengenali peran akun Anda.</p>
                     </div>
 
-                    <!-- Tab Coffee Shop -->
-                    <div class="tab-pane fade" id="coffeeshop" role="tabpanel">
-                        <div class="card border-0 shadow-lg" style="background-color: #33211D; border-radius: 8px;">
-                            <div class="card-body p-4 p-md-5">
-                                <h4 class="text-white text-center font-weight-bold mb-4">Masuk Sebagai Mitra Coffee Shop</h4>
-                                <form action="{{ route('login.coffeeshop') }}" method="POST">
-                                    @csrf
-                                    <div class="form-group mb-3">
-                                        <label class="text-white font-weight-bold">Username Mitra Roastery</label>
-                                        <input type="text" name="username" class="form-control p-4 border-0" placeholder="Username Roastery / Toko" required>
+                    <div class="card-body p-4 p-md-5 pt-3">
+                        <form action="{{ route('login.submit') }}" method="POST">
+                            @csrf
+                            <div class="form-group mb-3">
+                                <label class="text-white font-weight-bold small text-uppercase" style="letter-spacing: 1px;">Username / Akun</label>
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text bg-white border-0 text-muted"><i class="fa fa-user"></i></span>
                                     </div>
-
-                                    <div class="form-group mb-4">
-                                        <label class="text-white font-weight-bold">Password</label>
-                                        <div class="input-group">
-                                            <input type="password" name="password" id="password_cs" class="form-control p-4 border-0" placeholder="Kata sandi mitra" required>
-                                            <div class="input-group-append">
-                                                <button class="btn btn-light px-3" type="button" onclick="togglePasswordVisibility('password_cs', this)" style="border-radius: 0 4px 4px 0;">
-                                                    <i class="fa fa-eye text-dark"></i>
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <button class="btn btn-primary btn-block font-weight-bold py-3 text-secondary text-uppercase" type="submit" style="color: #33211D !important; font-size: 16px;">
-                                        <i class="fa fa-store mr-2"></i> Masuk ke Portal Coffee Shop
-                                    </button>
-
-                                    <div class="mt-4 p-3 rounded" style="background: rgba(255,255,255,0.05); border-left: 3px solid #DA9F5B;">
-                                         <small class="text-light d-block mb-1 font-weight-bold">Akun Demo Mitra Roastery:</small>
-                                         <small class="text-muted text-light d-block">Username: <code>roastery_senja</code> | Password: <code>KopiLink2026!</code></small>
-                                         <small class="text-muted text-light d-block">Username: <code>biji_bumi_coffee</code> | Password: <code>BumiHijau2026!</code></small>
-                                     </div>
-                                 </form>
-                             </div>
-                         </div>
-                     </div>
-
-                    <!-- Tab Super Admin -->
-                    <div class="tab-pane fade" id="admin" role="tabpanel">
-                        <div class="card border-0 shadow-lg" style="background-color: #33211D; border-radius: 8px;">
-                            <div class="card-body p-4 p-md-5">
-                                <h4 class="text-white text-center font-weight-bold mb-4">Masuk Sebagai Super Admin</h4>
-                                <form action="{{ route('login.admin') }}" method="POST">
-                                    @csrf
-                                    <div class="form-group mb-3">
-                                        <label class="text-white font-weight-bold">Username Super Admin</label>
-                                        <input type="text" name="username" class="form-control p-4 border-0" placeholder="Username Super Admin" required>
-                                    </div>
-
-                                    <div class="form-group mb-4">
-                                        <label class="text-white font-weight-bold">Password</label>
-                                        <div class="input-group">
-                                            <input type="password" name="password" id="password_admin" class="form-control p-4 border-0" placeholder="Kata sandi admin" required>
-                                            <div class="input-group-append">
-                                                <button class="btn btn-light px-3" type="button" onclick="togglePasswordVisibility('password_admin', this)" style="border-radius: 0 4px 4px 0;">
-                                                    <i class="fa fa-eye text-dark"></i>
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <button class="btn btn-primary btn-block font-weight-bold py-3 text-secondary text-uppercase" type="submit" style="color: #33211D !important; font-size: 16px;">
-                                        <i class="fa fa-user-shield mr-2"></i> Masuk ke Panel Super Admin
-                                    </button>
-
-                                    <div class="mt-4 p-3 rounded" style="background: rgba(255,255,255,0.05); border-left: 3px solid #DA9F5B;">
-                                        <small class="text-light d-block mb-1 font-weight-bold">Kredensial Super Admin:</small>
-                                        <small class="text-muted text-light d-block">Username: <code>superadmin</code> | Password: <code>AdminKopi2026!</code></small>
-                                    </div>
-                                </form>
+                                    <input type="text" name="username" class="form-control p-4 border-0" placeholder="Masukkan username Anda" value="{{ old('username') }}" required autofocus>
+                                </div>
                             </div>
-                        </div>
+
+                            <div class="form-group mb-4">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <label class="text-white font-weight-bold small text-uppercase mb-0" style="letter-spacing: 1px;">Password</label>
+                                </div>
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text bg-white border-0 text-muted"><i class="fa fa-lock"></i></span>
+                                    </div>
+                                    <input type="password" name="password" id="unified_password" class="form-control p-4 border-0" placeholder="Masukkan kata sandi" required>
+                                    <div class="input-group-append">
+                                        <button class="btn btn-light px-3" type="button" onclick="togglePasswordVisibility('unified_password', this)" style="border-radius: 0 4px 4px 0;">
+                                            <i class="fa fa-eye text-dark"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button class="btn btn-primary btn-block font-weight-bold py-3 text-secondary text-uppercase shadow-sm" type="submit" style="color: #33211D !important; font-size: 15px; letter-spacing: 1px;">
+                                <i class="fa fa-sign-in-alt mr-2"></i> Masuk Sekarang
+                            </button>
+
+                            <div class="text-center mt-4 pt-2 border-top" style="border-color: rgba(255,255,255,0.1) !important;">
+                                <p class="text-white small mb-0">
+                                    Belum terdaftar sebagai petani mitra? 
+                                    <a href="{{ route('register.petani') }}" class="text-primary font-weight-bold ml-1">Daftar Petani Baru</a>
+                                </p>
+                            </div>
+
+                            <!-- Petunjuk Aktor -->
+                            <div class="mt-4 p-3 rounded" style="background: rgba(255,255,255,0.06); border-left: 3px solid #DA9F5B;">
+                                <small class="text-warning d-block mb-1 font-weight-bold"><i class="fa fa-info-circle mr-1"></i> Informasi Akses:</small>
+                                <small class="text-white-50 d-block" style="font-size: 11px;">
+                                    &bull; <strong>Petani</strong> diarahkan ke Dashboard Manajemen Lahan & Panen Ceri/Green Bean.<br>
+                                    &bull; <strong>Coffee Shop</strong> diarahkan ke Pasokan Kopi & Penerbitan Label QR Kemasan.<br>
+                                    &bull; <strong>Super Admin</strong> diarahkan ke Panel Monitoring Panen & Manajemen User.
+                                </small>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>
@@ -170,18 +95,14 @@
 
 <script>
 function togglePasswordVisibility(inputId, btn) {
-    const input = document.getElementById(inputId);
-    const icon = btn.querySelector('i');
-    if (!input || !icon) return;
-
+    var input = document.getElementById(inputId);
+    var icon = btn.querySelector('i');
     if (input.type === 'password') {
         input.type = 'text';
-        icon.classList.remove('fa-eye');
-        icon.classList.add('fa-eye-slash');
+        icon.className = 'fa fa-eye-slash text-dark';
     } else {
         input.type = 'password';
-        icon.classList.remove('fa-eye-slash');
-        icon.classList.add('fa-eye');
+        icon.className = 'fa fa-eye text-dark';
     }
 }
 </script>
