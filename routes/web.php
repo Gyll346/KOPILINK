@@ -15,6 +15,7 @@ Route::get('/', [TraceabilityController::class, 'index'])->name('home');
 Route::get('/about', [TraceabilityController::class, 'about'])->name('about');
 Route::get('/service', [TraceabilityController::class, 'service'])->name('service');
 Route::get('/donasi', [TraceabilityController::class, 'donasi'])->name('donasi');
+Route::post('/donasi', [TraceabilityController::class, 'donasiSend'])->name('donasi.send');
 Route::get('/menu', [TraceabilityController::class, 'menu'])->name('menu');
 Route::get('/contact', [TraceabilityController::class, 'contact'])->name('contact');
 Route::post('/contact', [TraceabilityController::class, 'contactSend'])->name('contact.send');

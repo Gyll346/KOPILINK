@@ -27,6 +27,29 @@
             </p>
         </div>
 
+        @if(session('status'))
+            <div class="alert alert-success alert-dismissible fade show text-center mb-4 shadow-sm" role="alert" style="border-radius: 8px;">
+                <i class="fa fa-check-circle mr-2 fa-lg text-success"></i>
+                <strong>{{ session('status') }}</strong>
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        @endif
+
+        @if($errors->any())
+            <div class="alert alert-danger alert-dismissible fade show mb-4 shadow-sm" role="alert" style="border-radius: 8px;">
+                <ul class="mb-0 pl-3">
+                    @foreach($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        @endif
+
         <div class="row">
             <!-- 1. Donasi Bibit Kopi -->
             <div class="col-lg-4 col-md-6 mb-4">
@@ -129,43 +152,71 @@
                 <h5 class="modal-title font-weight-bold text-white"><i class="fa fa-heart text-danger mr-2"></i> Konfirmasi Donasi Kopi</h5>
                 <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
             </div>
-            <div class="modal-body p-4">
-                <div class="alert alert-warning mb-3 small" style="background-color: rgba(218, 159, 91, 0.2); border: 1px solid #DA9F5B; color: #33211D;">
-                    <i class="fa fa-info-circle mr-1 text-primary"></i> 
-                    Program terpilih: <strong id="modalDonasiHalamanProgramName">-</strong>
-                </div>
-                <div class="form-group">
-                    <label class="font-weight-bold text-dark">Nama Donatur / Pemerhati Kopi</label>
-                    <input type="text" id="donasiHalamanNama" class="form-control" placeholder="Contoh: Budi Santoso (atau Anonim)">
-                </div>
-                <div class="form-group">
-                    <label class="font-weight-bold text-dark">Jumlah Partisipasi</label>
-                    <input type="number" id="donasiHalamanJumlah" class="form-control" placeholder="Contoh: 10 bibit / 50 cangkir" min="1" value="5">
-                </div>
-                <div class="form-group">
-                    <label class="font-weight-bold text-dark">Pesan Semangat untuk Petani</label>
-                    <textarea id="donasiHalamanPesan" class="form-control" rows="2" placeholder="Tuliskan kata motivasi untuk petani kopi Kalimantan Barat..."></textarea>
-                </div>
-                @if(isset($rekeningAktif) && $rekeningAktif)
-                    <div class="card bg-light border-0 p-3 mb-3 text-center">
-                        <small class="text-muted font-weight-bold text-uppercase">Tujuan Transfer Resmi KopiLink:</small>
-                        <h5 class="font-weight-bold text-dark my-1">{{ $rekeningAktif->nama_bank }}</h5>
-                        <div class="badge badge-dark p-2 font-weight-bold text-monospace mx-auto my-1" style="font-size: 14px; letter-spacing: 1px;">
-                            {{ $rekeningAktif->nomor_rekening }}
-                        </div>
-                        <small class="text-muted">a.n <strong>{{ $rekeningAktif->atas_nama }}</strong></small>
+            <form action="{{ route('donasi.send') }}" method="POST" enctype="multipart/form-data" id="formDonasiPublik">
+                @csrf
+                <input type="hidden" name="program" id="donasiProgramInput" value="Donasi Bibit Kopi">
+                <div class="modal-body p-4">
+                    <div class="alert alert-warning mb-3 small" style="background-color: rgba(218, 159, 91, 0.2); border: 1px solid #DA9F5B; color: #33211D;">
+                        <i class="fa fa-info-circle mr-1 text-primary"></i> 
+                        Program terpilih: <strong id="modalDonasiHalamanProgramName">Donasi Bibit Kopi</strong>
                     </div>
-                @endif
-                <div class="p-2 bg-white border rounded text-center small text-muted">
-                    <i class="fa fa-shield-alt text-success mr-1"></i> 100% donasi dialokasikan langsung kepada kelompok tani <strong>Pasak Piang & Padi Jaya</strong>.
+
+                    @if(isset($rekeningAktif) && $rekeningAktif)
+                        <div class="card bg-light border-0 p-3 mb-3 text-center">
+                            <small class="text-muted font-weight-bold text-uppercase">Tujuan Transfer Resmi KopiLink:</small>
+                            <h5 class="font-weight-bold text-dark my-1">{{ $rekeningAktif->nama_bank }}</h5>
+                            <div class="badge badge-dark p-2 font-weight-bold text-monospace mx-auto my-1" style="font-size: 14px; letter-spacing: 1px;">
+                                {{ $rekeningAktif->nomor_rekening }}
+                            </div>
+                            <small class="text-muted">a.n <strong>{{ $rekeningAktif->atas_nama }}</strong></small>
+                        </div>
+                    @endif
+
+                    <div class="form-group">
+                        <label class="font-weight-bold text-dark">Nama Donatur / Pembayar <span class="text-danger">*</span></label>
+                        <input type="text" name="nama_donatur" id="donasiHalamanNama" class="form-control" placeholder="Contoh: Budi Santoso (atau Hamba Allah)" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="font-weight-bold text-dark">Nominal Donasi (Rp) <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text bg-light font-weight-bold">Rp</span>
+                            </div>
+                            <input type="number" name="nominal" id="donasiHalamanNominal" class="form-control font-weight-bold" placeholder="Contoh: 50000" min="1000" step="1000" value="50000" required>
+                        </div>
+                        <small class="text-muted d-block mt-1" id="keteranganEstimasi">
+                            Estimasi: ~3 Bibit Pohon Kopi Agroforestri
+                        </small>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="font-weight-bold text-dark">Pesan / Doa Semangat untuk Petani</label>
+                        <textarea name="pesan" id="donasiHalamanPesan" class="form-control" rows="2" placeholder="Tuliskan kata motivasi untuk petani kopi Kalimantan Barat..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="font-weight-bold text-dark">Upload Bukti Transfer / Resi (Opsional)</label>
+                        {{-- Input file mentah yang dipilih user --}}
+                        <input type="file" id="rawBuktiDonasi" class="form-control-file border p-2 rounded bg-light" accept="image/*" onchange="compressBuktiDonasi(this)">
+                        {{-- Input terkompresi yang dikirimkan ke server --}}
+                        <input type="file" name="bukti_transfer" id="compressedBuktiDonasi" class="d-none">
+                        <div id="buktiCompressStatus" class="mt-2 small text-success font-weight-bold"></div>
+                        <div id="buktiPreviewContainer" class="mt-2"></div>
+                        <small class="form-text text-muted">Gambar otomatis dikompresi langsung demi kecepatan dan keandalan upload.</small>
+                    </div>
+
+                    <div class="p-2 bg-white border rounded text-center small text-muted">
+                        <i class="fa fa-shield-alt text-success mr-1"></i> Donasi Anda langsung diverifikasi dan dicatat pada buku kas Super Admin.
+                    </div>
                 </div>
-            </div>
-            <div class="modal-footer border-top-0 pt-0">
-                <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Tutup</button>
-                <button type="button" class="btn btn-primary font-weight-bold px-4 py-2 text-dark" style="background-color: #DA9F5B; border-color: #DA9F5B;" onclick="submitDonasiHalaman()">
-                    <i class="fa fa-check mr-1"></i> Kirim Donasi Sekarang
-                </button>
-            </div>
+                <div class="modal-footer border-top-0 pt-0">
+                    <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary font-weight-bold px-4 py-2 text-dark" style="background-color: #DA9F5B; border-color: #DA9F5B;">
+                        <i class="fa fa-paper-plane mr-1"></i> Kirim Donasi ke Super Admin
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
@@ -174,18 +225,102 @@
 document.addEventListener('DOMContentLoaded', function () {
     $('#modalDonasiHalaman').on('show.bs.modal', function (event) {
         var button = $(event.relatedTarget);
-        var program = button.data('program') || 'Donasi Kopi';
+        var program = button.data('program') || 'Donasi Bibit Kopi ($1 = 1 Seedling)';
         $('#modalDonasiHalamanProgramName').text(program);
+        $('#donasiProgramInput').val(program);
+
+        var nominalInput = document.getElementById('donasiHalamanNominal');
+        var estimasi = document.getElementById('keteranganEstimasi');
+        if (program.indexOf('Bibit') > -1) {
+            nominalInput.value = '50000';
+            estimasi.innerText = 'Estimasi: ~3 Bibit Pohon Kopi Agroforestri';
+        } else if (program.indexOf('Cup') > -1) {
+            nominalInput.value = '20000';
+            estimasi.innerText = 'Estimasi: Setara apresiasi 100 cangkir kopi petani';
+        } else {
+            nominalInput.value = '25000';
+            estimasi.innerText = 'Dukungan operasional & keberlanjutan kebun';
+        }
+    });
+
+    document.getElementById('donasiHalamanNominal').addEventListener('input', function() {
+        var val = parseFloat(this.value) || 0;
+        var program = $('#donasiProgramInput').val();
+        var estimasi = document.getElementById('keteranganEstimasi');
+        if (program.indexOf('Bibit') > -1) {
+            var bibit = Math.floor(val / 16000);
+            estimasi.innerText = 'Estimasi: ~' + (bibit > 0 ? bibit : 0) + ' Bibit Pohon Kopi Agroforestri';
+        } else if (program.indexOf('Cup') > -1) {
+            var cup = Math.floor(val / 200);
+            estimasi.innerText = 'Estimasi: Setara apresiasi ' + cup + ' cangkir kopi';
+        }
     });
 });
 
-function submitDonasiHalaman() {
-    var nama = document.getElementById('donasiHalamanNama').value || 'Pemerhati Kopi';
-    var program = document.getElementById('modalDonasiHalamanProgramName').textContent;
-    alert('Terima kasih banyak, ' + nama + '! Partisipasi Anda dalam "' + program + '" telah berhasil dicatat. Dukungan Anda sangat berarti bagi keberlanjutan perkebunan kopi petani mitra KopiLink.');
-    $('#modalDonasiHalaman').modal('hide');
-    document.getElementById('donasiHalamanNama').value = '';
-    document.getElementById('donasiHalamanPesan').value = '';
+function compressBuktiDonasi(input) {
+    const statusEl = document.getElementById('buktiCompressStatus');
+    const container = document.getElementById('buktiPreviewContainer');
+    const hiddenInput = document.getElementById('compressedBuktiDonasi');
+
+    if (!input.files || input.files.length === 0) return;
+    const file = input.files[0];
+    if (!file.type.startsWith('image/')) return;
+
+    statusEl.innerHTML = '<span class="text-info"><i class="fa fa-spinner fa-spin mr-1"></i> Sedang mengompresi gambar...</span>';
+    container.innerHTML = '';
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+            const canvas = document.createElement('canvas');
+            let width = img.width;
+            let height = img.height;
+            const maxDim = 1200;
+
+            if (width > maxDim || height > maxDim) {
+                if (width > height) {
+                    height = Math.round((height * maxDim) / width);
+                    width = maxDim;
+                } else {
+                    width = Math.round((width * maxDim) / height);
+                    height = maxDim;
+                }
+            }
+
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+
+            canvas.toBlob(function(blob) {
+                const compressedFile = new File([blob], file.name.replace(/\.[^/.]+$/, ".jpg"), {
+                    type: 'image/jpeg',
+                    lastModified: Date.now()
+                });
+
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(compressedFile);
+                hiddenInput.files = dataTransfer.files;
+
+                const origKb = (file.size / 1024).toFixed(0);
+                const compKb = (blob.size / 1024).toFixed(0);
+                const saving = file.size > 0 ? (100 - (blob.size / file.size) * 100).toFixed(0) : 0;
+
+                statusEl.innerHTML = '<span class="text-success"><i class="fa fa-check-circle mr-1"></i> Terkompresi: ' + origKb + ' KB &rarr; ' + compKb + ' KB (Hemat ' + saving + '%)</span>';
+
+                const thumb = document.createElement('img');
+                thumb.src = canvas.toDataURL('image/jpeg', 0.8);
+                thumb.className = 'rounded border shadow-sm';
+                thumb.style.maxHeight = '90px';
+                thumb.style.maxWidth = '100%';
+                thumb.style.objectFit = 'contain';
+                container.appendChild(thumb);
+            }, 'image/jpeg', 0.8);
+        };
+        img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
 }
 </script>
 @endsection
