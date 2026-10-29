@@ -328,12 +328,12 @@
                     </li>
                     <li class="nav-item">
                         <a href="{{ route('admin.whatsapp.index') }}" class="nav-link {{ request()->routeIs('admin.whatsapp.*') ? 'active' : '' }}">
-                            <i class="fab fa-whatsapp text-success"></i> WhatsApp Gateway OTP
+                            <i class="fab fa-whatsapp"></i> WhatsApp Gateway OTP
                         </a>
                     </li>
                     <li class="nav-item">
                         <a href="{{ route('admin.donasi.index') }}" class="nav-link {{ request()->routeIs('admin.donasi.*') ? 'active' : '' }}">
-                            <i class="fa fa-hand-holding-heart text-danger"></i> Donasi & Kas Masuk/Keluar
+                            <i class="fa fa-hand-holding-heart"></i> Donasi & Kas Masuk/Keluar
                         </a>
                     </li>
                 </ul>
