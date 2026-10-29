@@ -129,6 +129,7 @@ Route::middleware('auth:web')->prefix('admin')->name('admin.')->group(function (
     // Manajemen Donasi & Pengaturan Rekening
     Route::get('/donasi', [\App\Http\Controllers\AdminDashboardController::class, 'donasiIndex'])->name('donasi.index');
     Route::post('/donasi/rekening', [\App\Http\Controllers\AdminDashboardController::class, 'rekeningStore'])->name('donasi.rekening.store');
+    Route::put('/donasi/rekening/{id_rekening}', [\App\Http\Controllers\AdminDashboardController::class, 'rekeningUpdate'])->name('donasi.rekening.update');
     Route::post('/donasi/rekening/{id_rekening}/toggle', [\App\Http\Controllers\AdminDashboardController::class, 'rekeningToggle'])->name('donasi.rekening.toggle');
     Route::delete('/donasi/rekening/{id_rekening}', [\App\Http\Controllers\AdminDashboardController::class, 'rekeningDestroy'])->name('donasi.rekening.destroy');
     Route::post('/donasi/transaksi', [\App\Http\Controllers\AdminDashboardController::class, 'donasiTransaksiStore'])->name('donasi.transaksi.store');

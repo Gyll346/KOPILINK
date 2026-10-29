@@ -70,14 +70,22 @@
 
 <!-- Bagian 1: Rekening Tujuan Penerima Donasi -->
 <div class="card card-stat mb-4">
-    <div class="card-header bg-white border-0 pt-3 px-3 pb-2 d-flex justify-content-between align-items-center flex-wrap">
+    <div class="card-header bg-white border-0 pt-3 px-3 pb-2 d-flex justify-content-between align-items-center flex-wrap" style="gap: 10px;">
         <div>
             <h6 class="font-weight-bold m-0 text-dark"><i class="fa fa-university text-primary mr-2"></i> Rekening Penerima Donasi yang Tersedia</h6>
             <small class="text-muted">Pilih rekening mana yang akan diaktifkan sebagai rekening tujuan utama donasi.</small>
         </div>
-        <button type="button" class="btn btn-sm btn-koppee" data-toggle="modal" data-target="#modalTambahRekening">
-            <i class="fa fa-plus-circle mr-1"></i> Tambah Rekening
-        </button>
+        <div class="d-flex align-items-center flex-wrap" style="gap: 8px;">
+            <div class="input-group input-group-sm" style="width: 220px;">
+                <div class="input-group-prepend">
+                    <span class="input-group-text bg-white border-right-0"><i class="fa fa-search text-muted"></i></span>
+                </div>
+                <input type="text" id="inputCariRekening" class="form-control border-left-0" placeholder="Cari rekening / bank...">
+            </div>
+            <button type="button" class="btn btn-sm btn-koppee" data-toggle="modal" data-target="#modalTambahRekening">
+                <i class="fa fa-plus-circle mr-1"></i> Tambah Rekening
+            </button>
+        </div>
     </div>
     <div class="card-body p-0">
         @if($rekeningList->isEmpty())
@@ -87,7 +95,7 @@
             </div>
         @else
             <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
+                <table class="table table-hover align-middle mb-0" id="tableRekening">
                     <thead class="thead-light">
                         <tr>
                             <th class="pl-4">Bank / Provider</th>
@@ -122,6 +130,17 @@
                                 </td>
                                 <td class="text-center pr-4">
                                     <div class="d-flex justify-content-center align-items-center" style="gap: 5px;">
+                                        <button type="button" 
+                                                class="btn btn-sm btn-outline-primary btn-edit-rek" 
+                                                title="Edit Rekening"
+                                                data-id="{{ $rek->id_rekening }}"
+                                                data-bank="{{ $rek->nama_bank }}"
+                                                data-nomor="{{ $rek->nomor_rekening }}"
+                                                data-nama="{{ $rek->atas_nama }}"
+                                                data-ket="{{ $rek->keterangan }}"
+                                                data-active="{{ $rek->is_active ? '1' : '0' }}">
+                                            <i class="fa fa-edit"></i>
+                                        </button>
                                         @if(!$rek->is_active)
                                             <form action="{{ route('admin.donasi.rekening.toggle', ['id_rekening' => $rek->id_rekening]) }}" method="POST">
                                                 @csrf
@@ -293,6 +312,54 @@
     </div>
 </div>
 
+<!-- Modal Edit Rekening Tujuan Donasi -->
+<div class="modal fade" id="modalEditRekening" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-dark text-white">
+                <h6 class="modal-title font-weight-bold text-white">
+                    <i class="fa fa-edit text-warning mr-2"></i> Edit Rekening Penerima Donasi
+                </h6>
+                <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
+            </div>
+            <form id="formEditRekening" method="POST">
+                @csrf
+                @method('PUT')
+                <div class="modal-body p-4 text-left">
+                    <div class="form-group">
+                        <label class="font-weight-bold text-dark">Nama Bank / Dompet Digital <span class="text-danger">*</span></label>
+                        <input type="text" name="nama_bank" id="edit_nama_bank" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="font-weight-bold text-dark">Nomor Rekening / ID Transaksi <span class="text-danger">*</span></label>
+                        <input type="text" name="nomor_rekening" id="edit_nomor_rekening" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="font-weight-bold text-dark">Atas Nama (Pemilik Rekening) <span class="text-danger">*</span></label>
+                        <input type="text" name="atas_nama" id="edit_atas_nama" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="font-weight-bold text-dark">Catatan Rekening</label>
+                        <input type="text" name="keterangan" id="edit_keterangan" class="form-control">
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" name="is_active" value="1" class="form-check-input" id="edit_is_active">
+                        <label class="form-check-label font-weight-bold text-dark small" for="edit_is_active">
+                            Jadikan sebagai rekening penerima donasi utama saat ini
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light border-0">
+                    <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-koppee btn-sm font-weight-bold">
+                        <i class="fa fa-save mr-1"></i> Perbarui Rekening
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <!-- Modal Catat Transaksi Kas Masuk / Keluar -->
 <div class="modal fade" id="modalCatatTransaksi" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
@@ -383,6 +450,38 @@ function filterKasTable() {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
+    // Cari Rekening Instant Filter
+    const inputCariRekening = document.getElementById('inputCariRekening');
+    if (inputCariRekening) {
+        inputCariRekening.addEventListener('input', function () {
+            const filter = this.value.toLowerCase().trim();
+            const rows = document.querySelectorAll('#tableRekening tbody tr');
+            rows.forEach(row => {
+                const text = row.textContent || row.innerText;
+                row.style.display = text.toLowerCase().indexOf(filter) > -1 ? '' : 'none';
+            });
+        });
+    }
+
+    // Modal Edit Rekening
+    $(document).on('click', '.btn-edit-rek', function () {
+        const id = $(this).data('id');
+        const bank = $(this).data('bank');
+        const nomor = $(this).data('nomor');
+        const nama = $(this).data('nama');
+        const ket = $(this).data('ket');
+        const active = $(this).data('active') == '1';
+
+        $('#formEditRekening').attr('action', '{{ url("admin/donasi/rekening") }}/' + id);
+        $('#edit_nama_bank').val(bank);
+        $('#edit_nomor_rekening').val(nomor);
+        $('#edit_atas_nama').val(nama);
+        $('#edit_keterangan').val(ket);
+        $('#edit_is_active').prop('checked', active);
+
+        $('#modalEditRekening').modal('show');
+    });
+
     $('#modalCatatTransaksi').on('show.bs.modal', function (event) {
         const button = $(event.relatedTarget);
         const jenis = button.data('jenis') || 'masuk';

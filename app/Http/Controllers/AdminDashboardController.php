@@ -261,7 +261,15 @@ class AdminDashboardController extends Controller
      */
     public function donasiIndex()
     {
-        $rekeningList = RekeningDonasi::orderBy('is_active', 'desc')->latest()->get();
+        $queryRekening = RekeningDonasi::orderBy('is_active', 'desc')->latest();
+        if ($searchRek = request('search_rekening')) {
+            $queryRekening->where(function ($q) use ($searchRek) {
+                $q->where('nama_bank', 'like', "%{$searchRek}%")
+                  ->orWhere('nomor_rekening', 'like', "%{$searchRek}%")
+                  ->orWhere('atas_nama', 'like', "%{$searchRek}%");
+            });
+        }
+        $rekeningList = $queryRekening->get();
         $transaksiList = DonasiTransaksi::with('rekening')->orderBy('tanggal', 'desc')->latest()->get();
 
         $totalMasuk = DonasiTransaksi::where('jenis', 'masuk')->sum('nominal');
@@ -300,6 +308,30 @@ class AdminDashboardController extends Controller
         RekeningDonasi::create($validated);
 
         return back()->with('status', 'Rekening penerima donasi berhasil ditambahkan!');
+    }
+
+    /**
+     * Perbarui Data Rekening Donasi
+     */
+    public function rekeningUpdate(Request $request, $id_rekening)
+    {
+        $rekening = RekeningDonasi::findOrFail($id_rekening);
+
+        $validated = $request->validate([
+            'nama_bank' => 'required|string|max:50',
+            'nomor_rekening' => 'required|string|max:50',
+            'atas_nama' => 'required|string|max:100',
+            'keterangan' => 'nullable|string|max:255',
+        ]);
+
+        if ($request->has('is_active') && $request->is_active) {
+            RekeningDonasi::where('id_rekening', '!=', $id_rekening)->update(['is_active' => false]);
+            $validated['is_active'] = true;
+        }
+
+        $rekening->update($validated);
+
+        return back()->with('status', "Data rekening [{$rekening->nama_bank} - {$rekening->nomor_rekening}] berhasil diperbarui!");
     }
 
     /**
