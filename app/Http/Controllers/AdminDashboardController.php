@@ -361,12 +361,13 @@ class AdminDashboardController extends Controller
     }
 
     /**
-     * Simpan Transaksi Kas Donasi (Uang Masuk / Keluar)
+     * Simpan Transaksi Kas Donasi Keluar (Penyaluran)
+     * Catatan: Uang masuk dihitung otomatis dari sistem donasi publik.
      */
     public function donasiTransaksiStore(Request $request)
     {
         $validated = $request->validate([
-            'jenis' => 'required|in:masuk,keluar',
+            'jenis' => 'required|in:keluar',
             'nominal' => 'required|numeric|min:1000',
             'tanggal' => 'required|date',
             'nama_pihak' => 'required|string|max:150',
@@ -382,8 +383,7 @@ class AdminDashboardController extends Controller
 
         DonasiTransaksi::create($validated);
 
-        $label = $validated['jenis'] === 'masuk' ? 'Uang Masuk (Donasi Diterima)' : 'Uang Keluar (Penyaluran Donasi)';
-        return back()->with('status', "Catatan transaksi {$label} sebesar Rp " . number_format($validated['nominal'], 0, ',', '.') . " berhasil disimpan!");
+        return back()->with('status', "Catatan penyaluran uang keluar sebesar Rp " . number_format($validated['nominal'], 0, ',', '.') . " berhasil disimpan!");
     }
 
     /**

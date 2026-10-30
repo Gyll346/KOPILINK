@@ -7,16 +7,13 @@
 <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap" style="gap: 10px;">
     <div>
         <h4 class="font-weight-bold mb-1">Manajemen Donasi & Rekening Penerima</h4>
-        <p class="text-muted mb-0">Kelola rekening tujuan transfer donatur, catat uang masuk (donasi) dan uang keluar (penyaluran bibit/kesejahteraan petani).</p>
+        <p class="text-muted mb-0">Kelola rekening tujuan transfer donatur, pantau donasi masuk otomatis dari sistem, dan catat penyaluran uang keluar untuk petani.</p>
     </div>
     <div class="d-flex flex-wrap" style="gap: 8px;">
         <button type="button" class="btn btn-outline-dark" data-toggle="modal" data-target="#modalTambahRekening">
             <i class="fa fa-university mr-1 text-primary"></i> Atur Rekening Tujuan
         </button>
-        <button type="button" class="btn btn-success" data-toggle="modal" data-target="#modalCatatTransaksi" data-jenis="masuk">
-            <i class="fa fa-arrow-down mr-1"></i> Catat Uang Masuk
-        </button>
-        <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#modalCatatTransaksi" data-jenis="keluar">
+        <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#modalCatatKeluar">
             <i class="fa fa-arrow-up mr-1"></i> Catat Uang Keluar
         </button>
     </div>
@@ -30,7 +27,7 @@
                 <div>
                     <small class="text-muted font-weight-bold text-uppercase">Total Donasi Masuk</small>
                     <h3 class="m-0 font-weight-bold text-success mt-1">Rp {{ number_format($totalMasuk, 0, ',', '.') }}</h3>
-                    <small class="text-muted"><i class="fa fa-arrow-circle-down text-success mr-1"></i> Dari donatur & pecinta kopi</small>
+                    <small class="text-muted"><i class="fa fa-check-circle text-success mr-1"></i> Terhitung otomatis dari sistem website</small>
                 </div>
                 <div class="rounded-circle p-3" style="background: rgba(40, 167, 69, 0.1); color: #28a745;">
                     <i class="fa fa-hand-holding-usd fa-2x"></i>
@@ -187,8 +184,8 @@
         @if($transaksiList->isEmpty())
             <div class="text-center py-5">
                 <i class="fa fa-book fa-3x text-muted mb-3"></i>
-                <h5 class="text-muted">Belum ada catatan transaksi uang masuk atau keluar.</h5>
-                <p class="small text-muted">Tekan tombol "Catat Uang Masuk" atau "Catat Uang Keluar" di atas untuk memulai pencatatan.</p>
+                <h5 class="text-muted">Belum ada catatan transaksi arus kas donasi.</h5>
+                <p class="small text-muted">Donasi masuk tercatat otomatis dari donatur di website publik. Gunakan tombol "Catat Uang Keluar" di atas untuk mencatat penyaluran dana.</p>
             </div>
         @else
             <div class="table-responsive">
@@ -212,7 +209,7 @@
                                 <td>
                                     @if($trx->jenis === 'masuk')
                                         <span class="badge badge-success px-2 py-1 font-weight-bold">
-                                            <i class="fa fa-arrow-down mr-1"></i> Masuk (Donasi)
+                                            <i class="fa fa-arrow-down mr-1"></i> Masuk (Sistem)
                                         </span>
                                     @else
                                         <span class="badge badge-danger px-2 py-1 font-weight-bold">
@@ -360,22 +357,22 @@
     </div>
 </div>
 
-<!-- Modal Catat Transaksi Kas Masuk / Keluar -->
-<div class="modal fade" id="modalCatatTransaksi" tabindex="-1" role="dialog" aria-hidden="true">
+<!-- Modal Catat Penyaluran Donasi (Uang Keluar) -->
+<div class="modal fade" id="modalCatatKeluar" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content border-0 shadow">
-            <div class="modal-header bg-dark text-white" id="modalTrxHeader">
-                <h6 class="modal-title font-weight-bold text-white" id="modalTrxTitle">
-                    <i class="fa fa-edit text-warning mr-2"></i> Catat Transaksi Kas Donasi
+            <div class="modal-header bg-dark text-white">
+                <h6 class="modal-title font-weight-bold text-white">
+                    <i class="fa fa-arrow-up text-danger mr-2"></i> Catat Uang Keluar (Penyaluran Donasi)
                 </h6>
                 <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
             </div>
             <form action="{{ route('admin.donasi.transaksi.store') }}" method="POST" enctype="multipart/form-data">
                 @csrf
-                <input type="hidden" name="jenis" id="trxJenisInput" value="masuk">
+                <input type="hidden" name="jenis" value="keluar">
                 <div class="modal-body p-4 text-left">
-                    <div class="alert alert-light border small mb-3" id="trxAlertInfo">
-                        Pencatatan arus dana donasi secara transparan dan akuntabel.
+                    <div class="alert alert-light border small mb-3">
+                        <i class="fa fa-info-circle text-danger mr-1"></i> Mencatat dana donasi yang disalurkan untuk bibit, pupuk, alat kebun, atau santunan petani.
                     </div>
                     <div class="form-row">
                         <div class="form-group col-md-6">
@@ -383,13 +380,13 @@
                             <input type="date" name="tanggal" class="form-control" value="{{ date('Y-m-d') }}" required>
                         </div>
                         <div class="form-group col-md-6">
-                            <label class="font-weight-bold text-dark">Nominal (Rp) <span class="text-danger">*</span></label>
+                            <label class="font-weight-bold text-dark">Nominal Penyaluran (Rp) <span class="text-danger">*</span></label>
                             <input type="number" name="nominal" class="form-control font-weight-bold" placeholder="Contoh: 100000" min="1000" step="500" required>
                         </div>
                     </div>
                     <div class="form-group">
-                        <label class="font-weight-bold text-dark" id="lblNamaPihak">Nama Donatur / Pengirim <span class="text-danger">*</span></label>
-                        <input type="text" name="nama_pihak" class="form-control" placeholder="Contoh: Budi Santoso / CV Kopi Jaya" required>
+                        <label class="font-weight-bold text-dark">Nama Penerima / Kelompok Tani / Vendor <span class="text-danger">*</span></label>
+                        <input type="text" name="nama_pihak" class="form-control" placeholder="Contoh: Kelompok Tani Pasak Piang / Toko Bibit Agro" required>
                     </div>
                     <div class="form-row">
                         <div class="form-group col-md-6">
@@ -403,9 +400,9 @@
                             </select>
                         </div>
                         <div class="form-group col-md-6">
-                            <label class="font-weight-bold text-dark">Rekening Bank Tujuan</label>
+                            <label class="font-weight-bold text-dark">Sumber Kas / Rekening</label>
                             <select name="id_rekening" class="form-control">
-                                <option value="">-- Tanpa Rekening (Tunai) --</option>
+                                <option value="">-- Kas Tunai Langsung --</option>
                                 @foreach($rekeningList as $r)
                                     <option value="{{ $r->id_rekening }}" {{ $r->is_active ? 'selected' : '' }}>
                                         {{ $r->nama_bank }} - {{ $r->nomor_rekening }} ({{ $r->atas_nama }})
@@ -415,19 +412,19 @@
                         </div>
                     </div>
                     <div class="form-group">
-                        <label class="font-weight-bold text-dark">Keterangan / Berita Acara</label>
-                        <textarea name="keterangan" class="form-control" rows="2" placeholder="Tuliskan catatan detail transaksi..."></textarea>
+                        <label class="font-weight-bold text-dark">Keterangan / Berita Acara Penyaluran</label>
+                        <textarea name="keterangan" class="form-control" rows="2" placeholder="Tuliskan catatan detail penyaluran dana..."></textarea>
                     </div>
                     <div class="form-group mb-0">
-                        <label class="font-weight-bold text-dark">Foto / Slip Bukti Transfer (Opsional)</label>
+                        <label class="font-weight-bold text-dark">Foto / Slip / Dokumentasi Penyaluran (Opsional)</label>
                         <input type="file" name="bukti_transfer" class="form-control-file border p-2 rounded bg-light" accept="image/*">
                         <small class="form-text text-muted">Format gambar JPG, PNG, WEBP. Maks 10MB (otomatis dikompresi).</small>
                     </div>
                 </div>
                 <div class="modal-footer bg-light border-0">
                     <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-koppee btn-sm font-weight-bold" id="btnSubmitTrx">
-                        <i class="fa fa-save mr-1"></i> Simpan Catatan
+                    <button type="submit" class="btn btn-danger btn-sm font-weight-bold">
+                        <i class="fa fa-save mr-1"></i> Simpan Penyaluran Keluar
                     </button>
                 </div>
             </form>
@@ -480,32 +477,6 @@ document.addEventListener('DOMContentLoaded', function () {
         $('#edit_is_active').prop('checked', active);
 
         $('#modalEditRekening').modal('show');
-    });
-
-    $('#modalCatatTransaksi').on('show.bs.modal', function (event) {
-        const button = $(event.relatedTarget);
-        const jenis = button.data('jenis') || 'masuk';
-        const inputJenis = document.getElementById('trxJenisInput');
-        const modalTitle = document.getElementById('modalTrxTitle');
-        const lblNamaPihak = document.getElementById('lblNamaPihak');
-        const alertInfo = document.getElementById('trxAlertInfo');
-        const btnSubmit = document.getElementById('btnSubmitTrx');
-
-        inputJenis.value = jenis;
-
-        if (jenis === 'masuk') {
-            modalTitle.innerHTML = '<i class="fa fa-arrow-down text-success mr-2"></i> Catat Uang Masuk (Donasi Diterima)';
-            lblNamaPihak.innerHTML = 'Nama Donatur / Pembayar <span class="text-danger">*</span>';
-            alertInfo.innerHTML = '<i class="fa fa-info-circle text-success mr-1"></i> Mencatat donasi yang masuk ke rekening atau kas yayasan/koperasi tani.';
-            btnSubmit.className = 'btn btn-success btn-sm font-weight-bold';
-            btnSubmit.innerHTML = '<i class="fa fa-check mr-1"></i> Simpan Donasi Masuk';
-        } else {
-            modalTitle.innerHTML = '<i class="fa fa-arrow-up text-danger mr-2"></i> Catat Uang Keluar (Penyaluran Donasi)';
-            lblNamaPihak.innerHTML = 'Nama Penerima / Kelompok Tani / Vendor <span class="text-danger">*</span>';
-            alertInfo.innerHTML = '<i class="fa fa-info-circle text-danger mr-1"></i> Mencatat dana donasi yang disalurkan untuk bibit, pupuk, atau santunan petani.';
-            btnSubmit.className = 'btn btn-danger btn-sm font-weight-bold';
-            btnSubmit.innerHTML = '<i class="fa fa-check mr-1"></i> Simpan Penyaluran Keluar';
-        }
     });
 });
 </script>
