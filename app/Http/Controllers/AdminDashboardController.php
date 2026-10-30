@@ -273,6 +273,20 @@ class AdminDashboardController extends Controller
         $transaksiList = DonasiTransaksi::with('rekening')->orderBy('tanggal', 'desc')->latest()->get();
 
         $totalMasuk = DonasiTransaksi::where('jenis', 'masuk')->sum('nominal');
+        $totalMasukSeedling = (float) DonasiTransaksi::where('jenis', 'masuk')
+            ->where(function ($q) {
+                $q->where('kategori', 'like', '%Seedling%')
+                  ->orWhere('kategori', 'like', '%Bibit%');
+            })->sum('nominal');
+        $countSeedling = (int) floor($totalMasukSeedling / 16000);
+
+        $totalMasukCup = (float) DonasiTransaksi::where('jenis', 'masuk')
+            ->where(function ($q) {
+                $q->where('kategori', 'like', '%Cup%')
+                  ->orWhere('kategori', 'like', '%Cangkir%');
+            })->sum('nominal');
+        $countCup = (int) floor($totalMasukCup / 200);
+
         $totalKeluar = DonasiTransaksi::where('jenis', 'keluar')->sum('nominal');
         $saldoKas = $totalMasuk - $totalKeluar;
 
@@ -280,6 +294,10 @@ class AdminDashboardController extends Controller
             'rekeningList',
             'transaksiList',
             'totalMasuk',
+            'totalMasukSeedling',
+            'countSeedling',
+            'totalMasukCup',
+            'countCup',
             'totalKeluar',
             'saldoKas'
         ));

@@ -7,7 +7,7 @@
 <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap" style="gap: 10px;">
     <div>
         <h4 class="font-weight-bold mb-1">Manajemen Donasi & Rekening Penerima</h4>
-        <p class="text-muted mb-0">Kelola rekening tujuan transfer donatur, pantau donasi masuk otomatis dari sistem, dan catat penyaluran uang keluar untuk petani.</p>
+        <p class="text-muted mb-0">Kelola rekening tujuan transfer donatur, pantau kas masuk otomatis dari sistem ($1 = Seedling & Rp 200 = One Cup of Coffee), dan catat penyaluran uang keluar untuk petani.</p>
     </div>
     <div class="d-flex flex-wrap" style="gap: 8px;">
         <button type="button" class="btn btn-outline-dark" data-toggle="modal" data-target="#modalTambahRekening">
@@ -23,13 +23,22 @@
 <div class="row mb-4">
     <div class="col-md-4 mb-3 mb-md-0">
         <div class="card card-stat p-3 h-100 border-left-success" style="border-left: 4px solid #28a745;">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <small class="text-muted font-weight-bold text-uppercase">Total Donasi Masuk</small>
+            <div class="d-flex justify-content-between align-items-start">
+                <div class="w-100 pr-2">
+                    <small class="text-muted font-weight-bold text-uppercase">Total Kas Donasi Masuk</small>
                     <h3 class="m-0 font-weight-bold text-success mt-1">Rp {{ number_format($totalMasuk, 0, ',', '.') }}</h3>
-                    <small class="text-muted"><i class="fa fa-check-circle text-success mr-1"></i> Terhitung otomatis dari sistem website</small>
+                    <div class="mt-2 pt-2 border-top" style="font-size: 11px; line-height: 1.5;">
+                        <div class="d-flex justify-content-between text-muted">
+                            <span><i class="fa fa-seedling text-success mr-1"></i>$1 = Seedling:</span>
+                            <span class="font-weight-bold text-dark">Rp {{ number_format($totalMasukSeedling, 0, ',', '.') }} <span class="text-muted font-weight-normal">({{ number_format($countSeedling, 0, ',', '.') }} bibit)</span></span>
+                        </div>
+                        <div class="d-flex justify-content-between text-muted">
+                            <span><i class="fa fa-coffee mr-1" style="color: #DA9F5B;"></i>Rp 200 = One Cup:</span>
+                            <span class="font-weight-bold text-dark">Rp {{ number_format($totalMasukCup, 0, ',', '.') }} <span class="text-muted font-weight-normal">({{ number_format($countCup, 0, ',', '.') }} cup)</span></span>
+                        </div>
+                    </div>
                 </div>
-                <div class="rounded-circle p-3" style="background: rgba(40, 167, 69, 0.1); color: #28a745;">
+                <div class="rounded-circle p-3" style="background: rgba(40, 167, 69, 0.1); color: #28a745; flex-shrink: 0;">
                     <i class="fa fa-hand-holding-usd fa-2x"></i>
                 </div>
             </div>
@@ -226,7 +235,13 @@
                                     <strong>{{ $trx->nama_pihak }}</strong>
                                 </td>
                                 <td>
-                                    <span class="badge badge-light border text-dark">{{ $trx->kategori ?: 'Umum' }}</span>
+                                    @if(str_contains(strtolower($trx->kategori ?? ''), 'seedling') || str_contains(strtolower($trx->kategori ?? ''), 'bibit'))
+                                        <span class="badge badge-success px-2 py-1"><i class="fa fa-seedling mr-1"></i> $1 = Seedling</span>
+                                    @elseif(str_contains(strtolower($trx->kategori ?? ''), 'cup') || str_contains(strtolower($trx->kategori ?? ''), 'cangkir'))
+                                        <span class="badge badge-warning text-dark px-2 py-1" style="background-color: #DA9F5B;"><i class="fa fa-coffee mr-1"></i> Rp 200 = One Cup</span>
+                                    @else
+                                        <span class="badge badge-light border text-dark">{{ $trx->kategori ?: 'Umum' }}</span>
+                                    @endif
                                 </td>
                                 <td>
                                     @if($trx->rekening)
