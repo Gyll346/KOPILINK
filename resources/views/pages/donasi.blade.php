@@ -181,15 +181,18 @@
                         </div>
 
                         <div class="form-group">
-                            <label class="font-weight-bold text-dark">Nominal Donasi (Rp) <span class="text-danger">*</span></label>
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <label class="font-weight-bold text-dark m-0">Nominal Donasi (Rp) <span class="text-danger">*</span></label>
+                                <span class="badge badge-light border text-muted small"><i class="fa fa-lock mr-1 text-primary"></i>Nilai Terkunci</span>
+                            </div>
                             <div class="input-group">
                                 <div class="input-group-prepend">
                                     <span class="input-group-text bg-light font-weight-bold">Rp</span>
                                 </div>
-                                <input type="number" name="nominal" id="donasiHalamanNominal" class="form-control font-weight-bold" placeholder="Contoh: 50000" min="1000" step="1000" value="50000" required>
+                                <input type="number" name="nominal" id="donasiHalamanNominal" class="form-control font-weight-bold bg-light" min="200" step="100" value="16000" readonly required>
                             </div>
-                            <small class="text-muted d-block mt-1" id="keteranganEstimasi">
-                                Estimasi: ~3 Bibit Pohon Kopi Agroforestri
+                            <small class="text-muted d-block mt-1 font-weight-bold" id="keteranganEstimasi">
+                                Nilai terkunci: $1 USD = Rp 16.000 / Seedling
                             </small>
                         </div>
 
@@ -337,15 +340,18 @@ document.addEventListener('DOMContentLoaded', function () {
 
         var nominalInput = document.getElementById('donasiHalamanNominal');
         var estimasi = document.getElementById('keteranganEstimasi');
-        if (program.indexOf('Bibit') > -1) {
-            nominalInput.value = '50000';
-            estimasi.innerText = 'Estimasi: ~3 Bibit Pohon Kopi Agroforestri';
-        } else if (program.indexOf('Cup') > -1) {
-            nominalInput.value = '20000';
-            estimasi.innerText = 'Estimasi: Setara apresiasi 100 cangkir kopi petani';
+        if (program.indexOf('Bibit') > -1 || program.indexOf('Seedling') > -1) {
+            nominalInput.value = '16000';
+            nominalInput.readOnly = true;
+            estimasi.innerHTML = '<i class="fa fa-lock text-success mr-1"></i> Nilai terkunci: <strong>$1 USD = Rp 16.000</strong> (1 Bibit / Seedling)';
+        } else if (program.indexOf('Cup') > -1 || program.indexOf('Cangkir') > -1) {
+            nominalInput.value = '200';
+            nominalInput.readOnly = true;
+            estimasi.innerHTML = '<i class="fa fa-lock text-warning mr-1"></i> Nilai terkunci: <strong>Rp 200</strong> (1 Cup of Coffee)';
         } else {
-            nominalInput.value = '25000';
-            estimasi.innerText = 'Dukungan operasional & keberlanjutan kebun';
+            nominalInput.value = '16000';
+            nominalInput.readOnly = true;
+            estimasi.innerHTML = 'Dukungan operasional & keberlanjutan kebun';
         }
     });
 
@@ -353,12 +359,12 @@ document.addEventListener('DOMContentLoaded', function () {
         var val = parseFloat(this.value) || 0;
         var program = $('#donasiProgramInput').val();
         var estimasi = document.getElementById('keteranganEstimasi');
-        if (program.indexOf('Bibit') > -1) {
+        if (program.indexOf('Bibit') > -1 || program.indexOf('Seedling') > -1) {
             var bibit = Math.floor(val / 16000);
-            estimasi.innerText = 'Estimasi: ~' + (bibit > 0 ? bibit : 0) + ' Bibit Pohon Kopi Agroforestri';
-        } else if (program.indexOf('Cup') > -1) {
+            estimasi.innerHTML = '<i class="fa fa-lock text-success mr-1"></i> Nilai terkunci: <strong>$1 USD = Rp 16.000</strong> (' + (bibit > 0 ? bibit : 1) + ' Bibit / Seedling)';
+        } else if (program.indexOf('Cup') > -1 || program.indexOf('Cangkir') > -1) {
             var cup = Math.floor(val / 200);
-            estimasi.innerText = 'Estimasi: Setara apresiasi ' + cup + ' cangkir kopi';
+            estimasi.innerHTML = '<i class="fa fa-lock text-warning mr-1"></i> Nilai terkunci: <strong>Rp 200</strong> (' + (cup > 0 ? cup : 1) + ' Cup of Coffee)';
         }
     });
 });
@@ -380,8 +386,8 @@ function prosesBayarQris() {
         document.getElementById('donasiHalamanNama').focus();
         return;
     }
-    if (!nominal || nominal < 1000) {
-        errAlert.innerText = 'Nominal donasi minimal Rp 1.000.';
+    if (!nominal || nominal < 200) {
+        errAlert.innerText = 'Nominal donasi minimal Rp 200.';
         errAlert.classList.remove('d-none');
         document.getElementById('donasiHalamanNominal').focus();
         return;
@@ -552,8 +558,8 @@ function kirimTransferManual() {
         document.getElementById('donasiHalamanNama').focus();
         return;
     }
-    if (!nominal || nominal < 1000) {
-        alert('Nominal minimal Rp 1.000.');
+    if (!nominal || nominal < 200) {
+        alert('Nominal minimal Rp 200.');
         document.getElementById('donasiHalamanNominal').focus();
         return;
     }

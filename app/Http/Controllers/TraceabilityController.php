@@ -62,15 +62,22 @@ class TraceabilityController extends Controller
         $validated = $request->validate([
             'nama_donatur' => 'required|string|max:150',
             'program' => 'required|string|max:100',
-            'nominal' => 'required|numeric|min:1000',
+            'nominal' => 'required|numeric|min:200',
             'pesan' => 'nullable|string|max:500',
             'bukti_transfer' => 'nullable|image|max:10240',
         ], [
             'nama_donatur.required' => 'Nama donatur wajib diisi.',
             'nominal.required' => 'Nominal donasi wajib diisi.',
-            'nominal.min' => 'Nominal donasi minimal Rp 1.000.',
+            'nominal.min' => 'Nominal donasi minimal Rp 200.',
             'bukti_transfer.image' => 'Bukti transfer harus berupa file gambar valid.',
         ]);
+
+        // Kunci nilai donasi: $1 (Rp 16.000) untuk Seedling, Rp 200 untuk Cup of Coffee
+        if (str_contains(strtolower($validated['program']), 'seedling') || str_contains(strtolower($validated['program']), 'bibit')) {
+            $validated['nominal'] = 16000;
+        } elseif (str_contains(strtolower($validated['program']), 'cup') || str_contains(strtolower($validated['program']), 'cangkir')) {
+            $validated['nominal'] = 200;
+        }
 
         $rekeningAktif = RekeningDonasi::where('is_active', true)->first();
         $buktiPath = null;
@@ -106,9 +113,16 @@ class TraceabilityController extends Controller
         $validated = $request->validate([
             'nama_donatur' => 'required|string|max:150',
             'program' => 'required|string|max:100',
-            'nominal' => 'required|integer|min:1000',
+            'nominal' => 'required|integer|min:200',
             'pesan' => 'nullable|string|max:500',
         ]);
+
+        // Kunci nilai donasi: $1 (Rp 16.000) untuk Seedling, Rp 200 untuk Cup of Coffee
+        if (str_contains(strtolower($validated['program']), 'seedling') || str_contains(strtolower($validated['program']), 'bibit')) {
+            $validated['nominal'] = 16000;
+        } elseif (str_contains(strtolower($validated['program']), 'cup') || str_contains(strtolower($validated['program']), 'cangkir')) {
+            $validated['nominal'] = 200;
+        }
 
         $rekeningAktif = RekeningDonasi::where('is_active', true)->first();
         $orderId = 'KPL-DON-' . strtoupper(Str::random(8)) . '-' . time();
