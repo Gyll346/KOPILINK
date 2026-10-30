@@ -272,15 +272,20 @@ class AdminDashboardController extends Controller
         $rekeningList = $queryRekening->get();
         $transaksiList = DonasiTransaksi::with('rekening')->orderBy('tanggal', 'desc')->latest()->get();
 
-        $totalMasuk = DonasiTransaksi::where('jenis', 'masuk')->sum('nominal');
-        $totalMasukSeedling = (float) DonasiTransaksi::where('jenis', 'masuk')
+        $masukQuery = fn() => DonasiTransaksi::where('jenis', 'masuk')
+            ->where(function ($q) {
+                $q->whereNull('status')->orWhere('status', 'settlement');
+            });
+
+        $totalMasuk = $masukQuery()->sum('nominal');
+        $totalMasukSeedling = (float) $masukQuery()
             ->where(function ($q) {
                 $q->where('kategori', 'like', '%Seedling%')
                   ->orWhere('kategori', 'like', '%Bibit%');
             })->sum('nominal');
         $countSeedling = (int) floor($totalMasukSeedling / 16000);
 
-        $totalMasukCup = (float) DonasiTransaksi::where('jenis', 'masuk')
+        $totalMasukCup = (float) $masukQuery()
             ->where(function ($q) {
                 $q->where('kategori', 'like', '%Cup%')
                   ->orWhere('kategori', 'like', '%Cangkir%');

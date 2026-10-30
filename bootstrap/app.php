@@ -13,6 +13,9 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->redirectGuestsTo('/login');
         $middleware->appendToGroup('web', \App\Http\Middleware\PreventBackHistory::class);
+        $middleware->validateCsrfTokens(except: [
+            'donasi/*',
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

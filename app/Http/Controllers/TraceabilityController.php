@@ -9,7 +9,9 @@ use App\Models\KontakPesan;
 use App\Models\RekeningDonasi;
 use App\Models\DonasiTransaksi;
 use App\Services\ImageOptimizationService;
+use App\Services\MidtransService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class TraceabilityController extends Controller
 {
@@ -46,9 +48,15 @@ class TraceabilityController extends Controller
     public function donasi()
     {
         $rekeningAktif = RekeningDonasi::where('is_active', true)->first();
-        return view('pages.donasi', compact('rekeningAktif'));
+        $midtransClientKey = config('midtrans.client_key');
+        $midtransEnabled = !empty(config('midtrans.server_key'));
+        return view('pages.donasi', compact('rekeningAktif', 'midtransClientKey', 'midtransEnabled'));
     }
 
+    /**
+     * Legacy: Manual donation (bukti transfer).
+     * Still works as fallback when Midtrans is not configured.
+     */
     public function donasiSend(Request $request)
     {
         $validated = $request->validate([
@@ -83,10 +91,149 @@ class TraceabilityController extends Controller
             'kategori' => $validated['program'],
             'keterangan' => $validated['pesan'] ?? 'Donasi langsung dari website KopiLink',
             'bukti_transfer' => $buktiPath,
+            'status' => 'settlement',
         ]);
 
         return redirect()->route('donasi')
             ->with('status', 'Terima kasih banyak, ' . $validated['nama_donatur'] . '! Konfirmasi donasi Anda sebesar Rp ' . number_format($validated['nominal'], 0, ',', '.') . ' telah berhasil dikirim ke Super Admin KopiLink.');
+    }
+
+    /**
+     * AJAX: Create Midtrans QRIS payment → returns QR code URL.
+     */
+    public function donasiCreateQris(Request $request)
+    {
+        $validated = $request->validate([
+            'nama_donatur' => 'required|string|max:150',
+            'program' => 'required|string|max:100',
+            'nominal' => 'required|integer|min:1000',
+            'pesan' => 'nullable|string|max:500',
+        ]);
+
+        $rekeningAktif = RekeningDonasi::where('is_active', true)->first();
+        $orderId = 'KPL-DON-' . strtoupper(Str::random(8)) . '-' . time();
+
+        // Create pending transaction
+        $transaksi = DonasiTransaksi::create([
+            'id_rekening' => $rekeningAktif?->id_rekening,
+            'order_id' => $orderId,
+            'jenis' => 'masuk',
+            'nominal' => $validated['nominal'],
+            'tanggal' => date('Y-m-d'),
+            'nama_pihak' => $validated['nama_donatur'],
+            'kategori' => $validated['program'],
+            'keterangan' => $validated['pesan'] ?? 'Donasi QRIS via website KopiLink',
+            'status' => 'pending',
+        ]);
+
+        try {
+            $midtrans = new MidtransService();
+            $result = $midtrans->createQris(
+                $orderId,
+                (int) $validated['nominal'],
+                $validated['nama_donatur'],
+                $validated['program']
+            );
+
+            return response()->json([
+                'success' => true,
+                'qr_url' => $result['qr_url'],
+                'order_id' => $orderId,
+                'expiry_time' => $result['expiry_time'],
+                'nominal' => (int) $validated['nominal'],
+                'is_mock' => $result['is_mock'] ?? false,
+            ]);
+        } catch (\Throwable $e) {
+            // Rollback: delete pending transaction
+            $transaksi->delete();
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal membuat QRIS: ' . $e->getMessage(),
+            ], 422);
+        }
+    }
+
+    /**
+     * AJAX: Check payment status by order_id.
+     */
+    public function donasiCheckStatus(Request $request)
+    {
+        $orderId = $request->input('order_id');
+        $transaksi = DonasiTransaksi::where('order_id', $orderId)->first();
+
+        if (!$transaksi) {
+            return response()->json(['status' => 'not_found'], 404);
+        }
+
+        return response()->json(['status' => $transaksi->status]);
+    }
+
+    /**
+     * AJAX: Dev/Test helper to simulate successful QRIS payment in local mode.
+     */
+    public function donasiSimulatePayment(Request $request)
+    {
+        $orderId = $request->input('order_id');
+        $transaksi = DonasiTransaksi::where('order_id', $orderId)->first();
+
+        if (!$transaksi) {
+            return response()->json(['success' => false, 'message' => 'Order tidak ditemukan.'], 404);
+        }
+
+        $transaksi->update(['status' => 'settlement']);
+
+        return response()->json(['success' => true, 'status' => 'settlement']);
+    }
+
+    /**
+     * AJAX: Mark transaction expired after 5-minute timer ends.
+     */
+    public function donasiExpire(Request $request)
+    {
+        $orderId = $request->input('order_id');
+        $transaksi = DonasiTransaksi::where('order_id', $orderId)->where('status', 'pending')->first();
+
+        if ($transaksi) {
+            $transaksi->update(['status' => 'expire']);
+        }
+
+        return response()->json(['success' => true, 'status' => 'expire']);
+    }
+
+    /**
+     * Midtrans notification webhook (POST, no CSRF).
+     */
+    public function midtransNotification(Request $request)
+    {
+        $payload = $request->all();
+        $midtrans = new MidtransService();
+
+        if (!$midtrans->verifySignature($payload)) {
+            return response()->json(['message' => 'Invalid signature'], 403);
+        }
+
+        $orderId = $payload['order_id'] ?? '';
+        $transactionStatus = $payload['transaction_status'] ?? '';
+
+        $transaksi = DonasiTransaksi::where('order_id', $orderId)->first();
+        if (!$transaksi) {
+            return response()->json(['message' => 'Order not found'], 404);
+        }
+
+        // Map Midtrans status
+        $newStatus = match ($transactionStatus) {
+            'capture', 'settlement' => 'settlement',
+            'pending' => 'pending',
+            'deny' => 'deny',
+            'cancel' => 'cancel',
+            'expire' => 'expire',
+            default => $transactionStatus,
+        };
+
+        $transaksi->update(['status' => $newStatus]);
+
+        return response()->json(['message' => 'OK']);
     }
 
     public function menu()

@@ -14,6 +14,7 @@ class DonasiTransaksi extends Model
 
     protected $fillable = [
         'id_rekening',
+        'order_id',
         'jenis',
         'nominal',
         'tanggal',
@@ -21,6 +22,7 @@ class DonasiTransaksi extends Model
         'kategori',
         'keterangan',
         'bukti_transfer',
+        'status',
     ];
 
     protected $casts = [

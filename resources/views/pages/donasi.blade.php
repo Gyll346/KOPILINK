@@ -145,86 +145,192 @@
 <!-- Donasi Section End -->
 
 <!-- Modal Dialog Donasi Halaman -->
-<div class="modal fade" id="modalDonasiHalaman" tabindex="-1" role="dialog" aria-hidden="true">
+<div class="modal fade" id="modalDonasiHalaman" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content border-0 shadow">
             <div class="modal-header text-white" style="background-color: #33211D;">
-                <h5 class="modal-title font-weight-bold text-white"><i class="fa fa-heart text-danger mr-2"></i> Konfirmasi Donasi Kopi</h5>
-                <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
+                <h5 class="modal-title font-weight-bold text-white"><i class="fa fa-heart text-danger mr-2"></i> Donasi Kopi KopiLink</h5>
+                <button type="button" class="close text-white" data-dismiss="modal" onclick="resetModalDonasi()">&times;</button>
             </div>
-            <form action="{{ route('donasi.send') }}" method="POST" enctype="multipart/form-data" id="formDonasiPublik">
-                @csrf
-                <input type="hidden" name="program" id="donasiProgramInput" value="Donasi Bibit Kopi">
-                <div class="modal-body p-4">
-                    <div class="alert alert-warning mb-3 small" style="background-color: rgba(218, 159, 91, 0.2); border: 1px solid #DA9F5B; color: #33211D;">
-                        <i class="fa fa-info-circle mr-1 text-primary"></i> 
-                        Program terpilih: <strong id="modalDonasiHalamanProgramName">Donasi Bibit Kopi</strong>
+
+            <!-- Step 1: Input Data Donasi -->
+            <div id="stepInputDonasi">
+                <form id="formDonasiQris">
+                    @csrf
+                    <input type="hidden" name="program" id="donasiProgramInput" value="Donasi Bibit Kopi ($1 = 1 Seedling)">
+                    <div class="modal-body p-4">
+                        <div class="alert alert-warning mb-3 small" style="background-color: rgba(218, 159, 91, 0.2); border: 1px solid #DA9F5B; color: #33211D;">
+                            <i class="fa fa-info-circle mr-1 text-primary"></i> 
+                            Program: <strong id="modalDonasiHalamanProgramName">Donasi Bibit Kopi</strong>
+                        </div>
+
+                        @if(isset($rekeningAktif) && $rekeningAktif)
+                            <div class="card bg-light border-0 p-3 mb-3 text-center">
+                                <small class="text-muted font-weight-bold text-uppercase">Kas Rekening Resmi Penerima Donasi:</small>
+                                <h5 class="font-weight-bold text-dark my-1">{{ $rekeningAktif->nama_bank }}</h5>
+                                <div class="badge badge-dark p-2 font-weight-bold text-monospace mx-auto my-1" style="font-size: 14px; letter-spacing: 1px;">
+                                    {{ $rekeningAktif->nomor_rekening }}
+                                </div>
+                                <small class="text-muted">a.n <strong>{{ $rekeningAktif->atas_nama }}</strong></small>
+                            </div>
+                        @endif
+
+                        <div class="form-group">
+                            <label class="font-weight-bold text-dark">Nama Donatur / Pembayar <span class="text-danger">*</span></label>
+                            <input type="text" name="nama_donatur" id="donasiHalamanNama" class="form-control" placeholder="Contoh: Budi Santoso (atau Hamba Allah)" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="font-weight-bold text-dark">Nominal Donasi (Rp) <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text bg-light font-weight-bold">Rp</span>
+                                </div>
+                                <input type="number" name="nominal" id="donasiHalamanNominal" class="form-control font-weight-bold" placeholder="Contoh: 50000" min="1000" step="1000" value="50000" required>
+                            </div>
+                            <small class="text-muted d-block mt-1" id="keteranganEstimasi">
+                                Estimasi: ~3 Bibit Pohon Kopi Agroforestri
+                            </small>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label class="font-weight-bold text-dark">Pesan / Doa Semangat untuk Petani</label>
+                            <textarea name="pesan" id="donasiHalamanPesan" class="form-control" rows="2" placeholder="Tuliskan kata motivasi untuk petani kopi Kalimantan Barat..."></textarea>
+                        </div>
+
+                        <div id="qrisErrorAlert" class="alert alert-danger py-2 small d-none"></div>
+
+                        <!-- Tombol Utama: Bayar via QRIS -->
+                        <button type="button" class="btn btn-primary btn-block font-weight-bold py-2 shadow-sm text-dark" id="btnBayarQris" style="background-color: #DA9F5B; border-color: #DA9F5B;" onclick="prosesBayarQris()">
+                            <i class="fa fa-qrcode mr-2"></i> Bayar Donasi via QRIS (Batas Waktu 5 Menit)
+                        </button>
+
+                        <!-- Opsi Alternatif: Transfer Manual dengan Unggah Bukti -->
+                        <div class="text-center mt-3 pt-2 border-top">
+                            <a href="#collapseManualTransfer" data-toggle="collapse" class="text-muted small">
+                                <i class="fa fa-receipt mr-1"></i> Ingin transfer manual & unggah slip bukti? Klik di sini
+                            </a>
+                        </div>
+
+                        <div class="collapse mt-3" id="collapseManualTransfer">
+                            <div class="p-3 bg-light rounded border">
+                                <small class="text-muted font-weight-bold d-block mb-2">Upload Bukti Transfer Manual:</small>
+                                <input type="file" id="rawBuktiDonasi" class="form-control-file border p-2 rounded bg-white" accept="image/*" onchange="compressBuktiDonasi(this)">
+                                <div id="buktiCompressStatus" class="mt-2 small text-success font-weight-bold"></div>
+                                <div id="buktiPreviewContainer" class="mt-2"></div>
+                                <button type="button" class="btn btn-secondary btn-sm btn-block mt-3 font-weight-bold" onclick="kirimTransferManual()">
+                                    <i class="fa fa-paper-plane mr-1"></i> Kirim Bukti Transfer Manual
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-top-0 pt-0">
+                        <button type="button" class="btn btn-outline-secondary btn-sm" data-dismiss="modal" onclick="resetModalDonasi()">Batal</button>
+                    </div>
+                </form>
+
+                <!-- Form tersembunyi untuk submit manual transfer -->
+                <form id="formManualSubmit" action="{{ route('donasi.send') }}" method="POST" enctype="multipart/form-data" class="d-none">
+                    @csrf
+                    <input type="hidden" name="nama_donatur" id="manualNama">
+                    <input type="hidden" name="program" id="manualProgram">
+                    <input type="hidden" name="nominal" id="manualNominal">
+                    <input type="hidden" name="pesan" id="manualPesan">
+                    <input type="file" name="bukti_transfer" id="compressedBuktiDonasi">
+                </form>
+            </div>
+
+            <!-- Step 2: Tampilan QR Code QRIS (5 Menit) -->
+            <div id="stepQrisDonasi" class="d-none">
+                <div class="modal-body p-4 text-center">
+                    <div class="d-flex justify-content-between align-items-center mb-2 px-2">
+                        <span class="badge badge-success px-2 py-1"><i class="fa fa-shield-alt mr-1"></i> QRIS Standar Nasional</span>
+                        <span class="badge badge-dark px-2 py-1 font-weight-bold text-monospace" id="qrisOrderIdBadge"></span>
+                    </div>
+
+                    <h4 class="font-weight-bold text-dark mt-2 mb-1" id="qrisNominalDisplay">Rp 0</h4>
+                    <p class="text-muted small mb-3" id="qrisProgramDisplay"></p>
+
+                    <!-- QR Image Container -->
+                    <div class="p-3 bg-white rounded border shadow-sm d-inline-block mx-auto position-relative" style="max-width: 270px;">
+                        <img id="qrisImageSrc" src="" alt="QRIS Code" class="img-fluid" style="width: 230px; height: 230px; object-fit: contain;">
+                        
+                        <!-- Overlay Expired -->
+                        <div id="qrisExpiredOverlay" class="position-absolute d-flex flex-column align-items-center justify-content-center d-none" style="top:0;left:0;right:0;bottom:0; background: rgba(255,255,255,0.92); border-radius: 8px;">
+                            <i class="fa fa-hourglass-end text-danger fa-3x mb-2"></i>
+                            <h6 class="font-weight-bold text-danger mb-1">QR Code Kedaluwarsa</h6>
+                            <small class="text-muted px-2">Batas waktu 5 menit telah berakhir.</small>
+                        </div>
+                    </div>
+
+                    <!-- Countdown Timer -->
+                    <div class="mt-3">
+                        <div class="badge badge-warning text-dark px-3 py-2 font-weight-bold" style="background-color: #DA9F5B; font-size: 15px;">
+                            <i class="fa fa-stopwatch mr-1"></i> Batas Waktu Bayar: <span id="countdownTimer">05:00</span>
+                        </div>
+                    </div>
+
+                    <!-- Status Text -->
+                    <div id="qrisStatusBox" class="mt-3 small font-weight-bold text-muted">
+                        <i class="fa fa-spinner fa-spin mr-1 text-primary"></i> Menunggu pemindaian & pembayaran dari Anda...
                     </div>
 
                     @if(isset($rekeningAktif) && $rekeningAktif)
-                        <div class="card bg-light border-0 p-3 mb-3 text-center">
-                            <small class="text-muted font-weight-bold text-uppercase">Tujuan Transfer Resmi KopiLink:</small>
-                            <h5 class="font-weight-bold text-dark my-1">{{ $rekeningAktif->nama_bank }}</h5>
-                            <div class="badge badge-dark p-2 font-weight-bold text-monospace mx-auto my-1" style="font-size: 14px; letter-spacing: 1px;">
-                                {{ $rekeningAktif->nomor_rekening }}
-                            </div>
-                            <small class="text-muted">a.n <strong>{{ $rekeningAktif->atas_nama }}</strong></small>
+                        <div class="card bg-light border-0 p-2 mt-3 text-center small text-muted">
+                            <i class="fa fa-university text-primary mr-1"></i> Kas disalurkan ke: <strong>{{ $rekeningAktif->nama_bank }}</strong> ({{ $rekeningAktif->nomor_rekening }}) a.n {{ $rekeningAktif->atas_nama }}
                         </div>
                     @endif
 
-                    <div class="form-group">
-                        <label class="font-weight-bold text-dark">Nama Donatur / Pembayar <span class="text-danger">*</span></label>
-                        <input type="text" name="nama_donatur" id="donasiHalamanNama" class="form-control" placeholder="Contoh: Budi Santoso (atau Hamba Allah)" required>
+                    <div class="small text-muted mt-2">
+                        Pindai via <strong>GoPay, OVO, Dana, ShopeePay, BCA, BRI, Mandiri</strong> atau aplikasi apa pun yang mendukung QRIS.
                     </div>
 
-                    <div class="form-group">
-                        <label class="font-weight-bold text-dark">Nominal Donasi (Rp) <span class="text-danger">*</span></label>
-                        <div class="input-group">
-                            <div class="input-group-prepend">
-                                <span class="input-group-text bg-light font-weight-bold">Rp</span>
-                            </div>
-                            <input type="number" name="nominal" id="donasiHalamanNominal" class="form-control font-weight-bold" placeholder="Contoh: 50000" min="1000" step="1000" value="50000" required>
-                        </div>
-                        <small class="text-muted d-block mt-1" id="keteranganEstimasi">
-                            Estimasi: ~3 Bibit Pohon Kopi Agroforestri
-                        </small>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="font-weight-bold text-dark">Pesan / Doa Semangat untuk Petani</label>
-                        <textarea name="pesan" id="donasiHalamanPesan" class="form-control" rows="2" placeholder="Tuliskan kata motivasi untuk petani kopi Kalimantan Barat..."></textarea>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="font-weight-bold text-dark">Upload Bukti Transfer / Resi (Opsional)</label>
-                        {{-- Input file mentah yang dipilih user --}}
-                        <input type="file" id="rawBuktiDonasi" class="form-control-file border p-2 rounded bg-light" accept="image/*" onchange="compressBuktiDonasi(this)">
-                        {{-- Input terkompresi yang dikirimkan ke server --}}
-                        <input type="file" name="bukti_transfer" id="compressedBuktiDonasi" class="d-none">
-                        <div id="buktiCompressStatus" class="mt-2 small text-success font-weight-bold"></div>
-                        <div id="buktiPreviewContainer" class="mt-2"></div>
-                        <small class="form-text text-muted">Gambar otomatis dikompresi langsung demi kecepatan dan keandalan upload.</small>
-                    </div>
-
-                    <div class="p-2 bg-white border rounded text-center small text-muted">
-                        <i class="fa fa-shield-alt text-success mr-1"></i> Donasi Anda langsung diverifikasi dan dicatat pada buku kas Super Admin.
+                    <!-- Dev Simulation Button (Local Testing) -->
+                    <div id="mockSimulateWrapper" class="mt-3 d-none">
+                        <button type="button" class="btn btn-outline-success btn-sm font-weight-bold" onclick="simulasikanBayarBerhasil()">
+                            <i class="fa fa-bolt mr-1"></i> [Simulasi Dev] Klik untuk Bayar Sukses
+                        </button>
                     </div>
                 </div>
-                <div class="modal-footer border-top-0 pt-0">
-                    <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-primary font-weight-bold px-4 py-2 text-dark" style="background-color: #DA9F5B; border-color: #DA9F5B;">
-                        <i class="fa fa-paper-plane mr-1"></i> Kirim Donasi ke Super Admin
+
+                <div class="modal-footer border-top-0 pt-0 justify-content-between">
+                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="kembaliKeInput()">
+                        <i class="fa fa-arrow-left mr-1"></i> Kembali / Ubah Nominal
+                    </button>
+                    <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal" onclick="resetModalDonasi()">
+                        Tutup
                     </button>
                 </div>
-            </form>
+            </div>
+
+            <!-- Step 3: Tampilan Sukses Pembayaran -->
+            <div id="stepSuksesDonasi" class="d-none">
+                <div class="modal-body p-4 text-center">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 80px; height: 80px; background: rgba(40, 167, 69, 0.15); color: #28a745;">
+                        <i class="fa fa-check-circle fa-3x"></i>
+                    </div>
+                    <h4 class="font-weight-bold text-success mb-2">Pembayaran QRIS Berhasil!</h4>
+                    <p class="text-dark mb-1 font-weight-bold" id="suksesNominalDisplay">Rp 0</p>
+                    <p class="text-muted small mb-3">Terima kasih banyak atas donasi Anda. Dana telah tercatat otomatis ke dalam kas sistem dan disalurkan untuk petani kopi.</p>
+                    <button type="button" class="btn btn-primary font-weight-bold px-4 py-2 text-dark" style="background-color: #DA9F5B; border-color: #DA9F5B;" onclick="window.location.reload()">
+                        <i class="fa fa-check mr-1"></i> Selesai
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 
 <script>
+let currentOrderId = null;
+let countdownInterval = null;
+let statusPollInterval = null;
+let remainingSeconds = 300; // 5 menit
+
 document.addEventListener('DOMContentLoaded', function () {
     $('#modalDonasiHalaman').on('show.bs.modal', function (event) {
         var button = $(event.relatedTarget);
+        if (!button.length) return;
         var program = button.data('program') || 'Donasi Bibit Kopi ($1 = 1 Seedling)';
         $('#modalDonasiHalamanProgramName').text(program);
         $('#donasiProgramInput').val(program);
@@ -256,6 +362,209 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 });
+
+function prosesBayarQris() {
+    const nama = document.getElementById('donasiHalamanNama').value.trim();
+    const nominal = parseInt(document.getElementById('donasiHalamanNominal').value, 10);
+    const program = document.getElementById('donasiProgramInput').value;
+    const pesan = document.getElementById('donasiHalamanPesan').value.trim();
+    const errAlert = document.getElementById('qrisErrorAlert');
+    const btn = document.getElementById('btnBayarQris');
+
+    errAlert.classList.add('d-none');
+    errAlert.innerText = '';
+
+    if (!nama) {
+        errAlert.innerText = 'Mohon isi nama Anda terlebih dahulu.';
+        errAlert.classList.remove('d-none');
+        document.getElementById('donasiHalamanNama').focus();
+        return;
+    }
+    if (!nominal || nominal < 1000) {
+        errAlert.innerText = 'Nominal donasi minimal Rp 1.000.';
+        errAlert.classList.remove('d-none');
+        document.getElementById('donasiHalamanNominal').focus();
+        return;
+    }
+
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa fa-spinner fa-spin mr-2"></i> Menyiapkan QRIS Midtrans...';
+
+    fetch('{{ route("donasi.qris") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Accept': 'application/json',
+        },
+        body: JSON.stringify({
+            nama_donatur: nama,
+            nominal: nominal,
+            program: program,
+            pesan: pesan,
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa fa-qrcode mr-2"></i> Bayar Donasi via QRIS (Batas Waktu 5 Menit)';
+
+        if (!data.success) {
+            errAlert.innerText = data.message || 'Gagal membuat QRIS. Silakan coba lagi.';
+            errAlert.classList.remove('d-none');
+            return;
+        }
+
+        // Tampilkan Step 2 (QRIS)
+        currentOrderId = data.order_id;
+        document.getElementById('qrisImageSrc').src = data.qr_url;
+        document.getElementById('qrisOrderIdBadge').innerText = data.order_id;
+        document.getElementById('qrisNominalDisplay').innerText = 'Rp ' + Number(data.nominal).toLocaleString('id-ID');
+        document.getElementById('qrisProgramDisplay').innerText = program;
+
+        document.getElementById('stepInputDonasi').classList.add('d-none');
+        document.getElementById('stepQrisDonasi').classList.remove('d-none');
+        document.getElementById('qrisExpiredOverlay').classList.add('d-none');
+
+        // Jika mode mock/dev, tampilkan tombol simulasi
+        if (data.is_mock) {
+            document.getElementById('mockSimulateWrapper').classList.remove('d-none');
+        } else {
+            document.getElementById('mockSimulateWrapper').classList.add('d-none');
+        }
+
+        startTimerAndPolling(data.order_id);
+    })
+    .catch(err => {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa fa-qrcode mr-2"></i> Bayar Donasi via QRIS (Batas Waktu 5 Menit)';
+        errAlert.innerText = 'Terjadi gangguan jaringan saat menghubungi server Midtrans.';
+        errAlert.classList.remove('d-none');
+    });
+}
+
+function startTimerAndPolling(orderId) {
+    clearInterval(countdownInterval);
+    clearInterval(statusPollInterval);
+
+    remainingSeconds = 300; // 5 Menit
+    updateTimerDisplay();
+
+    countdownInterval = setInterval(function () {
+        remainingSeconds--;
+        updateTimerDisplay();
+
+        if (remainingSeconds <= 0) {
+            clearInterval(countdownInterval);
+            clearInterval(statusPollInterval);
+
+            // Mark expired
+            document.getElementById('qrisExpiredOverlay').classList.remove('d-none');
+            document.getElementById('qrisStatusBox').innerHTML = '<span class="text-danger"><i class="fa fa-times-circle mr-1"></i> Batas waktu pembayaran habis (5 menit).</span>';
+
+            fetch('{{ route("donasi.expire") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ order_id: orderId })
+            });
+        }
+    }, 1000);
+
+    // Poll status setiap 3 detik
+    statusPollInterval = setInterval(function () {
+        fetch('{{ route("donasi.status") }}?order_id=' + encodeURIComponent(orderId))
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'settlement') {
+                    clearInterval(countdownInterval);
+                    clearInterval(statusPollInterval);
+
+                    document.getElementById('stepQrisDonasi').classList.add('d-none');
+                    document.getElementById('stepSuksesDonasi').classList.remove('d-none');
+                    document.getElementById('suksesNominalDisplay').innerText = document.getElementById('qrisNominalDisplay').innerText;
+                } else if (data.status === 'expire' || data.status === 'cancel') {
+                    clearInterval(countdownInterval);
+                    clearInterval(statusPollInterval);
+                    document.getElementById('qrisExpiredOverlay').classList.remove('d-none');
+                }
+            })
+            .catch(() => {});
+    }, 3000);
+}
+
+function updateTimerDisplay() {
+    const mins = Math.floor(remainingSeconds / 60);
+    const secs = remainingSeconds % 60;
+    const formatted = String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
+    const el = document.getElementById('countdownTimer');
+    if (el) el.innerText = formatted;
+}
+
+function kembaliKeInput() {
+    clearInterval(countdownInterval);
+    clearInterval(statusPollInterval);
+    document.getElementById('stepQrisDonasi').classList.add('d-none');
+    document.getElementById('stepInputDonasi').classList.remove('d-none');
+}
+
+function resetModalDonasi() {
+    clearInterval(countdownInterval);
+    clearInterval(statusPollInterval);
+    currentOrderId = null;
+    document.getElementById('stepInputDonasi').classList.remove('d-none');
+    document.getElementById('stepQrisDonasi').classList.add('d-none');
+    document.getElementById('stepSuksesDonasi').classList.add('d-none');
+}
+
+function simulasikanBayarBerhasil() {
+    if (!currentOrderId) return;
+    fetch('{{ route("donasi.simulate") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify({ order_id: currentOrderId })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            clearInterval(countdownInterval);
+            clearInterval(statusPollInterval);
+            document.getElementById('stepQrisDonasi').classList.add('d-none');
+            document.getElementById('stepSuksesDonasi').classList.remove('d-none');
+            document.getElementById('suksesNominalDisplay').innerText = document.getElementById('qrisNominalDisplay').innerText;
+        }
+    });
+}
+
+function kirimTransferManual() {
+    const nama = document.getElementById('donasiHalamanNama').value.trim();
+    const nominal = document.getElementById('donasiHalamanNominal').value;
+    const program = document.getElementById('donasiProgramInput').value;
+    const pesan = document.getElementById('donasiHalamanPesan').value.trim();
+
+    if (!nama) {
+        alert('Mohon isi nama donatur.');
+        document.getElementById('donasiHalamanNama').focus();
+        return;
+    }
+    if (!nominal || nominal < 1000) {
+        alert('Nominal minimal Rp 1.000.');
+        document.getElementById('donasiHalamanNominal').focus();
+        return;
+    }
+
+    document.getElementById('manualNama').value = nama;
+    document.getElementById('manualProgram').value = program;
+    document.getElementById('manualNominal').value = nominal;
+    document.getElementById('manualPesan').value = pesan;
+
+    document.getElementById('formManualSubmit').submit();
+}
 
 function compressBuktiDonasi(input) {
     const statusEl = document.getElementById('buktiCompressStatus');

@@ -233,6 +233,20 @@
                                 </td>
                                 <td>
                                     <strong>{{ $trx->nama_pihak }}</strong>
+                                    @if($trx->order_id)
+                                        <div class="mt-1">
+                                            <small class="d-block text-monospace text-muted" style="font-size: 10px;">{{ $trx->order_id }}</small>
+                                            @if($trx->status === 'settlement')
+                                                <span class="badge badge-success px-1" style="font-size: 10px;"><i class="fa fa-check-circle mr-1"></i>Lunas (QRIS)</span>
+                                            @elseif($trx->status === 'pending')
+                                                <span class="badge badge-warning text-dark px-1" style="font-size: 10px;"><i class="fa fa-clock mr-1"></i>Menunggu Bayar</span>
+                                            @elseif($trx->status === 'expire')
+                                                <span class="badge badge-secondary px-1" style="font-size: 10px;"><i class="fa fa-hourglass-end mr-1"></i>Kedaluwarsa</span>
+                                            @else
+                                                <span class="badge badge-danger px-1" style="font-size: 10px;">{{ ucfirst($trx->status) }}</span>
+                                            @endif
+                                        </div>
+                                    @endif
                                 </td>
                                 <td>
                                     @if(str_contains(strtolower($trx->kategori ?? ''), 'seedling') || str_contains(strtolower($trx->kategori ?? ''), 'bibit'))
