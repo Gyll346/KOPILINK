@@ -82,41 +82,43 @@
     <!-- Navbar End -->
 
     <!-- Flash Message Container -->
-    @if(session('status') && !request()->routeIs('contact'))
-        <div class="container mt-4">
-            <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm" role="alert" style="background-color: #DA9F5B; color: #111;">
-                <i class="fa fa-check-circle mr-2"></i> {{ session('status') }}
-                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
+    @if(!request()->routeIs('contact') && !request()->routeIs('donasi'))
+        @if(session('status'))
+            <div class="container mt-4">
+                <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm" role="alert" style="background-color: #DA9F5B; color: #111;">
+                    <i class="fa fa-check-circle mr-2"></i> {{ session('status') }}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
             </div>
-        </div>
-    @endif
+        @endif
 
-    @if(session('warning'))
-        <div class="container mt-4">
-            <div class="alert alert-warning alert-dismissible fade show border-0 shadow-sm" role="alert">
-                <i class="fa fa-exclamation-triangle mr-2"></i> {{ session('warning') }}
-                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
+        @if(session('warning'))
+            <div class="container mt-4">
+                <div class="alert alert-warning alert-dismissible fade show border-0 shadow-sm" role="alert">
+                    <i class="fa fa-exclamation-triangle mr-2"></i> {{ session('warning') }}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
             </div>
-        </div>
-    @endif
+        @endif
 
-    @if($errors->any())
-        <div class="container mt-4">
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                <ul class="mb-0 pl-3">
-                    @foreach($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
+        @if($errors->any())
+            <div class="container mt-4">
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <ul class="mb-0 pl-3">
+                        @foreach($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
             </div>
-        </div>
+        @endif
     @endif
 
     @yield('content')
