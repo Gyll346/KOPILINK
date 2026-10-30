@@ -86,6 +86,70 @@
     </div>
 </div>
 
+<!-- Card Modal & Arus Kas (Uang Masuk & Keluar) -->
+<div class="row mb-4">
+    <div class="col-md-4 mb-3 mb-md-0">
+        <div class="card card-stat p-3 h-100 border-left-success" style="border-left: 4px solid #28a745;">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <small class="text-muted font-weight-bold text-uppercase">Total Uang Masuk</small>
+                    <h3 class="m-0 font-weight-bold text-success mt-1">Rp {{ number_format($totalMasuk, 0, ',', '.') }}</h3>
+                    <small class="text-muted"><i class="fa fa-arrow-down text-success mr-1"></i> Donasi sistem & QRIS</small>
+                </div>
+                <div class="rounded-circle p-3" style="background: rgba(40, 167, 69, 0.1); color: #28a745;">
+                    <i class="fa fa-hand-holding-usd fa-2x"></i>
+                </div>
+            </div>
+            <div class="mt-2 pt-2 border-top d-flex justify-content-between align-items-center">
+                <a href="#modalRincianKas" data-toggle="modal" class="small font-weight-bold text-success">
+                    <i class="fa fa-list-alt mr-1"></i> Rincian Transaksi
+                </a>
+                <span class="badge badge-light border text-muted" style="font-size: 11px;">Otomatis</span>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3 mb-md-0">
+        <div class="card card-stat p-3 h-100 border-left-danger" style="border-left: 4px solid #dc3545;">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <small class="text-muted font-weight-bold text-uppercase">Total Uang Keluar</small>
+                    <h3 class="m-0 font-weight-bold text-danger mt-1">Rp {{ number_format($totalKeluar, 0, ',', '.') }}</h3>
+                    <small class="text-muted"><i class="fa fa-arrow-up text-danger mr-1"></i> Penyaluran bibit & petani</small>
+                </div>
+                <div class="rounded-circle p-3" style="background: rgba(220, 53, 69, 0.1); color: #dc3545;">
+                    <i class="fa fa-donate fa-2x"></i>
+                </div>
+            </div>
+            <div class="mt-2 pt-2 border-top d-flex justify-content-between align-items-center">
+                <a href="{{ route('admin.donasi.index') }}" class="small font-weight-bold text-danger">
+                    <i class="fa fa-plus-circle mr-1"></i> Catat Penyaluran &rarr;
+                </a>
+                <span class="badge badge-light border text-muted" style="font-size: 11px;">Penyaluran</span>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card card-stat p-3 h-100 border-left-warning" style="border-left: 4px solid #DA9F5B;">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <small class="text-muted font-weight-bold text-uppercase">Modal / Saldo Kas Tersedia</small>
+                    <h3 class="m-0 font-weight-bold text-dark mt-1">Rp {{ number_format($saldoKas, 0, ',', '.') }}</h3>
+                    <small class="text-muted"><i class="fa fa-wallet text-warning mr-1"></i> Saldo siap disalurkan</small>
+                </div>
+                <div class="rounded-circle p-3" style="background: rgba(218, 159, 91, 0.15); color: #DA9F5B;">
+                    <i class="fa fa-coins fa-2x"></i>
+                </div>
+            </div>
+            <div class="mt-2 pt-2 border-top d-flex justify-content-between align-items-center">
+                <a href="{{ route('admin.donasi.index') }}" class="small font-weight-bold text-dark">
+                    <i class="fa fa-book mr-1 text-primary"></i> Buka Buku Kas Donasi &rarr;
+                </a>
+                <span class="badge badge-warning text-dark font-weight-bold" style="background-color: #DA9F5B; font-size: 11px;">Kas Aktif</span>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Charts Section -->
 <div class="row mb-4">
     <!-- Line Chart: Tren Panen Bulanan -->
@@ -183,6 +247,80 @@
                         </tbody>
                     </table>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Dialog Rincian Arus Kas & Modal -->
+<div class="modal fade" id="modalRincianKas" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header text-white" style="background-color: #33211D;">
+                <h5 class="modal-title font-weight-bold text-white">
+                    <i class="fa fa-wallet text-warning mr-2"></i> Rincian Arus Modal & Kas Donasi
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="row mb-3">
+                    <div class="col-sm-4 text-center p-3 border-right">
+                        <small class="text-muted font-weight-bold text-uppercase">Uang Masuk</small>
+                        <h4 class="font-weight-bold text-success mt-1 mb-0">Rp {{ number_format($totalMasuk, 0, ',', '.') }}</h4>
+                    </div>
+                    <div class="col-sm-4 text-center p-3 border-right">
+                        <small class="text-muted font-weight-bold text-uppercase">Uang Keluar</small>
+                        <h4 class="font-weight-bold text-danger mt-1 mb-0">Rp {{ number_format($totalKeluar, 0, ',', '.') }}</h4>
+                    </div>
+                    <div class="col-sm-4 text-center p-3">
+                        <small class="text-muted font-weight-bold text-uppercase">Sisa Kas</small>
+                        <h4 class="font-weight-bold text-dark mt-1 mb-0">Rp {{ number_format($saldoKas, 0, ',', '.') }}</h4>
+                    </div>
+                </div>
+
+                <h6 class="font-weight-bold text-dark mb-2">5 Transaksi Arus Kas Terbaru</h6>
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover align-middle mb-0">
+                        <thead class="bg-light">
+                            <tr>
+                                <th>Tanggal</th>
+                                <th>Jenis</th>
+                                <th>Pihak / Donatur</th>
+                                <th>Kategori</th>
+                                <th class="text-right">Nominal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($recentTransaksi as $rt)
+                                <tr>
+                                    <td>{{ $rt->tanggal->format('d/m/Y') }}</td>
+                                    <td>
+                                        @if($rt->jenis === 'masuk')
+                                            <span class="badge badge-success px-1" style="font-size: 10px;">Masuk</span>
+                                        @else
+                                            <span class="badge badge-danger px-1" style="font-size: 10px;">Keluar</span>
+                                        @endif
+                                    </td>
+                                    <td><strong>{{ $rt->nama_pihak }}</strong></td>
+                                    <td><small class="text-muted">{{ $rt->kategori ?: 'Umum' }}</small></td>
+                                    <td class="text-right font-weight-bold {{ $rt->jenis === 'masuk' ? 'text-success' : 'text-danger' }}">
+                                        {{ $rt->jenis === 'masuk' ? '+' : '-' }} Rp {{ number_format($rt->nominal, 0, ',', '.') }}
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="5" class="text-center py-3 text-muted">Belum ada transaksi arus kas.</td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer border-top-0 pt-0 justify-content-between">
+                <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Tutup</button>
+                <a href="{{ route('admin.donasi.index') }}" class="btn btn-koppee btn-sm font-weight-bold">
+                    <i class="fa fa-external-link-alt mr-1"></i> Buka Manajemen Donasi Lengkap
+                </a>
             </div>
         </div>
     </div>

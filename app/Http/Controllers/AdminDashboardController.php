@@ -62,6 +62,16 @@ class AdminDashboardController extends Controller
             ->take(5)
             ->get();
 
+        // Data Arus Kas Donasi & Modal
+        $masukQuery = fn() => DonasiTransaksi::where('jenis', 'masuk')
+            ->where(function ($q) {
+                $q->whereNull('status')->orWhere('status', 'settlement');
+            });
+        $totalMasuk = (float) $masukQuery()->sum('nominal');
+        $totalKeluar = (float) DonasiTransaksi::where('jenis', 'keluar')->sum('nominal');
+        $saldoKas = $totalMasuk - $totalKeluar;
+        $recentTransaksi = DonasiTransaksi::orderBy('tanggal', 'desc')->latest()->take(5)->get();
+
         return view('admin.dashboard', compact(
             'totalPetani',
             'totalCoffeeShop',
@@ -71,7 +81,11 @@ class AdminDashboardController extends Controller
             'chartMonthly',
             'chartByJenis',
             'chartByKelompok',
-            'recentPanen'
+            'recentPanen',
+            'totalMasuk',
+            'totalKeluar',
+            'saldoKas',
+            'recentTransaksi'
         ));
     }
 
