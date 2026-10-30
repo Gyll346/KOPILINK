@@ -10,6 +10,14 @@
         <p class="text-muted mb-0">Kelola rekening tujuan transfer donatur, pantau kas masuk otomatis dari sistem ($1 = Seedling & Rp 200 = One Cup of Coffee), dan catat penyaluran uang keluar untuk petani.</p>
     </div>
     <div class="d-flex flex-wrap" style="gap: 8px;">
+        <button type="button" class="btn btn-outline-info" data-toggle="modal" data-target="#modalMidtransConfig">
+            <i class="fa fa-qrcode mr-1"></i> API Midtrans QRIS
+            @if(!empty($midtransConfig['is_configured']))
+                <span class="badge badge-success ml-1">Aktif</span>
+            @else
+                <span class="badge badge-warning text-dark ml-1">Belum Disetel</span>
+            @endif
+        </button>
         <button type="button" class="btn btn-outline-dark" data-toggle="modal" data-target="#modalTambahRekening">
             <i class="fa fa-university mr-1 text-primary"></i> Atur Rekening Tujuan
         </button>
@@ -69,6 +77,46 @@
                 <div class="rounded-circle p-3" style="background: rgba(218, 159, 91, 0.15); color: #DA9F5B;">
                     <i class="fa fa-coins fa-2x"></i>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bagian Status Integrasi Midtrans QRIS -->
+<div class="card card-stat mb-4">
+    <div class="card-header bg-white border-0 pt-3 px-3 pb-2 d-flex justify-content-between align-items-center flex-wrap" style="gap: 10px;">
+        <div>
+            <h6 class="font-weight-bold m-0 text-dark">
+                <i class="fa fa-qrcode text-primary mr-2"></i> Integrasi Midtrans Core API (QRIS Otomatis)
+            </h6>
+            <small class="text-muted">
+                Status Integrasi: 
+                @if(!empty($midtransConfig['is_configured']))
+                    <span class="badge badge-success"><i class="fa fa-check-circle mr-1"></i>Aktif & Terhubung ({{ $midtransConfig['is_production'] ? 'Production' : 'Sandbox' }})</span>
+                @else
+                    <span class="badge badge-warning text-dark"><i class="fa fa-exclamation-triangle mr-1"></i>Kunci API Belum Dikonfigurasi</span>
+                @endif
+            </small>
+        </div>
+        <button type="button" class="btn btn-sm btn-outline-primary font-weight-bold" data-toggle="modal" data-target="#modalMidtransConfig">
+            <i class="fa fa-cog mr-1"></i> Konfigurasi Kunci API Midtrans
+        </button>
+    </div>
+    <div class="card-body px-3 py-2 bg-light border-top">
+        <div class="row small text-muted">
+            <div class="col-md-4 mb-2 mb-md-0">
+                <span class="d-block font-weight-bold text-dark">Mode Environment:</span>
+                <span class="badge {{ $midtransConfig['is_production'] ? 'badge-danger' : 'badge-info' }}">
+                    {{ $midtransConfig['is_production'] ? 'Production (Live)' : 'Sandbox (Uji Coba)' }}
+                </span>
+            </div>
+            <div class="col-md-4 mb-2 mb-md-0">
+                <span class="d-block font-weight-bold text-dark">Client Key:</span>
+                <code>{{ !empty($midtransConfig['client_key']) ? substr($midtransConfig['client_key'], 0, 14) . '...' : 'Belum disetel' }}</code>
+            </div>
+            <div class="col-md-4">
+                <span class="d-block font-weight-bold text-dark">Server Key:</span>
+                <code>{{ !empty($midtransConfig['server_key']) ? substr($midtransConfig['server_key'], 0, 8) . '********' : 'Belum disetel' }}</code>
             </div>
         </div>
     </div>
@@ -454,6 +502,56 @@
                     <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Batal</button>
                     <button type="submit" class="btn btn-danger btn-sm font-weight-bold">
                         <i class="fa fa-save mr-1"></i> Simpan Penyaluran Keluar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Pengaturan Midtrans QRIS -->
+<div class="modal fade" id="modalMidtransConfig" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-dark text-white">
+                <h5 class="modal-title font-weight-bold">
+                    <i class="fa fa-qrcode text-warning mr-2"></i> Pengaturan Midtrans QRIS
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form action="{{ route('admin.donasi.midtrans.update') }}" method="POST">
+                @csrf
+                <div class="modal-body p-4">
+                    <div class="alert alert-info py-2 px-3 small mb-3">
+                        <i class="fa fa-info-circle mr-1"></i> Dapatkan Server Key & Client Key dari Dashboard Midtrans: <a href="https://dashboard.midtrans.com/" target="_blank" class="font-weight-bold text-primary">dashboard.midtrans.com</a> (Menu: <em>Settings &rarr; Access Keys</em>).
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label class="font-weight-bold text-dark small">Mode Environment</label>
+                        <select name="midtrans_is_production" class="form-control">
+                            <option value="0" {{ !$midtransConfig['is_production'] ? 'selected' : '' }}>Sandbox (Mode Simulasi / Uji Coba)</option>
+                            <option value="1" {{ $midtransConfig['is_production'] ? 'selected' : '' }}>Production (Mode Live Transaksi Nyata)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label class="font-weight-bold text-dark small">Server Key</label>
+                        <input type="text" name="midtrans_server_key" class="form-control" placeholder="{{ !empty($midtransConfig['server_key']) ? 'Tersimpan (kosongkan jika tidak diubah)' : 'Contoh: SB-Mid-server-XXXX...' }}">
+                        <small class="text-muted">Kunci rahasia server untuk memproses charge QRIS Core API & verifikasi status.</small>
+                    </div>
+
+                    <div class="form-group mb-2">
+                        <label class="font-weight-bold text-dark small">Client Key</label>
+                        <input type="text" name="midtrans_client_key" class="form-control" value="{{ $midtransConfig['client_key'] }}" placeholder="Contoh: SB-Mid-client-XXXX...">
+                        <small class="text-muted">Kunci publik client.</small>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light border-0">
+                    <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-koppee btn-sm font-weight-bold">
+                        <i class="fa fa-save mr-1"></i> Simpan Pengaturan
                     </button>
                 </div>
             </form>

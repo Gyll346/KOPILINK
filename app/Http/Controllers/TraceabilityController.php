@@ -155,7 +155,6 @@ class TraceabilityController extends Controller
                 'order_id' => $orderId,
                 'expiry_time' => $result['expiry_time'],
                 'nominal' => (int) $validated['nominal'],
-                'is_mock' => $result['is_mock'] ?? false,
             ]);
         } catch (\Throwable $e) {
             // Rollback: delete pending transaction
@@ -169,7 +168,7 @@ class TraceabilityController extends Controller
     }
 
     /**
-     * AJAX: Check payment status by order_id.
+     * AJAX: Check payment status by order_id (sync directly with Midtrans).
      */
     public function donasiCheckStatus(Request $request)
     {
@@ -180,24 +179,22 @@ class TraceabilityController extends Controller
             return response()->json(['status' => 'not_found'], 404);
         }
 
-        return response()->json(['status' => $transaksi->status]);
-    }
-
-    /**
-     * AJAX: Dev/Test helper to simulate successful QRIS payment in local mode.
-     */
-    public function donasiSimulatePayment(Request $request)
-    {
-        $orderId = $request->input('order_id');
-        $transaksi = DonasiTransaksi::where('order_id', $orderId)->first();
-
-        if (!$transaksi) {
-            return response()->json(['success' => false, 'message' => 'Order tidak ditemukan.'], 404);
+        // Sync langsung ke Midtrans API secara realtime jika masih pending
+        if ($transaksi->status === 'pending') {
+            try {
+                $midtrans = new MidtransService();
+                $mStatus = $midtrans->checkStatus($orderId);
+                if (in_array($mStatus, ['settlement', 'capture'])) {
+                    $transaksi->update(['status' => 'settlement']);
+                } elseif (in_array($mStatus, ['expire', 'cancel', 'deny'])) {
+                    $transaksi->update(['status' => $mStatus]);
+                }
+            } catch (\Throwable $e) {
+                // Abaikan jika network error sementara
+            }
         }
 
-        $transaksi->update(['status' => 'settlement']);
-
-        return response()->json(['success' => true, 'status' => 'settlement']);
+        return response()->json(['status' => $transaksi->fresh()->status]);
     }
 
     /**

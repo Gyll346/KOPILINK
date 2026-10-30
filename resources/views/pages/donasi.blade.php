@@ -285,14 +285,15 @@
                     @endif
 
                     <div class="small text-muted mt-2">
-                        Pindai via <strong>GoPay, OVO, Dana, ShopeePay, BCA, BRI, Mandiri</strong> atau aplikasi apa pun yang mendukung QRIS.
-                    </div>
-
-                    <!-- Dev Simulation Button (Local Testing) -->
-                    <div id="mockSimulateWrapper" class="mt-3 d-none">
-                        <button type="button" class="btn btn-outline-success btn-sm font-weight-bold" onclick="simulasikanBayarBerhasil()">
-                            <i class="fa fa-bolt mr-1"></i> [Simulasi Dev] Klik untuk Bayar Sukses
-                        </button>
+                        Pindai via <strong>GoPay, OVO, Dana, ShopeePay, BCA, BRI, Mandiri</strong> atau aplikasi mobile banking apa pun yang berlogo QRIS.
+                        @if(!config('midtrans.is_production'))
+                            <div class="mt-2 p-2 bg-light rounded text-left border">
+                                <span class="badge badge-info mb-1"><i class="fa fa-flask mr-1"></i> Sandbox Test Mode</span><br>
+                                <span class="text-secondary" style="font-size: 11px;">
+                                    Untuk menguji pembayaran di environment sandbox, Anda dapat membuka <a href="https://simulator.sandbox.midtrans.com/qris/index" target="_blank" class="text-primary font-weight-bold">QRIS Simulator Midtrans</a> dan memasukkan gambar QR di atas.
+                                </span>
+                            </div>
+                        @endif
                     </div>
                 </div>
 
@@ -432,13 +433,6 @@ function prosesBayarQris() {
         document.getElementById('stepQrisDonasi').classList.remove('d-none');
         document.getElementById('qrisExpiredOverlay').classList.add('d-none');
 
-        // Jika mode mock/dev, tampilkan tombol simulasi
-        if (data.is_mock) {
-            document.getElementById('mockSimulateWrapper').classList.remove('d-none');
-        } else {
-            document.getElementById('mockSimulateWrapper').classList.add('d-none');
-        }
-
         startTimerAndPolling(data.order_id);
     })
     .catch(err => {
@@ -523,28 +517,6 @@ function resetModalDonasi() {
     document.getElementById('stepInputDonasi').classList.remove('d-none');
     document.getElementById('stepQrisDonasi').classList.add('d-none');
     document.getElementById('stepSuksesDonasi').classList.add('d-none');
-}
-
-function simulasikanBayarBerhasil() {
-    if (!currentOrderId) return;
-    fetch('{{ route("donasi.simulate") }}', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-        },
-        body: JSON.stringify({ order_id: currentOrderId })
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (data.success) {
-            clearInterval(countdownInterval);
-            clearInterval(statusPollInterval);
-            document.getElementById('stepQrisDonasi').classList.add('d-none');
-            document.getElementById('stepSuksesDonasi').classList.remove('d-none');
-            document.getElementById('suksesNominalDisplay').innerText = document.getElementById('qrisNominalDisplay').innerText;
-        }
-    });
 }
 
 function kirimTransferManual() {
