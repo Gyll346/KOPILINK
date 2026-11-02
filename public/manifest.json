@@ -1,0 +1,25 @@
+{
+    "name": "KopiLink - Coffee Traceability System",
+    "short_name": "KopiLink",
+    "description": "Platform transparansi rantai pasok kopi hulu ke hilir.",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#33211D",
+    "theme_color": "#DA9F5B",
+    "orientation": "portrait-primary",
+    "icons": [
+        {
+            "src": "/img/logo.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "/img/logo.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ]
+}
+
