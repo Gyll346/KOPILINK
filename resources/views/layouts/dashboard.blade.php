@@ -500,7 +500,10 @@
         const pwaDashBtn = document.getElementById('pwa-install-btn');
         const pwaDashDismiss = document.getElementById('pwa-dismiss-btn');
 
+        const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+
         window.addEventListener('beforeinstallprompt', (e) => {
+            if (isStandalone) return;
             e.preventDefault();
             deferredDashboardPrompt = e;
             if (pwaDashBanner && !sessionStorage.getItem('pwa_banner_dismissed')) {

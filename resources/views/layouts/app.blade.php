@@ -180,7 +180,10 @@
         const pwaBtn = document.getElementById('pwa-install-btn');
         const pwaDismiss = document.getElementById('pwa-dismiss-btn');
 
+        const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+
         window.addEventListener('beforeinstallprompt', (e) => {
+            if (isStandalone) return;
             e.preventDefault();
             deferredPrompt = e;
             if (pwaBanner && !sessionStorage.getItem('pwa_banner_dismissed')) {
