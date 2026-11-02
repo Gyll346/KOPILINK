@@ -35,9 +35,9 @@ Route::get('/trace/{slug}', [TraceabilityController::class, 'show'])->name('trac
 Route::get('/register-petani', [AuthController::class, 'showPetaniRegister'])->name('register.petani');
 Route::post('/register-petani', [AuthController::class, 'registerPetani'])->name('register.petani.submit');
 
-Route::get('/verify-otp/{id_petani}', [AuthController::class, 'showVerifyOtp'])->name('otp.verify.form');
+Route::get('/verify-otp/{token}', [AuthController::class, 'showVerifyOtp'])->name('otp.verify.form');
 Route::post('/verify-otp', [AuthController::class, 'verifyOtp'])->name('otp.verify.submit');
-Route::post('/resend-otp/{id_petani}', [AuthController::class, 'resendOtp'])->name('otp.resend');
+Route::post('/resend-otp/{token}', [AuthController::class, 'resendOtp'])->name('otp.resend');
 
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->name('login.submit');

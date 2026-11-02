@@ -33,26 +33,18 @@ class WhatsAppOtpService
     }
 
     /**
-     * Generate dan kirim kode OTP
+     * Generate dan kirim kode OTP ke nomor WhatsApp (sebelum akun dibuat di DB)
      */
-    public function sendOtp(Petani $petani): array
+    public function sendOtpToPhone(string $nama, string|int $kontak): array
     {
         $otp = (string)random_int(100000, 999999);
         $expiredAt = Carbon::now()->addMinutes(5);
 
-        $petani->update([
-            'otp_code' => $otp,
-            'otp_expired_at' => $expiredAt,
-        ]);
-
-        $message = "Halo {$petani->nama},\n\nKode verifikasi OTP akun KopiLink Anda adalah: *{$otp}*.\nKode ini berlaku selama 5 menit. Jangan bagikan kode ini kepada siapapun.";
+        $message = "Halo {$nama},\n\nKode verifikasi OTP akun KopiLink Anda adalah: *{$otp}*.\nKode ini berlaku selama 5 menit. Jangan bagikan kode ini kepada siapapun.";
 
         $sent = false;
         try {
-            // Format nomor tujuan WhatsApp (62xxxxxxxx)
-            $target = (string)$this->formatPhoneNumber($petani->kontak);
-            
-            // Kirim pesan teks OTP menggunakan WhatsApp Web Sidecar
+            $target = (string)$this->formatPhoneNumber($kontak);
             \Kstmostofa\LaravelWhatsApp\Facades\WhatsApp::web('main')->messages()->sendText(
                 $target,
                 $message
@@ -62,18 +54,32 @@ class WhatsAppOtpService
             Log::warning("Gagal mengirim WhatsApp OTP via Web Sidecar: " . $e->getMessage());
         }
 
-        // Catat ke log sistem sebagai audit trail & cadangan lokal
-        Log::info("WhatsApp OTP untuk Petani [{$petani->nama} - {$petani->kontak}]: {$otp} (Terkirim WA: " . ($sent ? 'YA' : 'TIDAK') . ")");
+        Log::info("WhatsApp OTP untuk [{$nama} - {$kontak}]: {$otp} (Terkirim WA: " . ($sent ? 'YA' : 'TIDAK') . ")");
 
         return [
             'success' => true,
             'otp' => $otp,
+            'expired_at' => $expiredAt,
             'sent_via_gateway' => $sent,
             'message' => $sent 
                 ? 'Kode OTP verifikasi berhasil dikirim langsung ke WhatsApp Anda.' 
                 : "OTP telah dibuat. (WhatsApp Sidecar belum terkoneksi: {$otp})",
         ];
+    }
 
+    /**
+     * Generate dan kirim kode OTP untuk model Petani yang sudah ada di database
+     */
+    public function sendOtp(Petani $petani): array
+    {
+        $result = $this->sendOtpToPhone($petani->nama, $petani->kontak);
+
+        $petani->update([
+            'otp_code' => $result['otp'],
+            'otp_expired_at' => $result['expired_at'],
+        ]);
+
+        return $result;
     }
 
     /**

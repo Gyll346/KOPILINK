@@ -36,6 +36,28 @@
                     </div>
 
                     <div class="card-body p-4 p-md-5 pt-3">
+                        @if(session('status'))
+                            <div class="alert alert-success border-0 mb-3" style="background-color: #DA9F5B; color: #111;">
+                                <i class="fa fa-check-circle mr-2"></i> {{ session('status') }}
+                            </div>
+                        @endif
+
+                        @if(session('warning'))
+                            <div class="alert alert-warning border-0 mb-3">
+                                <i class="fa fa-exclamation-triangle mr-2"></i> {{ session('warning') }}
+                            </div>
+                        @endif
+
+                        @if($errors->any())
+                            <div class="alert alert-danger border-0 mb-3">
+                                <ul class="mb-0 pl-3">
+                                    @foreach($errors->all() as $error)
+                                        <li>{{ $error }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        @endif
+
                         <form action="{{ route('login.submit') }}" method="POST">
                             @csrf
                             <div class="form-group mb-3">

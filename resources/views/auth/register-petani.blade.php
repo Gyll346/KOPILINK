@@ -28,6 +28,16 @@
             <div class="col-lg-8">
                 <div class="card border-0 shadow-lg" style="background-color: #33211D; border-radius: 8px;">
                     <div class="card-body p-4 p-md-5">
+                        @if($errors->any())
+                            <div class="alert alert-danger border-0 mb-4">
+                                <ul class="mb-0 pl-3">
+                                    @foreach($errors->all() as $error)
+                                        <li>{{ $error }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        @endif
+
                         <form action="{{ route('register.petani.submit') }}" method="POST">
                             @csrf
                             <div class="form-row">

@@ -6,9 +6,12 @@ use App\Models\Petani;
 use App\Models\CoffeeShop;
 use App\Models\User;
 use App\Services\WhatsAppOtpService;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
@@ -40,51 +43,148 @@ class AuthController extends Controller
             return back()->withInput()->withErrors(['kontak' => 'Nomor WhatsApp sudah terdaftar.']);
         }
 
-        $petani = Petani::create([
+        // Generate token registrasi unik
+        $token = (string) Str::uuid();
+
+        // Kirim OTP langsung ke WhatsApp tanpa membuat akun di database terlebih dahulu
+        $otpResult = $this->otpService->sendOtpToPhone($validated['nama'], $formattedPhone);
+
+        // Simpan data calon pendaftar di Cache sementara selama 15 menit
+        Cache::put('pending_register_' . $token, [
             'username' => $validated['username'],
             'password' => Hash::make($validated['password']),
             'nama' => $validated['nama'],
             'kontak' => $formattedPhone,
-            'alamat' => null,
             'kelompok_tani' => $validated['kelompok_tani'],
-            'is_verified' => false,
-        ]);
+            'otp_code' => $otpResult['otp'],
+            'otp_expired_at' => $otpResult['expired_at'],
+        ], now()->addMinutes(15));
 
-        $otpResult = $this->otpService->sendOtp($petani);
-
-        return redirect()->route('otp.verify.form', ['id_petani' => $petani->id_petani])
+        return redirect()->route('otp.verify.form', ['token' => $token])
             ->with('status', $otpResult['message']);
     }
 
-    public function showVerifyOtp($id_petani)
+    public function showVerifyOtp($token)
     {
-        $petani = Petani::findOrFail($id_petani);
-        return view('auth.verify-otp', compact('petani'));
+        $pending = Cache::get('pending_register_' . $token);
+
+        if ($pending) {
+            $petani = (object) [
+                'token' => $token,
+                'nama' => $pending['nama'],
+                'kontak' => $pending['kontak'],
+                'id_petani' => $token,
+            ];
+            return view('auth.verify-otp', ['petani' => $petani, 'token' => $token]);
+        }
+
+        // Fallback untuk akun lama yang sudah di database namun belum diverifikasi
+        if (is_numeric($token)) {
+            $petani = Petani::find($token);
+            if ($petani && !$petani->is_verified) {
+                return view('auth.verify-otp', ['petani' => $petani, 'token' => (string)$petani->id_petani]);
+            }
+        }
+
+        return redirect()->route('register.petani')
+            ->withErrors(['error' => 'Sesi verifikasi OTP telah kedaluwarsa atau tidak valid. Silakan lakukan pendaftaran kembali.']);
     }
 
     public function verifyOtp(Request $request)
     {
         $validated = $request->validate([
-            'id_petani' => 'required|exists:petani,id_petani',
+            'token' => 'nullable|string',
+            'id_petani' => 'nullable',
             'otp_code' => 'required|string|size:6',
         ]);
 
-        $petani = Petani::findOrFail($validated['id_petani']);
-
-        if ($this->otpService->verifyOtp($petani, $validated['otp_code'])) {
-            return redirect()->route('login')
-                ->with('status', 'Akun Petani berhasil diverifikasi! Silakan login untuk melanjutkan.');
+        $token = $validated['token'] ?? $validated['id_petani'] ?? null;
+        if (!$token) {
+            return redirect()->route('register.petani')
+                ->withErrors(['error' => 'Token verifikasi tidak valid.']);
         }
 
-        return back()->withErrors(['otp_code' => 'Kode OTP salah atau telah kedaluwarsa. Silakan coba lagi atau kirim ulang OTP.']);
+        $pending = Cache::get('pending_register_' . $token);
+
+        if ($pending) {
+            if (Carbon::now()->isAfter($pending['otp_expired_at'])) {
+                return back()->withErrors(['otp_code' => 'Kode OTP telah kedaluwarsa. Silakan klik kirim ulang kode OTP.']);
+            }
+
+            if ($pending['otp_code'] !== trim($validated['otp_code'])) {
+                return back()->withErrors(['otp_code' => 'Kode OTP salah. Silakan coba lagi atau periksa kembali WhatsApp Anda.']);
+            }
+
+            // Validasi ulang sebelum insert untuk mencegah duplikasi
+            if (Petani::where('username', $pending['username'])->exists()) {
+                Cache::forget('pending_register_' . $token);
+                return redirect()->route('register.petani')
+                    ->withErrors(['username' => 'Username ini sudah terdaftar oleh akun lain. Silakan daftar ulang.']);
+            }
+
+            if (Petani::where('kontak', $pending['kontak'])->exists()) {
+                Cache::forget('pending_register_' . $token);
+                return redirect()->route('register.petani')
+                    ->withErrors(['kontak' => 'Nomor WhatsApp ini sudah terdaftar. Silakan login.']);
+            }
+
+            // Setelah kode OTP diverifikasi dengan benar, BARU masukkan ke database dan masuk ke daftar manajemen user
+            Petani::create([
+                'username' => $pending['username'],
+                'password' => $pending['password'],
+                'nama' => $pending['nama'],
+                'kontak' => $pending['kontak'],
+                'alamat' => null,
+                'kelompok_tani' => $pending['kelompok_tani'],
+                'is_verified' => true,
+                'is_active' => true,
+                'otp_code' => null,
+                'otp_expired_at' => null,
+            ]);
+
+            Cache::forget('pending_register_' . $token);
+
+            return redirect()->route('login')
+                ->with('status', 'Pendaftaran berhasil dan akun telah aktif! Silakan login untuk melanjutkan.');
+        }
+
+        // Fallback untuk petani di database lama jika ada
+        if (is_numeric($token)) {
+            $petani = Petani::find($token);
+            if ($petani && $this->otpService->verifyOtp($petani, $validated['otp_code'])) {
+                return redirect()->route('login')
+                    ->with('status', 'Akun Petani berhasil diverifikasi! Silakan login untuk melanjutkan.');
+            }
+        }
+
+        return back()->withErrors(['otp_code' => 'Sesi verifikasi OTP tidak ditemukan atau telah kedaluwarsa. Silakan daftar kembali.']);
     }
 
-    public function resendOtp($id_petani)
+    public function resendOtp($token)
     {
-        $petani = Petani::findOrFail($id_petani);
-        $otpResult = $this->otpService->sendOtp($petani);
+        $pending = Cache::get('pending_register_' . $token);
 
-        return back()->with('status', $otpResult['message']);
+        if ($pending) {
+            $otpResult = $this->otpService->sendOtpToPhone($pending['nama'], $pending['kontak']);
+            $pending['otp_code'] = $otpResult['otp'];
+            $pending['otp_expired_at'] = $otpResult['expired_at'];
+
+            // Perpanjang masa sesi di cache
+            Cache::put('pending_register_' . $token, $pending, now()->addMinutes(15));
+
+            return back()->with('status', $otpResult['message']);
+        }
+
+        if (is_numeric($token)) {
+            $petani = Petani::find($token);
+            if ($petani) {
+                $otpResult = $this->otpService->sendOtp($petani);
+                return back()->with('status', $otpResult['message']);
+            }
+        }
+
+        return redirect()->route('register.petani')
+            ->withErrors(['error' => 'Sesi pendaftaran telah kedaluwarsa. Silakan melakukan pendaftaran ulang.']);
     }
 
     public function showLogin()
@@ -140,7 +240,7 @@ class AuthController extends Controller
 
             if (!$petani->is_verified) {
                 $this->otpService->sendOtp($petani);
-                return redirect()->route('otp.verify.form', ['id_petani' => $petani->id_petani])
+                return redirect()->route('otp.verify.form', ['token' => (string)$petani->id_petani])
                     ->with('warning', 'Akun belum diverifikasi via WhatsApp OTP. Kode OTP baru telah dikirimkan!');
             }
 

@@ -40,9 +40,19 @@
                             </div>
                         @endif
 
+                        @if($errors->any())
+                            <div class="alert alert-danger border-0 mb-4 text-left">
+                                <ul class="mb-0 pl-3">
+                                    @foreach($errors->all() as $error)
+                                        <li>{{ $error }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        @endif
+
                         <form action="{{ route('otp.verify.submit') }}" method="POST">
                             @csrf
-                            <input type="hidden" name="id_petani" value="{{ $petani->id_petani }}">
+                            <input type="hidden" name="token" value="{{ $token ?? ($petani->token ?? $petani->id_petani) }}">
 
                             <div class="form-group mb-4">
                                 <label class="text-white font-weight-bold d-block text-left">Masukkan 6-Digit Kode OTP</label>
@@ -57,7 +67,7 @@
                         </form>
 
                         <div class="mt-4 pt-3 border-top border-dark">
-                            <form action="{{ route('otp.resend', ['id_petani' => $petani->id_petani]) }}" method="POST">
+                            <form action="{{ route('otp.resend', ['token' => $token ?? ($petani->token ?? $petani->id_petani)]) }}" method="POST">
                                 @csrf
                                 <p class="text-white mb-2">Belum menerima pesan WhatsApp?</p>
                                 <button type="submit" class="btn btn-outline-primary btn-sm px-4">
