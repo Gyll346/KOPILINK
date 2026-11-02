@@ -1,8 +1,12 @@
-const CACHE_NAME = 'kopilink-pwa-v1';
+const CACHE_NAME = 'kopilink-pwa-v2';
 const PRECACHE_ASSETS = [
     '/',
     '/manifest.json',
     '/img/logo.png',
+    '/img/icon-192x192.png',
+    '/img/icon-512x512.png',
+    '/img/icon-maskable-192x192.png',
+    '/img/icon-maskable-512x512.png',
     '/css/style.min.css'
 ];
 
@@ -36,4 +40,3 @@ self.addEventListener('fetch', (event) => {
             .catch(() => caches.match(event.request).then((cached) => cached || caches.match('/')))
     );
 });
-
