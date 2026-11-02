@@ -1,9 +1,14 @@
-const CACHE_NAME = 'kopilink-pwa-v2';
+const CACHE_NAME = 'kopilink-pwa-v3';
 const PRECACHE_ASSETS = [
     '/',
     '/manifest.json',
+    '/favicon.ico',
     '/img/logo.png',
+    '/img/icon-32x32.png',
+    '/img/icon-64x64.png',
+    '/img/icon-128x128.png',
     '/img/icon-192x192.png',
+    '/img/icon-256x256.png',
     '/img/icon-512x512.png',
     '/img/icon-maskable-192x192.png',
     '/img/icon-maskable-512x512.png',

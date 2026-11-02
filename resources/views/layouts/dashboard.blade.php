@@ -6,13 +6,15 @@
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
 
     <!-- Favicon & PWA -->
-    <link href="{{ asset('img/logo.png') }}" rel="icon" type="image/png">
+    <link rel="shortcut icon" href="{{ asset('favicon.ico') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('img/icon-32x32.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('img/icon-32x32.png') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('img/icon-192x192.png') }}">
     <link rel="manifest" href="{{ asset('manifest.json') }}">
     <meta name="theme-color" content="#DA9F5B">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="KopiLink">
-    <link rel="apple-touch-icon" href="{{ asset('img/icon-192x192.png') }}">
 
     <!-- Google Font -->
     <link rel="preconnect" href="https://fonts.gstatic.com">
