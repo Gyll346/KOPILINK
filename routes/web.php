@@ -22,7 +22,9 @@ Route::post('/donasi/expire', [TraceabilityController::class, 'donasiExpire'])->
 Route::post('/donasi/midtrans/notification', [TraceabilityController::class, 'midtransNotification'])->name('donasi.notification');
 Route::get('/menu', [TraceabilityController::class, 'menu'])->name('menu');
 Route::get('/contact', [TraceabilityController::class, 'contact'])->name('contact');
-Route::post('/contact', [TraceabilityController::class, 'contactSend'])->name('contact.send');
+Route::post('/contact', [TraceabilityController::class, 'contactSend'])
+    ->middleware('throttle:6,1')
+    ->name('contact.send');
 
 Route::get('/scan', [TraceabilityController::class, 'scan'])->name('scan');
 Route::get('/trace/{slug}', [TraceabilityController::class, 'show'])->name('trace.show');

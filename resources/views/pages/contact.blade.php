@@ -55,22 +55,42 @@
                             </div>
                         @endif
 
-                        <form action="{{ route('contact.send') }}" method="POST">
+                        @if($errors->any())
+                            <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm mb-4" role="alert">
+                                <i class="fa fa-exclamation-triangle mr-2"></i> <strong>Perhatian:</strong>
+                                <ul class="mb-0 mt-1 pl-3">
+                                    @foreach($errors->all() as $error)
+                                        <li>{{ $error }}</li>
+                                    @endforeach
+                                </ul>
+                                <button type="button" class="close text-white" data-dismiss="alert" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                        @endif
+
+                        <form id="contactForm" action="{{ route('contact.send') }}" method="POST">
                             @csrf
+                            {{-- Token Keamanan Anti-Spam & Honeypot Bot --}}
+                            <input type="hidden" name="_form_ts" value="{{ encrypt(time()) }}">
+                            <div style="position: absolute; left: -9999px; top: -9999px; opacity: 0; pointer-events: none; width: 0; height: 0;" aria-hidden="true">
+                                <input type="text" name="_hp_security_check" tabindex="-1" autocomplete="off" value="" />
+                            </div>
+
                             <div class="form-group">
-                                <input type="text" name="nama" class="form-control p-4 border-0" placeholder="Nama Lengkap Anda" value="{{ old('nama') }}" required="required" />
+                                <input type="text" name="nama" class="form-control p-4 border-0" placeholder="Nama Lengkap Anda" value="{{ old('nama') }}" required="required" maxlength="100" />
                             </div>
                             <div class="form-group">
-                                <input type="email" name="email" class="form-control p-4 border-0" placeholder="Alamat Email Anda" value="{{ old('email') }}" required="required" />
+                                <input type="email" name="email" class="form-control p-4 border-0" placeholder="Alamat Email Anda" value="{{ old('email') }}" required="required" maxlength="100" />
                             </div>
                             <div class="form-group">
-                                <input type="text" name="subjek" class="form-control p-4 border-0" placeholder="Subjek Kemitraan / Pertanyaan" value="{{ old('subjek') }}" required="required" />
+                                <input type="text" name="subjek" class="form-control p-4 border-0" placeholder="Subjek Kemitraan / Pertanyaan" value="{{ old('subjek') }}" required="required" maxlength="150" />
                             </div>
                             <div class="form-group">
-                                <textarea name="pesan" class="form-control border-0 p-3" rows="4" placeholder="Tuliskan pesan lengkap Anda di sini..." required="required">{{ old('pesan') }}</textarea>
+                                <textarea name="pesan" class="form-control border-0 p-3" rows="4" placeholder="Tuliskan pesan lengkap Anda di sini (minimal 5 karakter)..." required="required" minlength="5" maxlength="3000">{{ old('pesan') }}</textarea>
                             </div>
                             <div>
-                                <button class="btn btn-primary font-weight-bold py-3 px-5 text-secondary" type="submit" style="color: #33211D !important;">
+                                <button id="btnSubmitContact" class="btn btn-primary font-weight-bold py-3 px-5 text-secondary" type="submit" style="color: #33211D !important;">
                                     <i class="fa fa-paper-plane mr-2"></i> Kirim Pesan
                                 </button>
                             </div>
@@ -82,4 +102,16 @@
     </div>
 </div>
 <!-- Contact End -->
+
+@push('scripts')
+<script>
+document.getElementById('contactForm')?.addEventListener('submit', function() {
+    var btn = document.getElementById('btnSubmitContact');
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa fa-spinner fa-spin mr-2"></i> Mengirim Pesan...';
+    }
+});
+</script>
+@endpush
 @endsection

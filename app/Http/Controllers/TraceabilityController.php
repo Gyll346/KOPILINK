@@ -11,6 +11,8 @@ use App\Models\DonasiTransaksi;
 use App\Services\ImageOptimizationService;
 use App\Services\MidtransService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class TraceabilityController extends Controller
@@ -259,20 +261,81 @@ class TraceabilityController extends Controller
 
     public function contactSend(Request $request)
     {
+        // 1. Anti-Bot Honeypot Check: field tersembunyi yang hanya diisi bot/crawler
+        if ($request->filled('_hp_security_check')) {
+            Log::warning("Spambot contact attempt blocked from IP: {$request->ip()}");
+            return back()->withInput()->withErrors(['pesan' => 'Pengiriman pesan ditolak (terindikasi bot otomatis).']);
+        }
+
+        // 2. Timing Check: deteksi pengiriman instan (< 2 detik)
+        if ($request->has('_form_ts')) {
+            try {
+                $formTime = (int) decrypt($request->input('_form_ts'));
+                if ((time() - $formTime) < 2) {
+                    return back()->withInput()->withErrors(['pesan' => 'Pengiriman pesan terlalu cepat. Mohon tunggu sejenak sebelum mencoba kembali.']);
+                }
+            } catch (\Throwable $e) {
+                // Abaikan kesalahan dekripsi
+            }
+        }
+
+        // 3. Rate Limiting per IP: maksimal 3 pesan per 5 menit
+        $ipKey = 'contact_flood_ip:' . $request->ip();
+        if (RateLimiter::tooManyAttempts($ipKey, 3)) {
+            $seconds = RateLimiter::availableIn($ipKey);
+            return back()->withInput()->withErrors([
+                'pesan' => "Anda telah mengirimkan beberapa pesan. Untuk mencegah spam, mohon tunggu {$seconds} detik sebelum mengirim lagi."
+            ]);
+        }
+
+        // 4. Rate Limiting per Email: maksimal 2 pesan per 5 menit
+        $email = strtolower(trim((string)$request->input('email', '')));
+        if ($email !== '') {
+            $emailKey = 'contact_flood_email:' . md5($email);
+            if (RateLimiter::tooManyAttempts($emailKey, 2)) {
+                $seconds = RateLimiter::availableIn($emailKey);
+                return back()->withInput()->withErrors([
+                    'pesan' => "Alamat email ini baru saja mengirimkan pesan. Silakan tunggu {$seconds} detik sebelum mengirim pesan berikutnya."
+                ]);
+            }
+        }
+
+        // 5. Validasi data
         $validated = $request->validate([
             'nama' => 'required|string|max:100',
             'email' => 'required|email|max:100',
             'subjek' => 'required|string|max:150',
-            'pesan' => 'required|string',
+            'pesan' => 'required|string|min:5|max:3000',
         ], [
             'nama.required' => 'Nama lengkap wajib diisi.',
             'email.required' => 'Alamat email wajib diisi.',
             'email.email' => 'Format email tidak valid.',
             'subjek.required' => 'Subjek pesan wajib diisi.',
             'pesan.required' => 'Isi pesan tidak boleh kosong.',
+            'pesan.min' => 'Isi pesan terlalu pendek (minimal 5 karakter).',
+            'pesan.max' => 'Isi pesan terlalu panjang (maksimal 3000 karakter).',
         ]);
 
+        // 6. Anti-Duplikat: cegah pengiriman isi pesan yang identik dalam 15 menit terakhir
+        $isDuplicate = KontakPesan::where('email', $validated['email'])
+            ->where('pesan', $validated['pesan'])
+            ->where('created_at', '>=', now()->subMinutes(15))
+            ->exists();
+
+        if ($isDuplicate) {
+            return back()->withInput()->withErrors([
+                'pesan' => 'Pesan dengan isi yang sama telah dikirim sebelumnya. Mohon tunggu tanggapan dari tim kami.'
+            ]);
+        }
+
+        // 7. Simpan pesan ke database
         KontakPesan::create($validated);
+
+        // Catat rate limiting hits (berlaku 300 detik / 5 menit)
+        RateLimiter::hit($ipKey, 300);
+        if ($email !== '') {
+            RateLimiter::hit($emailKey, 300);
+        }
 
         return redirect()->route('contact')
             ->with('status', 'Terima kasih! Pesan Anda telah berhasil dikirim ke tim KopiLink dan akan segera ditinjau oleh Admin.');

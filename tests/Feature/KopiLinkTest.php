@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\CoffeeShop;
 use App\Models\KemasanKopi;
+use App\Models\KontakPesan;
 use App\Models\Lahan;
 use App\Models\Petani;
 use App\Models\Produksi;
@@ -155,5 +156,57 @@ class KopiLinkTest extends TestCase
 
         // Cleanup
         Petani::where('username', 'petani_baru_otp_test')->delete();
+    }
+
+    public function test_contact_form_anti_spam_mechanisms()
+    {
+        $this->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class]);
+
+        // 1. Honeypot check: bot yang mengisi field tersembunyi harus diblokir
+        $responseHoneypot = $this->post(route('contact.send'), [
+            'nama' => 'Spambot User',
+            'email' => 'bot@example.com',
+            'subjek' => 'Promo Vi@gra',
+            'pesan' => 'Kunjungi link ini segera sekarang juga!',
+            '_hp_security_check' => 'http://spam.ru',
+            '_form_ts' => encrypt(time() - 10),
+        ]);
+        $responseHoneypot->assertSessionHasErrors('pesan');
+        $this->assertDatabaseMissing('kontak_pesan', ['email' => 'bot@example.com']);
+
+        // 2. Timing check: pengiriman terlalu cepat (< 2 detik) harus ditolak
+        $responseTiming = $this->post(route('contact.send'), [
+            'nama' => 'Fast Bot User',
+            'email' => 'fast@example.com',
+            'subjek' => 'Pesan Cepat',
+            'pesan' => 'Pesan dikirim dalam 0.1 detik',
+            '_hp_security_check' => '',
+            '_form_ts' => encrypt(time()),
+        ]);
+        $responseTiming->assertSessionHasErrors('pesan');
+        $this->assertDatabaseMissing('kontak_pesan', ['email' => 'fast@example.com']);
+
+        // 3. Pengiriman pesan normal yang sah
+        $validData = [
+            'nama' => 'Budi Santoso',
+            'email' => 'budi.santoso@gmail.com',
+            'subjek' => 'Pertanyaan Kemitraan Kopi',
+            'pesan' => 'Halo tim KopiLink, kami tertarik bermitra untuk pasokan green bean robusta.',
+            '_hp_security_check' => '',
+            '_form_ts' => encrypt(time() - 10),
+        ];
+        $responseValid = $this->post(route('contact.send'), $validData);
+        $responseValid->assertRedirect(route('contact'));
+        $this->assertDatabaseHas('kontak_pesan', [
+            'email' => 'budi.santoso@gmail.com',
+            'subjek' => 'Pertanyaan Kemitraan Kopi',
+        ]);
+
+        // 4. Anti-Duplikat: pengiriman pesan yang persis sama harus ditolak
+        $responseDuplicate = $this->post(route('contact.send'), $validData);
+        $responseDuplicate->assertSessionHasErrors('pesan');
+
+        // Cleanup
+        KontakPesan::where('email', 'budi.santoso@gmail.com')->delete();
     }
 }
