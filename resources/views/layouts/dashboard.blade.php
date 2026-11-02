@@ -6,7 +6,7 @@
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
 
     <!-- Favicon -->
-    <link href="{{ asset('img/favicon.ico') }}" rel="icon">
+    <link href="{{ asset('img/logo.png') }}" rel="icon" type="image/png">
 
     <!-- Google Font -->
     <link rel="preconnect" href="https://fonts.gstatic.com">
@@ -196,9 +196,12 @@
         <!-- Sidebar Navigation Start -->
         <nav id="sidebar">
             <div class="sidebar-brand">
-                <a href="{{ route('home') }}" class="text-decoration-none">
-                    <h3 class="text-uppercase"><i class="fa fa-coffee text-primary mr-2"></i>KOPPEE</h3>
-                    <div style="font-size: 11px; color: #DA9F5B; letter-spacing: 1px; font-weight: 600;">PORTAL TRACEABILITY</div>
+                <a href="{{ route('home') }}" class="text-decoration-none d-flex align-items-center justify-content-center">
+                    <img src="{{ asset('img/logo.png') }}" alt="Logo KopiLink" style="height: 42px; width: auto; margin-right: 10px; object-fit: contain;">
+                    <div class="text-left">
+                        <h4 class="m-0 text-white font-weight-bold" style="letter-spacing: 1px;">KopiLink</h4>
+                        <div style="font-size: 10px; color: #DA9F5B; letter-spacing: 1.5px; font-weight: 600;">PORTAL TRACEABILITY</div>
+                    </div>
                 </a>
             </div>
 

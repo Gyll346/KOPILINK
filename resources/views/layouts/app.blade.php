@@ -8,7 +8,7 @@
     <meta content="KopiLink adalah platform keterlacakan rantai pasok kopi dari Kebun ke Cangkir (Crop to Cup) berbasis SDGs." name="description">
 
     <!-- Favicon -->
-    <link href="{{ asset('img/favicon.ico') }}" rel="icon">
+    <link href="{{ asset('img/logo.png') }}" rel="icon" type="image/png">
 
     <!-- Google Font -->
     <link rel="preconnect" href="https://fonts.gstatic.com">
@@ -32,10 +32,10 @@
     <div class="container-fluid p-0 nav-bar">
         <nav class="navbar navbar-expand-lg bg-none navbar-dark py-3">
             <a href="{{ route('home') }}" class="navbar-brand px-lg-4 m-0 d-flex align-items-center">
-                <i class="fa fa-coffee text-primary mr-2 fa-2x"></i>
+                <img src="{{ asset('img/logo.png') }}" alt="Logo KopiLink" class="mr-3" style="height: 60px; width: auto; object-fit: contain;">
                 <div>
-                    <h1 class="m-0 display-4 text-uppercase text-white" style="letter-spacing: 2px;">KOPPEE</h1>
-                    <small class="text-primary font-weight-bold" style="font-size: 11px; letter-spacing: 3px; display: block; margin-top: -8px;">KOPILINK TRACEABILITY</small>
+                    <h1 class="m-0 display-4 text-white font-weight-bold" style="letter-spacing: 1px;">KopiLink</h1>
+                    <small class="text-primary font-weight-bold" style="font-size: 11px; letter-spacing: 3px; display: block; margin-top: -6px;">COFFEE TRACEABILITY</small>
                 </div>
             </a>
             <button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#navbarCollapse">
