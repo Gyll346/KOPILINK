@@ -488,12 +488,75 @@
                 window.location.reload();
             }
         });
-        // Register PWA Service Worker
+        // Register PWA Service Worker & Install Prompt
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('/sw.js').catch(err => console.log('SW registration failed:', err));
             });
         }
+
+        let deferredDashboardPrompt;
+        const pwaDashBanner = document.getElementById('pwa-install-banner');
+        const pwaDashBtn = document.getElementById('pwa-install-btn');
+        const pwaDashDismiss = document.getElementById('pwa-dismiss-btn');
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredDashboardPrompt = e;
+            if (pwaDashBanner && !sessionStorage.getItem('pwa_banner_dismissed')) {
+                pwaDashBanner.classList.remove('d-none');
+            }
+        });
+
+        if (pwaDashBtn) {
+            pwaDashBtn.addEventListener('click', async () => {
+                if (!deferredDashboardPrompt) return;
+                deferredDashboardPrompt.prompt();
+                const choice = await deferredDashboardPrompt.userChoice;
+                if (choice.outcome === 'accepted') {
+                    if (pwaDashBanner) pwaDashBanner.classList.add('d-none');
+                }
+                deferredDashboardPrompt = null;
+            });
+        }
+
+        if (pwaDashDismiss) {
+            pwaDashDismiss.addEventListener('click', () => {
+                if (pwaDashBanner) pwaDashBanner.classList.add('d-none');
+                sessionStorage.setItem('pwa_banner_dismissed', '1');
+            });
+        }
+
+        window.addEventListener('appinstalled', () => {
+            if (pwaDashBanner) pwaDashBanner.classList.add('d-none');
+            deferredDashboardPrompt = null;
+        });
+    </script>
+
+    <!-- PWA Install Banner -->
+    <div id="pwa-install-banner" class="fixed-bottom p-3 d-none" style="z-index: 9999;">
+        <div class="container" style="max-width: 500px;">
+            <div class="card border-0 shadow-lg text-white" style="background-color: #33211D; border-radius: 12px; border: 1px solid #DA9F5B !important;">
+                <div class="card-body p-3 d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center">
+                        <img src="{{ asset('img/icon-192x192.png') }}" alt="Logo" style="width: 44px; height: 44px; border-radius: 10px; margin-right: 12px; object-fit: contain;">
+                        <div>
+                            <div class="text-white font-weight-bold" style="font-size: 14px;">Pasang Aplikasi KopiLink</div>
+                            <small class="text-white-50" style="font-size: 11px;">Akses cepat & fungsi offline di HP</small>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <button id="pwa-install-btn" class="btn btn-sm btn-primary font-weight-bold px-3 py-1 mr-2" style="color: #33211D !important; font-size: 12px;">
+                            Instal
+                        </button>
+                        <button id="pwa-dismiss-btn" class="btn btn-sm btn-outline-light px-2 py-1" style="font-size: 11px;">
+                            <i class="fa fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     </script>
 
     @stack('scripts')

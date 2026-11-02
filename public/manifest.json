@@ -9,6 +9,9 @@
     "background_color": "#33211D",
     "theme_color": "#DA9F5B",
     "orientation": "portrait-primary",
+    "lang": "id",
+    "categories": ["business", "food"],
+    "prefer_related_applications": false,
     "icons": [
         {
             "src": "/img/icon-32x32.png",
