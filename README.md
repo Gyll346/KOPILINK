@@ -1,6 +1,6 @@
-# KopiLink - Sistem Ketertelusuran (Traceability) & Donasi Keberlanjutan Kopi
+# KopiLink - Sistem Ketertelusuran (Traceability), Donasi Keberlanjutan & PWA Kopi
 
-**KopiLink** adalah platform web terpadu untuk keterlacakan rantai pasok kopi dari hulu ke hilir (**"Crop to Cup" / Kebun ke Cangkir**) berbasis nilai **Sustainable Development Goals (SDGs)** di Kalimantan Barat. Platform ini menghubungkan Kelompok Tani (Robusta Pasak Piang & Liberika Padi Jaya), Roastery/Coffee Shop mitra, dan konsumen akhir dengan transparansi asal-usul kebun, pencatatan proses panen hingga sangrai melalui QR Code unik, serta didukung oleh sistem **Program Donasi & Buku Kas Terintegrasi (Midtrans QRIS)**.
+**KopiLink** adalah platform web terpadu untuk keterlacakan rantai pasok kopi dari hulu ke hilir (**"Crop to Cup" / Kebun ke Cangkir**) berbasis nilai **Sustainable Development Goals (SDGs)** di Kalimantan Barat. Platform ini menghubungkan Kelompok Tani (Robusta Pasak Piang & Liberika Padi Jaya), Roastery/Coffee Shop mitra, dan konsumen akhir dengan transparansi asal-usul kebun, pencatatan proses panen hingga sangrai melalui QR Code unik, didukung oleh sistem **Program Donasi & Buku Kas Terintegrasi (Midtrans QRIS)**, serta dilengkapi kapabilitas **Progressive Web App (PWA)** native.
 
 ---
 
@@ -8,11 +8,11 @@
 
 ### 1. 🚪 Portal Login Terpadu (Single Sign-On Entry)
 - Seluruh aktor sistem (**Petani**, **Mitra Coffee Shop / Roastery**, dan **Super Admin**) masuk melalui satu pintu form login yang sama (`/login`).
-- Sistem secara otomatis mendeteksi kredensial dan peran (role) pengguna, lalu mengarahkan ke dashboard masing-masing.
+- Sistem secara otomatis mendeteksi kredensial dan peran (*role*) pengguna, lalu mengarahkan ke dashboard masing-masing.
 
 ### 2. 👨‍🌾 Portal Petani Kopi
-- **Registrasi Mandiri & OTP WhatsApp**: Pendaftaran akun menggunakan nomor WhatsApp aktif dengan verifikasi kode OTP 6 digit.
-- **Manajemen Lahan Kebun (GIS Mapping)**: Pencatatan titik koordinat kebun (Latitude/Longitude), luas lahan, varietas tanaman (Robusta / Liberika), serta foto kebun terkompresi otomatis.
+- **Registrasi Tertunda & Verifikasi WhatsApp OTP**: Calon akun petani yang mendaftar diverifikasi terlebih dahulu via OTP WhatsApp 6 digit. Data pendaftaran disimpan sementara di cache dan **hanya akan dicatat ke database/manajemen user setelah kode OTP dimasukkan dengan benar**.
+- **Manajemen Lahan Kebun (GIS Mapping)**: Pencatatan titik koordinat kebun (Latitude/Longitude), luas lahan, varietas tanaman otomatis (Robusta / Liberika), serta foto kebun terkompresi otomatis.
 - **Pencatatan Panen Ceri**: Dokumentasi pemetikan buah ceri merah matang beserta tanggal panen dan galeri foto panen.
 - **Produksi Green Bean (Biji Kering)**: Pencatatan batch berat gabah/biji beras kopi (Kg), metode pengolahan pascapanen (Natural, Full Wash, Honey, Wine, Anaerob), dan status ketersediaan untuk diserap roastery.
 - **Optimasi Kuota Pedesaan**: Seluruh unggahan foto dikompresi otomatis di sisi browser (HTML5 Canvas) sebelum dikirim ke server.
@@ -36,24 +36,39 @@
   - **$1 = 1 Seedling / Bibit Kopi**: Nilai donasi terkunci pada **$1 USD (~Rp 16.000)** untuk pengadaan 1 bibit pohon kopi varietas unggul konservasi agroforestri.
   - **Rp 200 = 1 Cup of Coffee**: Nilai donasi terkunci pada **Rp 200** per cangkir kopi untuk dana abadi kesejahteraan sosial petani dan perbaikan fasilitas kebun.
 - **Pembayaran QRIS Midtrans (Batas Waktu 5 Menit)**:
-  - Integrasi Midtrans Core API QRIS langsung via HTTP standar.
+  - Integrasi Midtrans Core API QRIS langsung via HTTP standar (`/v2/charge`).
   - Menampilkan QR Code dinamis dengan countdown timer batas waktu bayar **05:00 menit**.
   - Polling status otomatis (`pending`, `settlement`, `expire`) setiap 3 detik dan webhook notifikasi otomatis.
-  - Mode simulasi otomatis untuk pengujian di lingkungan lokal/development.
+  - Mode konfigurasi fleksibel: Pengaturan Server Key, Client Key, dan Mode (Sandbox / Production) dapat dikelola langsung oleh Super Admin melalui modal pengaturan di dashboard.
   - Opsi transfer manual ke rekening resmi bagi donatur yang memilih upload slip resi/bukti transfer.
 
-### 6. 🛡️ Pusat Kendali Super Admin
+### 6. 📱 Progressive Web App (PWA) Native
+- **Installable Desktop & Mobile**: Mendukung instalasi langsung ke layar beranda (*Add to Home Screen*) pada Android, iOS, Windows, dan macOS.
+- **Web App Manifest Teroptimasi**: Konfigurasi `manifest.json` lengkap dengan dukungan ikon multi-resolusi (32px, 64px, 128px, 192px, 256px, 512px) untuk mode *standard* maupun *maskable* (safe-zone margin).
+- **Service Worker Native (`sw.js`)**: Cache assets statis, strategi *Network First* dengan *Cache Fallback* instan untuk navigasi halaman, serta pengelolaan *lifecycle* mandiri.
+- **Banner Instalasi Otomatis**: Menampilkan banner penawaran instalasi responsif saat perangkat mendeteksi browser siap memasang WebAPK.
+
+### 7. 🛡️ Keamanan & Proteksi Anti-Spam Multi-Layer
+- **Proteksi Formulir Kontak (`/contact`)**:
+  - *Honeypot Trap*: Input tersembunyi `_hp_security_check` untuk menjebak bot scraper/spammer.
+  - *Submission Timing*: Verifikasi waktu pengisian terenkripsi (`_form_ts`) untuk memblokir pengiriman instan (< 2 detik).
+  - *Rate Limiter*: Pembatasan maksimal 3 pengiriman per 5 menit per IP dan 2 pengiriman per 5 menit per email.
+  - *Anti-Duplikat*: Pencegahan pengiriman isi pesan yang sama persis dalam rentang 15 menit.
+  - *Frontend Debounce*: Tombol submit otomatis terkunci (*disabled*) saat proses pengiriman untuk mencegah *double-submit*.
+
+### 8. 👑 Pusat Kendali Super Admin
 - **Dashboard Monitoring & Panen (`/admin/dashboard`)**:
   - Statistik volume panen green bean, luas kebun, jumlah petani terverifikasi, dan mitra roastery.
   - Grafik tren produksi panen bulanan dan proporsi varietas kopi (Chart.js).
-  - **Card Modal & Arus Kas Donasi**: Menampilkan akumulasi Total Uang Masuk, Total Uang Keluar (Penyaluran), dan Sisa Modal/Kas Aktif, dilengkapi modal rincian mutasi transaksi terakhir.
+  - **Arus Kas & Buku Donasi**: Menampilkan akumulasi Total Uang Masuk, Total Uang Keluar (Penyaluran), dan Sisa Kas Aktif.
 - **Manajemen Donasi & Rekening (`/admin/donasi`)**:
-  - Pengelolaan rekening bank dan e-wallet tujuan resmi (mengaktifkan rekening utama, tambah/edit rekening).
+  - Pengelolaan rekening bank dan e-wallet tujuan resmi.
+  - Konfigurasi kredensial Midtrans Payment Gateway (Server Key & Mode Sandbox/Production).
   - Kas masuk terhitung otomatis dari sistem website & QRIS yang berstatus lunas (`settlement`).
   - Pencatatan kas keluar manual khusus untuk penyaluran bantuan bibit, pupuk, atau santunan petani.
-- **Manajemen Pengguna & Verifikasi (`/admin/users`)**: Verifikasi akun petani baru, reset password, dan aktivasi/nonaktifkan status akun pengguna.
+- **Manajemen Pengguna & Verifikasi (`/admin/users`)**: Verifikasi akun petani, reset password, dan aktivasi/nonaktifkan status akun pengguna.
 - **Pusat Pesan Pengunjung (`/admin/pesan`)**: Kotak masuk pesan kemitraan yang dikirim melalui halaman kontak publik (`/contact`).
-- **Integrasi WhatsApp Gateway (`/admin/whatsapp`)**: Manajemen koneksi WhatsApp Web via pairing QR Code untuk pengiriman OTP otomatis.
+- **Integrasi WhatsApp Gateway (`/admin/whatsapp`)**: Manajemen koneksi WhatsApp Web via pairing QR Code (Node.js Sidecar Chromium) untuk pengiriman OTP otomatis mandiri tanpa dependensi API berbayar pihak ketiga.
 
 ---
 
@@ -61,8 +76,10 @@
 
 - **Backend Framework**: Laravel 11.x
 - **Bahasa Pemrograman**: PHP 8.2+
-- **Database**: MySQL 8.0 (Relational schema dengan foreign key constraints)
+- **Database**: MySQL 8.0 (Skema relasional dengan foreign key constraints)
 - **Payment Gateway**: Midtrans Core API (QRIS Standar Nasional)
+- **WhatsApp Gateway**: Laravel WhatsApp Web Sidecar (Node.js Puppeteer Chromium)
+- **PWA Engine**: Service Worker Native (Cache API) & Web App Manifest
 - **Frontend**: Blade Templating, Bootstrap 4, FontAwesome 5, Chart.js, Leaflet.js
 - **QR Code Engine**: `simplesoftwareio/simple-qrcode` & HTML5-QRCode Scanner
 - **Containerization**: Docker & Docker Compose
@@ -74,10 +91,10 @@
 
 | Peran Pengguna | Pintu Akses | Halaman Utama | Hak & Tanggung Jawab |
 | :--- | :--- | :--- | :--- |
-| **Publik / Konsumen** | `/` | `/`, `/scan`, `/donasi`, `/contact` | Pindai QR kemasan, cek peta kebun, kirim donasi QRIS, hubungi kemitraan |
-| **Petani Kopi** | `/login` | `/petani/dashboard` | Kelola kebun, catat panen ceri & green bean, monitor status serap |
-| **Mitra Roastery** | `/login` | `/coffeeshop/dashboard` | Terima pasokan, catat profil sangrai, terbitkan label QR kemasan |
-| **Super Admin** | `/login` | `/admin/dashboard` | Monitoring panen, kelola buku kas donasi, atur rekening, verifikasi user |
+| **Publik / Konsumen** | `/` | `/`, `/scan`, `/donasi`, `/contact` | Pindai QR kemasan, cek peta kebun, donasi QRIS, hubungi kemitraan, install PWA |
+| **Petani Kopi** | `/login` | `/petani/dashboard` | Kelola kebun, catat panen ceri & green bean, monitor status penyerapan |
+| **Mitra Roastery** | `/login` | `/coffeeshop/dashboard` | Terima pasokan petani, catat profil sangrai, terbitkan label QR kemasan |
+| **Super Admin** | `/login` | `/admin/dashboard` | Monitoring sistem, kelola kas donasi & Midtrans, aktivasi user, WhatsApp Gateway |
 
 ---
 
@@ -89,17 +106,23 @@
 
 ### Langkah-langkah:
 
-1. **Jalankan Container Docker**:
+1. **Clone Repositori & Masuk ke Direktori**:
+   ```bash
+   git clone <url-repository>
+   cd KopiLink
+   ```
+
+2. **Jalankan Container Docker**:
    ```bash
    docker-compose up -d
    ```
 
-2. **Jalankan Migrasi Database**:
+3. **Jalankan Migrasi Database**:
    ```bash
    docker exec kopilink_app php artisan migrate
    ```
 
-3. **Akses Aplikasi**:
+4. **Akses Aplikasi**:
    - Beranda Publik: [http://localhost:8000](http://localhost:8000)
    - Pindai QR Kopi: [http://localhost:8000/scan](http://localhost:8000/scan)
    - Program Donasi: [http://localhost:8000/donasi](http://localhost:8000/donasi)
@@ -110,4 +133,4 @@
 
 ## 📜 Lisensi & Kontribusi
 
-Sistem ini dikembangkan untuk mendukung transparansi perdagangan berkeadilan (*Fair Trade*) dan keberlanjutan perkebunan kopi rakyat di Indonesia. Dilindungi di bawah lisensi open-source MIT.
+Sistem ini dikembangkan untuk mendukung transparansi perdagangan berkeadilan (*Fair Trade*) dan kelestarian perkebunan kopi agroforestri rakyat di Indonesia. Dilindungi di bawah lisensi open-source MIT.
