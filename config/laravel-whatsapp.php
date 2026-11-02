@@ -70,7 +70,7 @@ return [
     */
 
     'web' => [
-        'enabled' => env('WHATSAPP_WEB_ENABLED', false),
+        'enabled' => env('WHATSAPP_WEB_ENABLED', true),
 
         // Network coordinates that BOTH the sidecar binds to AND Laravel connects to.
         //
@@ -103,7 +103,7 @@ return [
             // the Chromium that `whatsapp:sidecar:install` downloads. Set this
             // (or PUPPETEER_EXECUTABLE_PATH) when you installed with
             // --skip-chromium and want to reuse a system browser instead.
-            'chrome_path' => env('WHATSAPP_WEB_CHROME_PATH', env('PUPPETEER_EXECUTABLE_PATH')),
+            'chrome_path' => env('WHATSAPP_WEB_CHROME_PATH', env('PUPPETEER_EXECUTABLE_PATH', file_exists('/usr/bin/chromium') ? '/usr/bin/chromium' : null)),
             'session_dir' => env('WHATSAPP_WEB_SESSION_DIR', storage_path('app/whatsapp-sidecar/sessions')),
             'auto_start_sessions' => env('WHATSAPP_WEB_AUTO_START_SESSIONS', true),
             'pid_file' => env('WHATSAPP_WEB_PID_FILE', storage_path('app/whatsapp-sidecar/sidecar.pid')),

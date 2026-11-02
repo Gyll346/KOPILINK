@@ -32,4 +32,4 @@ WORKDIR /var/www
 
 EXPOSE 8000
 
-CMD ["sh", "-c", "php artisan serve --host=0.0.0.0 --port=8000"]
+CMD ["sh", "-c", "php artisan whatsapp:sidecar:start || true; php artisan serve --host=0.0.0.0 --port=8000"]

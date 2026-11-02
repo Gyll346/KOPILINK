@@ -34,9 +34,9 @@
                             <strong class="text-primary font-weight-bold" style="font-size: 18px;">+{{ $petani->kontak }}</strong>
                         </p>
 
-                        @if($petani->otp_code)
+                        @if(session('status'))
                             <div class="alert alert-info border-0 mb-4" style="background: rgba(218, 159, 91, 0.2); color: #DA9F5B;">
-                                <i class="fa fa-info-circle mr-1"></i> Mode Pengujian Lokal: Kode OTP aktif Anda adalah <strong>{{ $petani->otp_code }}</strong>
+                                <i class="fa fa-info-circle mr-1"></i> {{ session('status') }}
                             </div>
                         @endif
 

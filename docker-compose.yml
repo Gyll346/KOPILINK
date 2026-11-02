@@ -28,6 +28,8 @@ services:
       - DB_DATABASE=kopilink_db
       - DB_USERNAME=kopilink_user
       - DB_PASSWORD=kopilink_secret
+      - PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
+      - WHATSAPP_WEB_ENABLED=true
     depends_on:
       db:
         condition: service_healthy

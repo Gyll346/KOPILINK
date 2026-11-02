@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Kstmostofa\LaravelWhatsApp\Facades\WhatsApp;
+use Kstmostofa\LaravelWhatsApp\Web\SidecarManager;
 use Throwable;
 
 class WhatsAppWebController extends Controller
@@ -19,9 +20,17 @@ class WhatsAppWebController extends Controller
     /**
      * Dapatkan status dan QR code sesi sidecar (JSON API untuk polling frontend)
      */
-    public function status()
+    public function status(SidecarManager $manager)
     {
         try {
+            if (!$manager->isRunning()) {
+                return response()->json([
+                    'success' => true,
+                    'status' => 'disconnected',
+                    'message' => 'Layanan WhatsApp Sidecar belum aktif.',
+                ]);
+            }
+
             $state = WhatsApp::web('main')->state();
             $status = $state['status'] ?? 'unknown';
             $qr = null;
@@ -49,7 +58,6 @@ class WhatsAppWebController extends Controller
                 'info' => $info,
             ]);
         } catch (Throwable $e) {
-
             return response()->json([
                 'success' => false,
                 'status' => 'disconnected',
@@ -61,9 +69,21 @@ class WhatsAppWebController extends Controller
     /**
      * Start/Inisialisasi sesi WhatsApp Web untuk mendapatkan QR code baru
      */
-    public function start()
+    public function start(SidecarManager $manager)
     {
         try {
+            if (!$manager->isRunning()) {
+                $manager->start();
+                usleep(500_000); // 500ms
+            }
+
+            try {
+                $state = WhatsApp::web('main')->state();
+                if (in_array($state['status'] ?? '', ['error', 'disconnected'])) {
+                    WhatsApp::web('main')->destroy();
+                }
+            } catch (Throwable $e) {}
+
             $response = WhatsApp::web('main')->start();
             return response()->json([
                 'success' => true,
