@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Login Portal KopiLink - KOPPEE')
+@section('title', 'Login Portal - KopiLink')
 
 @section('content')
 <!-- Page Header Start -->

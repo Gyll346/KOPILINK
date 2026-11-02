@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'KOPPEE - KopiLink Coffee Traceability System')
+@section('title', 'KopiLink - Coffee Traceability System')
 
 @section('content')
 <!-- Carousel Start -->

@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Tentang Kami - KOPPEE KopiLink')
+@section('title', 'Tentang Kami - KopiLink')
 
 @section('content')
 <!-- Page Header Start -->
@@ -27,7 +27,7 @@
             <div class="col-lg-4 py-0 py-lg-5">
                 <h1 class="mb-3">Kisah Kami</h1>
                 <h5 class="mb-3">Berakar dari komitmen pelestarian hutan agroforestri dan keadilan ekonomi bagi petani.</h5>
-                <p>KOPPEE KopiLink hadir untuk menjembatani kesenjangan informasi antara petani hulu (Desa Pasak Piang & Desa Padi Jaya) dengan penikmat kopi di hilir melalui sertifikat digital berbasis QR Code.</p>
+                <p>KopiLink hadir untuk menjembatani kesenjangan informasi antara petani hulu (Desa Pasak Piang & Desa Padi Jaya) dengan penikmat kopi di hilir melalui sertifikat digital berbasis QR Code.</p>
                 <a href="{{ route('scan') }}" class="btn btn-secondary font-weight-bold py-2 px-4 mt-2">Pindai QR Kemasan</a>
             </div>
             <div class="col-lg-4 py-5 py-lg-0" style="min-height: 450px;">
