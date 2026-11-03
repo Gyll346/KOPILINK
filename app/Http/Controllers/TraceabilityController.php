@@ -66,7 +66,7 @@ class TraceabilityController extends Controller
             'program' => 'required|string|max:100',
             'nominal' => 'required|numeric|min:200',
             'pesan' => 'nullable|string|max:500',
-            'bukti_transfer' => 'nullable|image|max:10240',
+            'bukti_transfer' => 'nullable|image|mimes:jpeg,jpg,png,webp|max:10240',
         ], [
             'nama_donatur.required' => 'Nama donatur wajib diisi.',
             'nominal.required' => 'Nominal donasi wajib diisi.',

@@ -337,8 +337,8 @@ class AdminDashboardController extends Controller
     public function midtransUpdate(Request $request)
     {
         $validated = $request->validate([
-            'midtrans_server_key' => 'nullable|string|max:255',
-            'midtrans_client_key' => 'nullable|string|max:255',
+            'midtrans_server_key' => ['nullable', 'string', 'max:100', 'regex:/^[a-zA-Z0-9_\-]+$/'],
+            'midtrans_client_key' => ['nullable', 'string', 'max:100', 'regex:/^[a-zA-Z0-9_\-]+$/'],
             'midtrans_is_production' => 'nullable|in:0,1',
         ]);
 

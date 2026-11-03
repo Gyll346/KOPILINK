@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 
 class AuthController extends Controller
@@ -104,6 +105,12 @@ class AuthController extends Controller
                 ->withErrors(['error' => 'Token verifikasi tidak valid.']);
         }
 
+        $throttleKey = 'otp_attempts_' . $token;
+        if (RateLimiter::tooManyAttempts($throttleKey, 5)) {
+            $seconds = RateLimiter::availableIn($throttleKey);
+            return back()->withErrors(['otp_code' => "Terlalu banyak percobaan salah. Silakan coba lagi dalam {$seconds} detik."]);
+        }
+
         $pending = Cache::get('pending_register_' . $token);
 
         if ($pending) {
@@ -112,8 +119,12 @@ class AuthController extends Controller
             }
 
             if ($pending['otp_code'] !== trim($validated['otp_code'])) {
-                return back()->withErrors(['otp_code' => 'Kode OTP salah. Silakan coba lagi atau periksa kembali WhatsApp Anda.']);
+                RateLimiter::hit($throttleKey, 300);
+                $left = RateLimiter::retriesLeft($throttleKey, 5);
+                return back()->withErrors(['otp_code' => "Kode OTP salah. Sisa kesempatan: {$left} kali."]);
             }
+
+            RateLimiter::clear($throttleKey);
 
             // Validasi ulang sebelum insert untuk mencegah duplikasi
             if (Petani::where('username', $pending['username'])->exists()) {

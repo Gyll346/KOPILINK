@@ -74,13 +74,18 @@ class CoffeeShopDashboardController extends Controller
         $coffeeShop = Auth::guard('coffee_shop')->user();
         $produksi = Produksi::where('status', 'Diterima Coffee Shop')->with('lahan')->findOrFail($id_produksi);
 
+        if ($produksi->kemasan()->exists()) {
+            return back()->withErrors(['error' => 'Batch biji kopi ini sudah pernah dibuatkan QR Code kemasannya.']);
+        }
+
         $request->validate([
             'foto_sangrai' => 'required|array|min:1',
-            'foto_sangrai.*' => 'image|max:10240',
+            'foto_sangrai.*' => 'image|mimes:jpeg,jpg,png,webp|max:10240',
         ], [
             'foto_sangrai.required' => 'Wajib mengunggah minimal 1 foto green bean yang telah disangrai (roasting).',
             'foto_sangrai.min' => 'Wajib mengunggah minimal 1 foto green bean yang telah disangrai (roasting).',
             'foto_sangrai.*.image' => 'File harus berupa gambar valid (JPG, PNG, JPEG, WEBP).',
+            'foto_sangrai.*.mimes' => 'Format gambar harus berupa JPG, JPEG, PNG, atau WEBP.',
             'foto_sangrai.*.max' => 'Ukuran gambar maksimal adalah 10MB.',
         ]);
 

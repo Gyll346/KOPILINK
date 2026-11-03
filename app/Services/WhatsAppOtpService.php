@@ -43,15 +43,17 @@ class WhatsAppOtpService
         $message = "Halo {$nama},\n\nKode verifikasi OTP akun KopiLink Anda adalah: *{$otp}*.\nKode ini berlaku selama 5 menit. Jangan bagikan kode ini kepada siapapun.";
 
         $sent = false;
-        try {
-            $target = (string)$this->formatPhoneNumber($kontak);
-            \Kstmostofa\LaravelWhatsApp\Facades\WhatsApp::web('main')->messages()->sendText(
-                $target,
-                $message
-            );
-            $sent = true;
-        } catch (\Throwable $e) {
-            Log::warning("Gagal mengirim WhatsApp OTP via Web Sidecar: " . $e->getMessage());
+        if (!app()->environment('testing')) {
+            try {
+                $target = (string)$this->formatPhoneNumber($kontak);
+                \Kstmostofa\LaravelWhatsApp\Facades\WhatsApp::web('main')->messages()->sendText(
+                    $target,
+                    $message
+                );
+                $sent = true;
+            } catch (\Throwable $e) {
+                Log::warning("Gagal mengirim WhatsApp OTP via Web Sidecar: " . $e->getMessage());
+            }
         }
 
         Log::info("WhatsApp OTP untuk [{$nama} - {$kontak}]: {$otp} (Terkirim WA: " . ($sent ? 'YA' : 'TIDAK') . ")");

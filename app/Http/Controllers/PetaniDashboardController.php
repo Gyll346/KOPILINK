@@ -59,7 +59,7 @@ class PetaniDashboardController extends Controller
             'luas_lahan' => 'required|numeric|min:0.01',
             'jumlah_tanaman' => 'required|integer|min:1',
             'foto_lahan' => 'required|array|min:1',
-            'foto_lahan.*' => 'image|max:10240',
+            'foto_lahan.*' => 'image|mimes:jpeg,jpg,png,webp|max:10240',
         ], [
             'foto_lahan.required' => 'Wajib mengunggah minimal 1 foto lahan/kebun.',
             'foto_lahan.min' => 'Wajib mengunggah minimal 1 foto lahan/kebun.',
@@ -119,10 +119,10 @@ class PetaniDashboardController extends Controller
 
         if (empty($existingFotos)) {
             $rules['foto_lahan'] = 'required|array|min:1';
-            $rules['foto_lahan.*'] = 'image|max:10240';
+            $rules['foto_lahan.*'] = 'image|mimes:jpeg,jpg,png,webp|max:10240';
         } else {
             $rules['foto_lahan'] = 'nullable|array';
-            $rules['foto_lahan.*'] = 'image|max:10240';
+            $rules['foto_lahan.*'] = 'image|mimes:jpeg,jpg,png,webp|max:10240';
         }
 
         $validated = $request->validate($rules, [
@@ -218,7 +218,7 @@ class PetaniDashboardController extends Controller
             'jumlah_green_bean' => 'required|numeric|min:0.5',
             'tanggal_input' => 'required|date',
             'foto_green_bean' => 'required|array|min:1',
-            'foto_green_bean.*' => 'image|max:10240',
+            'foto_green_bean.*' => 'image|mimes:jpeg,jpg,png,webp|max:10240',
         ], [
             'foto_green_bean.required' => 'Wajib mengunggah minimal 1 foto hasil panen green bean.',
             'foto_green_bean.min' => 'Wajib mengunggah minimal 1 foto hasil panen green bean.',
@@ -295,10 +295,10 @@ class PetaniDashboardController extends Controller
 
         if (empty($existingFotos)) {
             $rules['foto_green_bean'] = 'required|array|min:1';
-            $rules['foto_green_bean.*'] = 'image|max:10240';
+            $rules['foto_green_bean.*'] = 'image|mimes:jpeg,jpg,png,webp|max:10240';
         } else {
             $rules['foto_green_bean'] = 'nullable|array';
-            $rules['foto_green_bean.*'] = 'image|max:10240';
+            $rules['foto_green_bean.*'] = 'image|mimes:jpeg,jpg,png,webp|max:10240';
         }
 
         $validated = $request->validate($rules, [
@@ -368,7 +368,7 @@ class PetaniDashboardController extends Controller
             'tanggal_panen' => 'required|date',
             'catatan' => 'nullable|string|max:500',
             'foto_ceri' => 'required|array|min:1',
-            'foto_ceri.*' => 'image|max:10240',
+            'foto_ceri.*' => 'image|mimes:jpeg,jpg,png,webp|max:10240',
         ], [
             'foto_ceri.required' => 'Wajib mengunggah minimal 1 foto hasil panen ceri.',
             'foto_ceri.min' => 'Wajib mengunggah minimal 1 foto hasil panen ceri.',
@@ -428,10 +428,10 @@ class PetaniDashboardController extends Controller
 
         if (empty($existingFotos)) {
             $rules['foto_ceri'] = 'required|array|min:1';
-            $rules['foto_ceri.*'] = 'image|max:10240';
+            $rules['foto_ceri.*'] = 'image|mimes:jpeg,jpg,png,webp|max:10240';
         } else {
             $rules['foto_ceri'] = 'nullable|array';
-            $rules['foto_ceri.*'] = 'image|max:10240';
+            $rules['foto_ceri.*'] = 'image|mimes:jpeg,jpg,png,webp|max:10240';
         }
 
         $validated = $request->validate($rules, [
@@ -504,7 +504,7 @@ class PetaniDashboardController extends Controller
             'kelompok_tani' => 'required|in:Pasak Piang,Padi Jaya',
             'password' => 'nullable|string|min:6|confirmed',
             'alamat' => 'required|string',
-            'foto_profil' => 'nullable|image|max:10240',
+            'foto_profil' => 'nullable|image|mimes:jpeg,jpg,png,webp|max:10240',
         ]);
 
         $petani->nama = $validated['nama'];
