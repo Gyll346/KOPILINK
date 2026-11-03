@@ -56,7 +56,8 @@ class WhatsAppOtpService
             }
         }
 
-        Log::info("WhatsApp OTP untuk [{$nama} - {$kontak}]: {$otp} (Terkirim WA: " . ($sent ? 'YA' : 'TIDAK') . ")");
+        $logOtp = config('app.debug') ? $otp : (substr($otp, 0, 2) . '****');
+        Log::info("WhatsApp OTP untuk [{$nama} - {$kontak}]: {$logOtp} (Terkirim WA: " . ($sent ? 'YA' : 'TIDAK') . ")");
 
         return [
             'success' => true,

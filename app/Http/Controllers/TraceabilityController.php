@@ -207,7 +207,7 @@ class TraceabilityController extends Controller
         $orderId = $request->input('order_id');
         $transaksi = DonasiTransaksi::where('order_id', $orderId)->where('status', 'pending')->first();
 
-        if ($transaksi) {
+        if ($transaksi && $transaksi->created_at && $transaksi->created_at->diffInSeconds(now()) >= 270) {
             $transaksi->update(['status' => 'expire']);
         }
 

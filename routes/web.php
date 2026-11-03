@@ -15,8 +15,12 @@ Route::get('/', [TraceabilityController::class, 'index'])->name('home');
 Route::get('/about', [TraceabilityController::class, 'about'])->name('about');
 Route::get('/service', [TraceabilityController::class, 'service'])->name('service');
 Route::get('/donasi', [TraceabilityController::class, 'donasi'])->name('donasi');
-Route::post('/donasi', [TraceabilityController::class, 'donasiSend'])->name('donasi.send');
-Route::post('/donasi/qris', [TraceabilityController::class, 'donasiCreateQris'])->name('donasi.qris');
+Route::post('/donasi', [TraceabilityController::class, 'donasiSend'])
+    ->middleware('throttle:10,1')
+    ->name('donasi.send');
+Route::post('/donasi/qris', [TraceabilityController::class, 'donasiCreateQris'])
+    ->middleware('throttle:10,1')
+    ->name('donasi.qris');
 Route::get('/donasi/status', [TraceabilityController::class, 'donasiCheckStatus'])->name('donasi.status');
 Route::post('/donasi/expire', [TraceabilityController::class, 'donasiExpire'])->name('donasi.expire');
 Route::post('/donasi/midtrans/notification', [TraceabilityController::class, 'midtransNotification'])->name('donasi.notification');
@@ -39,7 +43,9 @@ Route::post('/register-petani', [AuthController::class, 'registerPetani'])->name
 
 Route::get('/verify-otp/{token}', [AuthController::class, 'showVerifyOtp'])->name('otp.verify.form');
 Route::post('/verify-otp', [AuthController::class, 'verifyOtp'])->name('otp.verify.submit');
-Route::post('/resend-otp/{token}', [AuthController::class, 'resendOtp'])->name('otp.resend');
+Route::post('/resend-otp/{token}', [AuthController::class, 'resendOtp'])
+    ->middleware('throttle:3,1')
+    ->name('otp.resend');
 
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])

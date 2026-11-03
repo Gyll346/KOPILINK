@@ -173,6 +173,13 @@ class AuthController extends Controller
 
     public function resendOtp($token)
     {
+        $throttleKey = 'otp_resend_' . $token;
+        if (RateLimiter::tooManyAttempts($throttleKey, 1)) {
+            $seconds = RateLimiter::availableIn($throttleKey);
+            return back()->withErrors(['error' => "Mohon tunggu {$seconds} detik sebelum meminta kirim ulang kode OTP."]);
+        }
+        RateLimiter::hit($throttleKey, 60); // Batasi 1x per 60 detik
+
         $pending = Cache::get('pending_register_' . $token);
 
         if ($pending) {
