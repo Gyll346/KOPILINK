@@ -2,6 +2,57 @@
 
 @section('title', 'KopiLink - Coffee Traceability System')
 
+@push('styles')
+<style>
+    @media (max-width: 768px) {
+        #blog-carousel .carousel-item {
+            min-height: 480px;
+        }
+        #blog-carousel .carousel-item img {
+            min-height: 480px;
+            object-fit: cover;
+            object-position: center;
+        }
+        #blog-carousel .carousel-caption {
+            padding: 30px 20px !important;
+        }
+        #blog-carousel .carousel-title {
+            font-size: 2.3rem !important;
+            letter-spacing: 2px !important;
+            line-height: 1.2 !important;
+            margin: 8px 0 !important;
+        }
+        #blog-carousel .carousel-subtitle {
+            font-size: 0.95rem !important;
+            letter-spacing: 1px !important;
+            line-height: 1.3 !important;
+        }
+        #blog-carousel .carousel-tagline {
+            font-size: 0.8rem !important;
+            letter-spacing: 1px !important;
+        }
+        #blog-carousel .carousel-btn-group {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            max-width: 280px;
+            margin-top: 20px !important;
+            gap: 8px;
+        }
+        #blog-carousel .carousel-btn-group .btn {
+            margin: 0 !important;
+            padding: 11px 18px !important;
+            font-size: 13px !important;
+            width: 100%;
+        }
+        #blog-carousel .carousel-control-prev,
+        #blog-carousel .carousel-control-next {
+            width: 38px;
+        }
+    }
+</style>
+@endpush
+
 @section('content')
 <!-- Carousel Start -->
 <div class="container-fluid p-0 mb-5">
@@ -10,11 +61,11 @@
             <div class="carousel-item active">
                 <img class="w-100" src="{{ asset('img/carousel-1.jpg') }}" alt="Kopi Agroforestri">
                 <div class="carousel-caption d-flex flex-column align-items-center justify-content-center">
-                    <h2 class="text-primary font-weight-medium m-0">Dari Kebun Hingga Cangkir</h2>
-                    <h1 class="display-1 text-white m-0">KOPILINK</h1>
-                    <h2 class="text-white m-0">* TRACEABILITY SYSTEM *</h2>
-                    <div class="mt-4">
-                        <a href="{{ route('scan') }}" class="btn btn-primary px-4 py-3 font-weight-bold text-secondary mr-2" style="color: #33211D !important;">
+                    <h2 class="text-primary font-weight-medium m-0 carousel-subtitle">Dari Kebun Hingga Cangkir</h2>
+                    <h1 class="display-1 text-white m-0 carousel-title font-weight-bold">KOPILINK</h1>
+                    <h2 class="text-white m-0 carousel-tagline">* TRACEABILITY SYSTEM *</h2>
+                    <div class="mt-4 carousel-btn-group">
+                        <a href="{{ route('scan') }}" class="btn btn-primary px-4 py-3 font-weight-bold text-secondary mr-md-2 mb-2 mb-md-0" style="color: #33211D !important;">
                             <i class="fa fa-qrcode mr-2"></i> Pindai QR Kemasan
                         </a>
                         <a href="{{ route('login') }}" class="btn btn-outline-light px-4 py-3 font-weight-bold">
@@ -26,11 +77,11 @@
             <div class="carousel-item">
                 <img class="w-100" src="{{ asset('img/carousel-2.jpg') }}" alt="Roastery Specialty Coffee">
                 <div class="carousel-caption d-flex flex-column align-items-center justify-content-center">
-                    <h2 class="text-primary font-weight-medium m-0">Agroforestri & Perdagangan Berkeadilan</h2>
-                    <h1 class="display-1 text-white m-0">SPECIALTY</h1>
-                    <h2 class="text-white m-0">* ROBUSTA & LIBERIKA *</h2>
-                    <div class="mt-4">
-                        <a href="{{ route('scan') }}" class="btn btn-primary px-4 py-3 font-weight-bold text-secondary mr-2" style="color: #33211D !important;">
+                    <h2 class="text-primary font-weight-medium m-0 carousel-subtitle">Agroforestri & Perdagangan Berkeadilan</h2>
+                    <h1 class="display-1 text-white m-0 carousel-title font-weight-bold">SPECIALTY</h1>
+                    <h2 class="text-white m-0 carousel-tagline">* ROBUSTA & LIBERIKA *</h2>
+                    <div class="mt-4 carousel-btn-group">
+                        <a href="{{ route('scan') }}" class="btn btn-primary px-4 py-3 font-weight-bold text-secondary mr-md-2 mb-2 mb-md-0" style="color: #33211D !important;">
                             <i class="fa fa-search mr-2"></i> Telusuri Jejak Kopi
                         </a>
                         <a href="{{ route('register.petani') }}" class="btn btn-outline-light px-4 py-3 font-weight-bold">
