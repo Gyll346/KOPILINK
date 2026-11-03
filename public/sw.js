@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kopilink-pwa-v6';
+const CACHE_NAME = 'kopilink-pwa-v7';
 const PRECACHE_ASSETS = [
     '/',
     '/manifest.json',
@@ -62,8 +62,9 @@ self.addEventListener('fetch', (event) => {
         return;
     }
 
-    // Asset statis lokal: Cache first, network fallback
-    if (event.request.url.startsWith(self.location.origin)) {
+    // Asset statis lokal (hanya file berekstensi statis murni, bukan API/JSON/polling): Cache first, network fallback
+    const reqUrl = new URL(event.request.url);
+    if (event.request.url.startsWith(self.location.origin) && reqUrl.pathname.match(/\.(css|js|png|jpg|jpeg|svg|webp|ico|woff|woff2|ttf|eot)$/i)) {
         event.respondWith(
             caches.match(event.request).then((cached) => {
                 if (cached) return cached;

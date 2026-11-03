@@ -111,7 +111,7 @@
     let pollInterval = null;
 
     function checkStatus() {
-        fetch("{{ route('admin.whatsapp.status') }}")
+        fetch("{{ route('admin.whatsapp.status') }}?_t=" + Date.now(), { cache: 'no-store' })
             .then(res => res.json())
             .then(data => {
                 const statusBadge = document.getElementById('badge-status');
@@ -138,6 +138,7 @@
                     statusBadge.innerText = 'MENUNGGU SCAN QR';
                     connSec.style.display = 'none';
                     discSec.style.display = 'none';
+                    loadingSec.style.display = 'none';
                     qrSec.style.display = 'block';
 
                     if (data.qr) {
@@ -172,15 +173,37 @@
             btnStart.addEventListener('click', function() {
                 this.disabled = true;
                 this.innerHTML = '<i class="fa fa-spinner fa-spin mr-1"></i> Menyiapkan...';
+
+                // Tampilkan indikator loading segera
+                document.getElementById('section-disconnected').style.display = 'none';
+                document.getElementById('section-loading').style.display = 'block';
+                document.getElementById('badge-status').className = 'badge badge-info px-3 py-2';
+                document.getElementById('badge-status').innerText = 'MEMBUAT QR CODE...';
+
                 fetch("{{ route('admin.whatsapp.start') }}", {
                     method: 'POST',
                     headers: {
                         'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
                     }
                 })
                 .then(res => res.json())
-                .then(() => {
+                .then(data => {
+                    if (data.status === 'qr' && data.qr) {
+                        document.getElementById('badge-status').className = 'badge badge-warning px-3 py-2 text-dark font-weight-bold';
+                        document.getElementById('badge-status').innerText = 'MENUNGGU SCAN QR';
+                        document.getElementById('section-loading').style.display = 'none';
+                        document.getElementById('section-disconnected').style.display = 'none';
+                        document.getElementById('section-connected').style.display = 'none';
+                        document.getElementById('section-qr').style.display = 'block';
+                        document.getElementById('qr-image').src = data.qr;
+                    } else {
+                        checkStatus();
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
                     checkStatus();
                 })
                 .finally(() => {

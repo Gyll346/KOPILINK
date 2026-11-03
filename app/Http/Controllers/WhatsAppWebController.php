@@ -77,18 +77,46 @@ class WhatsAppWebController extends Controller
                 usleep(500_000); // 500ms
             }
 
+            $status = null;
             try {
                 $state = WhatsApp::web('main')->state();
-                if (in_array($state['status'] ?? '', ['error', 'disconnected'])) {
-                    WhatsApp::web('main')->destroy();
-                }
+                $status = $state['status'] ?? null;
             } catch (Throwable $e) {}
 
+            // Jika sesi sebelumnya error atau disconnected, bersihkan sesi agar fresh
+            if (in_array($status, ['error', 'disconnected'])) {
+                try {
+                    WhatsApp::web('main')->destroy();
+                    usleep(300_000);
+                } catch (Throwable $e) {}
+            }
+
+            // Jika sesi sudah dalam kondisi menunggu scan QR, langsung kembalikan QR code aktif
+            if ($status === 'qr') {
+                try {
+                    $qrData = WhatsApp::web('main')->qr();
+                    return response()->json([
+                        'success' => true,
+                        'status' => 'qr',
+                        'qr' => $qrData['qr'] ?? null,
+                    ]);
+                } catch (Throwable $e) {}
+            }
+
             $response = WhatsApp::web('main')->start();
+            $qr = $response['qr'] ?? null;
+
+            if (($response['status'] ?? '') === 'qr' && !$qr) {
+                try {
+                    $qrData = WhatsApp::web('main')->qr();
+                    $qr = $qrData['qr'] ?? null;
+                } catch (Throwable $e) {}
+            }
+
             return response()->json([
                 'success' => true,
                 'status' => $response['status'] ?? 'initializing',
-                'qr' => $response['qr'] ?? null,
+                'qr' => $qr,
             ]);
         } catch (Throwable $e) {
             return response()->json([
