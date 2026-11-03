@@ -12,7 +12,7 @@
                 <p class="text-muted small mb-0">Hasil panen yang dicatat akan berstatus 'Tersedia' dan langsung dapat dilihat oleh Coffee Shop mitra.</p>
             </div>
             <div class="card-body p-4">
-                <form action="{{ route('petani.produksi.store') }}" method="POST" enctype="multipart/form-data">
+                <form action="{{ route('petani.produksi.store') }}" method="POST" enctype="multipart/form-data" data-offline-sync="true" data-form-title="Panen Green Bean" data-redirect-url="{{ route('petani.produksi.index') }}">
                     @csrf
 
                     <div class="form-group mb-4">

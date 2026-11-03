@@ -12,7 +12,7 @@
                 <p class="text-muted small mb-0">Catat berat panen buah ceri kopi dari kebun untuk pelacakan produktivitas dan kualitas bahan baku.</p>
             </div>
             <div class="card-body p-4">
-                <form action="{{ route('petani.ceri.store') }}" method="POST" enctype="multipart/form-data">
+                <form action="{{ route('petani.ceri.store') }}" method="POST" enctype="multipart/form-data" data-offline-sync="true" data-form-title="Panen Ceri" data-redirect-url="{{ route('petani.ceri.index') }}">
                     @csrf
 
                     <div class="form-group mb-4">

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kopilink-pwa-v4';
+const CACHE_NAME = 'kopilink-pwa-v5';
 const PRECACHE_ASSETS = [
     '/',
     '/manifest.json',
@@ -6,7 +6,8 @@ const PRECACHE_ASSETS = [
     '/img/logo.png',
     '/img/icon-192x192.png',
     '/img/icon-512x512.png',
-    '/css/style.min.css'
+    '/css/style.min.css',
+    '/js/offline-sync.js'
 ];
 
 self.addEventListener('install', (event) => {
@@ -54,6 +55,19 @@ self.addEventListener('fetch', (event) => {
                     }
                     return response;
                 });
+            })
+        );
+    }
+});
+
+// Background Sync API: Bangunkan client atau lakukan sinkronisasi antrean formulir offline
+self.addEventListener('sync', (event) => {
+    if (event.tag === 'kopilink-sync-forms') {
+        event.waitUntil(
+            self.clients.matchAll({ includeUncontrolled: true, type: 'window' }).then((clients) => {
+                if (clients && clients.length > 0) {
+                    clients.forEach((client) => client.postMessage({ type: 'SYNC_NOW' }));
+                }
             })
         );
     }

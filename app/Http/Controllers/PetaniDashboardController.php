@@ -87,6 +87,10 @@ class PetaniDashboardController extends Controller
             'foto_lahan' => !empty($paths) ? json_encode($paths) : null,
         ]);
 
+        if ($request->wantsJson()) {
+            return response()->json(['success' => true, 'message' => "Data Lahan {$jenisKopi} berhasil didaftarkan!"]);
+        }
+
         return redirect()->route('petani.lahan.index')
             ->with('status', "Data Lahan {$jenisKopi} berhasil didaftarkan ke sistem KopiLink!");
     }
@@ -241,6 +245,10 @@ class PetaniDashboardController extends Controller
             'foto_green_bean' => !empty($paths) ? json_encode($paths) : null,
         ]);
 
+        if ($request->wantsJson()) {
+            return response()->json(['success' => true, 'message' => 'Data panen green bean berhasil dicatat!']);
+        }
+
         return redirect()->route('petani.produksi.index')
             ->with('status', 'Data panen green bean berhasil dicatat dengan status Tersedia!');
     }
@@ -390,6 +398,10 @@ class PetaniDashboardController extends Controller
             'catatan' => $validated['catatan'] ?? null,
             'foto_ceri' => !empty($paths) ? json_encode($paths) : null,
         ]);
+
+        if ($request->wantsJson()) {
+            return response()->json(['success' => true, 'message' => 'Data panen ceri kopi berhasil dicatat!']);
+        }
 
         return redirect()->route('petani.ceri.index')
             ->with('status', 'Data panen ceri kopi berhasil dicatat!');

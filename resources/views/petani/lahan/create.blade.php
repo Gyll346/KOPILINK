@@ -20,7 +20,7 @@
                 <p class="text-muted small mb-0">Masukkan titik koordinat GPS kebun Anda serta data populasi tanaman kopi.</p>
             </div>
             <div class="card-body p-4">
-                <form action="{{ route('petani.lahan.store') }}" method="POST" enctype="multipart/form-data" id="lahanForm">
+                <form action="{{ route('petani.lahan.store') }}" method="POST" enctype="multipart/form-data" id="lahanForm" data-offline-sync="true" data-form-title="Pendaftaran Lahan" data-redirect-url="{{ route('petani.lahan.index') }}">
                     @csrf
 
                     <!-- Alert Business Rule Auto Variety -->

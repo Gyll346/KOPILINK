@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <title>@yield('title', 'Dashboard - KopiLink')</title>
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <!-- Favicon & PWA -->
     <link rel="shortcut icon" href="{{ asset('favicon.ico') }}">
@@ -386,6 +387,9 @@
                     <h5 class="m-0 font-weight-bold text-dark d-none d-sm-block">@yield('page_title', 'Dashboard')</h5>
                 </div>
                 <div class="d-flex align-items-center">
+                    <!-- Indikator Sinyal & Antrean Offline -->
+                    <div id="offline-sync-indicator" class="mr-3 d-flex align-items-center"></div>
+
                     <span class="mr-3 text-muted small d-none d-md-inline">
                         <i class="fa fa-calendar-alt mr-1"></i> {{ date('d F Y') }}
                     </span>
@@ -560,7 +564,8 @@
             </div>
         </div>
     </div>
-    </script>
+    <!-- Offline Queue & Auto-Sync Engine -->
+    <script src="{{ asset('js/offline-sync.js') }}"></script>
 
     @stack('scripts')
 </body>

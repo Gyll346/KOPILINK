@@ -24,6 +24,10 @@ Route::post('/donasi/qris', [TraceabilityController::class, 'donasiCreateQris'])
 Route::get('/donasi/status', [TraceabilityController::class, 'donasiCheckStatus'])->name('donasi.status');
 Route::post('/donasi/expire', [TraceabilityController::class, 'donasiExpire'])->name('donasi.expire');
 Route::post('/donasi/midtrans/notification', [TraceabilityController::class, 'midtransNotification'])->name('donasi.notification');
+Route::get('/csrf-token', function () {
+    return response()->json(['token' => csrf_token()]);
+})->name('csrf.token');
+
 Route::get('/menu', [TraceabilityController::class, 'menu'])->name('menu');
 Route::get('/contact', [TraceabilityController::class, 'contact'])->name('contact');
 Route::post('/contact', [TraceabilityController::class, 'contactSend'])
