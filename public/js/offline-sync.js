@@ -362,6 +362,38 @@ const KopiLinkOffline = (() => {
         // Cek antrean saat halaman baru dimuat
         if (navigator.onLine) {
             setTimeout(syncNow, 2000);
+            prewarmPetaniCache();
+        }
+    }
+
+    // Pra-simpan rute dashboard petani ke cache agar profil, panen, dan kebun bisa dibuka offline
+    async function prewarmPetaniCache() {
+        if (!navigator.onLine || !window.location.pathname.startsWith('/petani')) return;
+        if (!('caches' in window)) return;
+
+        const routes = [
+            '/petani/dashboard',
+            '/petani/profil',
+            '/petani/ceri',
+            '/petani/ceri/create',
+            '/petani/produksi',
+            '/petani/produksi/create',
+            '/petani/lahan',
+            '/petani/lahan/create'
+        ];
+
+        try {
+            const cache = await caches.open('kopilink-pwa-v6');
+            for (const r of routes) {
+                const match = await cache.match(r);
+                if (!match) {
+                    fetch(r).then((res) => {
+                        if (res && res.status === 200) cache.put(r, res);
+                    }).catch(() => {});
+                }
+            }
+        } catch (e) {
+            // Abaikan jika browser membatasi cache
         }
     }
 
@@ -375,3 +407,4 @@ const KopiLinkOffline = (() => {
 document.addEventListener('DOMContentLoaded', () => {
     KopiLinkOffline.init();
 });
+
