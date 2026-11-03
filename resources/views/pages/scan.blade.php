@@ -82,7 +82,7 @@
                                 <i class="fa fa-keyboard text-primary mr-1"></i> Atau Masukkan Kode Kemasan Secara Manual:
                             </label>
                             <form id="manualForm" onsubmit="event.preventDefault(); goToTrace();" class="d-flex">
-                                <input type="text" id="manualCode" class="form-control border-0 mr-2" placeholder="Contoh: KPL-ROB-2026-BBF01" value="KPL-ROB-2026-BBF01">
+                                <input type="text" id="manualCode" class="form-control border-0 mr-2" placeholder="Contoh: KPL-ROB-2026-BBF01">
                                 <button type="submit" class="btn btn-primary font-weight-bold text-secondary px-3" style="color: #33211D !important;">
                                     Buka
                                 </button>
