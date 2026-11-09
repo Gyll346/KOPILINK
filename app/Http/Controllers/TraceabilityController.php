@@ -50,8 +50,8 @@ class TraceabilityController extends Controller
     public function donasi()
     {
         $rekeningAktif = RekeningDonasi::where('is_active', true)->first();
-        $bayaraja = new BayarajaService();
-        $qrisEnabled = $bayaraja->isConfigured();
+        $duitku = new DuitkuService();
+        $qrisEnabled = $duitku->isConfigured();
         return view('pages.donasi', compact('rekeningAktif', 'qrisEnabled'));
     }
 
