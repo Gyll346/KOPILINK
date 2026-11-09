@@ -9,7 +9,7 @@ use App\Models\KontakPesan;
 use App\Models\RekeningDonasi;
 use App\Models\DonasiTransaksi;
 use App\Services\ImageOptimizationService;
-use App\Services\BayarajaService;
+use App\Services\DuitkuService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Log;
@@ -107,7 +107,7 @@ class TraceabilityController extends Controller
     }
 
     /**
-     * AJAX: Create Bayaraja QRIS payment → returns QR code URL.
+     * AJAX: Create Duitku Dynamic QRIS payment → returns QR code URL.
      */
     public function donasiCreateQris(Request $request)
     {
@@ -126,7 +126,7 @@ class TraceabilityController extends Controller
         }
 
         $rekeningAktif = RekeningDonasi::where('is_active', true)->first();
-        $orderId = 'KPL-DON-' . strtoupper(Str::random(8)) . '-' . time();
+        $orderId = 'KPL-DON-' . strtoupper(Str::random(6)) . '-' . time();
 
         // Create pending transaction
         $transaksi = DonasiTransaksi::create([
@@ -142,8 +142,8 @@ class TraceabilityController extends Controller
         ]);
 
         try {
-            $bayaraja = new BayarajaService();
-            $result = $bayaraja->createQris(
+            $duitku = new DuitkuService();
+            $result = $duitku->createQris(
                 $orderId,
                 (int) $validated['nominal'],
                 $validated['nama_donatur'],
@@ -156,6 +156,7 @@ class TraceabilityController extends Controller
                 'order_id' => $orderId,
                 'expiry_time' => $result['expiry_time'],
                 'nominal' => (int) $validated['nominal'],
+                'payment_url' => $result['payment_url'],
             ]);
         } catch (\Throwable $e) {
             // Rollback: delete pending transaction
@@ -163,13 +164,13 @@ class TraceabilityController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal membuat QRIS: ' . $e->getMessage(),
+                'message' => 'Gagal membuat QRIS Duitku: ' . $e->getMessage(),
             ], 422);
         }
     }
 
     /**
-     * AJAX: Check payment status by order_id (sync directly with Bayaraja / Gateway).
+     * AJAX: Check payment status by order_id (sync directly with Duitku).
      */
     public function donasiCheckStatus(Request $request)
     {
@@ -180,15 +181,15 @@ class TraceabilityController extends Controller
             return response()->json(['status' => 'not_found'], 404);
         }
 
-        // Sync langsung ke Bayaraja API secara realtime jika masih pending
+        // Sync langsung ke Duitku API secara realtime jika masih pending
         if ($transaksi->status === 'pending') {
             try {
-                $bayaraja = new BayarajaService();
-                $bStatus = $bayaraja->checkStatus($orderId);
-                if ($bStatus === 'settlement') {
+                $duitku = new DuitkuService();
+                $dStatus = $duitku->checkStatus($orderId);
+                if ($dStatus === 'settlement') {
                     $transaksi->update(['status' => 'settlement']);
-                } elseif (in_array($bStatus, ['expire', 'cancel'])) {
-                    $transaksi->update(['status' => $bStatus]);
+                } elseif (in_array($dStatus, ['expire', 'cancel'])) {
+                    $transaksi->update(['status' => $dStatus]);
                 }
             } catch (\Throwable $e) {
                 // Abaikan jika network error sementara
@@ -214,34 +215,32 @@ class TraceabilityController extends Controller
     }
 
     /**
-     * Bayaraja notification webhook (POST, no CSRF).
+     * Duitku notification callback webhook (POST, no CSRF).
      */
-    public function bayarajaNotification(Request $request)
+    public function duitkuNotification(Request $request)
     {
         $payload = $request->all();
-        $event = $payload['event'] ?? ($payload['type'] ?? '');
-        $data = $payload['data'] ?? $payload;
+        $duitku = new DuitkuService();
 
-        $orderId = $data['order_id'] ?? ($data['title'] ?? ($payload['order_id'] ?? ''));
-
-        $transaksi = DonasiTransaksi::where('order_id', $orderId)->first();
-        if (!$transaksi && !empty($data['id'])) {
-            $transaksi = DonasiTransaksi::where('order_id', 'LIKE', '%' . $data['id'] . '%')->first();
+        if (!$duitku->verifyCallback($payload)) {
+            Log::warning('Duitku callback signature invalid', $payload);
+            return response('Bad Signature', 400);
         }
 
-        if ($transaksi) {
-            $newStatus = match ($event) {
-                'transaction.confirmed', 'payment.success', 'paid', 'confirmed' => 'settlement',
-                'transaction.rejected', 'payment.failed', 'rejected' => 'cancel',
-                default => 'pending',
-            };
+        $merchantOrderId = $payload['merchantOrderId'] ?? '';
+        $resultCode = $payload['resultCode'] ?? '';
 
-            if ($newStatus !== 'pending') {
-                $transaksi->update(['status' => $newStatus]);
+        $transaksi = DonasiTransaksi::where('order_id', $merchantOrderId)->first();
+
+        if ($transaksi) {
+            if ($resultCode === '00') {
+                $transaksi->update(['status' => 'settlement']);
+            } else {
+                $transaksi->update(['status' => 'cancel']);
             }
         }
 
-        return response()->json(['message' => 'OK']);
+        return response('OK', 200);
     }
 
     public function menu()

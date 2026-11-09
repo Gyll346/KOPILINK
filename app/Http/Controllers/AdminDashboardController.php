@@ -309,12 +309,14 @@ class AdminDashboardController extends Controller
         $totalKeluar = DonasiTransaksi::where('jenis', 'keluar')->sum('nominal');
         $saldoKas = $totalMasuk - $totalKeluar;
 
-        $bayarajaApiKey = config('bayaraja.api_key') ?: env('BAYARAJA_API_KEY', '');
-        $bayarajaBaseUrl = config('bayaraja.base_url') ?: env('BAYARAJA_BASE_URL', 'https://bayaraja.arwebs.my.id');
-        $bayarajaConfig = [
-            'base_url' => $bayarajaBaseUrl,
-            'api_key' => $bayarajaApiKey,
-            'is_configured' => !empty($bayarajaApiKey),
+        $duitkuMerchantCode = config('duitku.merchant_code') ?: env('DUITKU_MERCHANT_CODE', '');
+        $duitkuApiKey = config('duitku.api_key') ?: env('DUITKU_API_KEY', '');
+        $duitkuIsSandbox = (bool) (config('duitku.is_sandbox') ?? env('DUITKU_IS_SANDBOX', true));
+        $duitkuConfig = [
+            'merchant_code' => $duitkuMerchantCode,
+            'api_key' => $duitkuApiKey,
+            'is_sandbox' => $duitkuIsSandbox,
+            'is_configured' => !empty($duitkuMerchantCode) && !empty($duitkuApiKey),
         ];
 
         return view('admin.donasi', compact(
@@ -327,18 +329,18 @@ class AdminDashboardController extends Controller
             'countCup',
             'totalKeluar',
             'saldoKas',
-            'bayarajaConfig'
+            'duitkuConfig'
         ));
     }
 
     /**
-     * Update Bayaraja API Credentials & Environment (.env)
+     * Update Duitku API Credentials & Environment (.env)
      */
-    public function bayarajaUpdate(Request $request)
+    public function duitkuUpdate(Request $request)
     {
         $validated = $request->validate([
-            'bayaraja_base_url' => ['nullable', 'url', 'max:150'],
-            'bayaraja_api_key' => ['nullable', 'string', 'max:120', 'regex:/^[a-zA-Z0-9_\-]+$/'],
+            'duitku_merchant_code' => ['nullable', 'string', 'max:50'],
+            'duitku_api_key' => ['nullable', 'string', 'max:100', 'regex:/^[a-zA-Z0-9_\-]+$/'],
         ]);
 
         $envPath = base_path('.env');
@@ -346,12 +348,13 @@ class AdminDashboardController extends Controller
             $content = file_get_contents($envPath);
 
             $updates = [];
-            if (!empty($validated['bayaraja_base_url'])) {
-                $updates['BAYARAJA_BASE_URL'] = rtrim($validated['bayaraja_base_url'], '/');
+            if (!empty($validated['duitku_merchant_code'])) {
+                $updates['DUITKU_MERCHANT_CODE'] = trim($validated['duitku_merchant_code']);
             }
-            if (!empty($validated['bayaraja_api_key'])) {
-                $updates['BAYARAJA_API_KEY'] = trim($validated['bayaraja_api_key']);
+            if (!empty($validated['duitku_api_key'])) {
+                $updates['DUITKU_API_KEY'] = trim($validated['duitku_api_key']);
             }
+            $updates['DUITKU_IS_SANDBOX'] = $request->has('duitku_is_sandbox') ? 'true' : 'false';
 
             foreach ($updates as $key => $val) {
                 if (preg_match("/^{$key}=.*/m", $content)) {
@@ -365,7 +368,7 @@ class AdminDashboardController extends Controller
             \Illuminate\Support\Facades\Artisan::call('config:clear');
         }
 
-        return back()->with('status', 'Konfigurasi API Bayaraja QRIS berhasil diperbarui!');
+        return back()->with('status', 'Konfigurasi API Duitku QRIS berhasil diperbarui!');
     }
 
     /**

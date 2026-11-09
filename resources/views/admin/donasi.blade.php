@@ -11,8 +11,8 @@
     </div>
     <div class="d-flex flex-wrap" style="gap: 8px;">
         <button type="button" class="btn btn-outline-info" data-toggle="modal" data-target="#modalGatewayConfig">
-            <i class="fa fa-qrcode mr-1"></i> API Bayaraja QRIS
-            @if(!empty($bayarajaConfig['is_configured']))
+            <i class="fa fa-qrcode mr-1"></i> API Duitku QRIS
+            @if(!empty($duitkuConfig['is_configured']))
                 <span class="badge badge-success ml-1">Aktif</span>
             @else
                 <span class="badge badge-warning text-dark ml-1">Belum Disetel</span>
@@ -503,13 +503,13 @@
     </div>
 </div>
 
-<!-- Modal Pengaturan Bayaraja QRIS -->
+<!-- Modal Pengaturan Duitku QRIS -->
 <div class="modal fade" id="modalGatewayConfig" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content border-0 shadow">
             <div class="modal-header bg-dark text-white">
                 <h5 class="modal-title font-weight-bold">
-                    <i class="fa fa-qrcode text-warning mr-2"></i> Pengaturan Bayaraja QRIS
+                    <i class="fa fa-qrcode text-warning mr-2"></i> Pengaturan Duitku QRIS
                 </h5>
                 <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
@@ -519,19 +519,27 @@
                 @csrf
                 <div class="modal-body p-4">
                     <div class="alert alert-info py-2 px-3 small mb-3">
-                        <i class="fa fa-info-circle mr-1"></i> Dapatkan API Key dari Dashboard Bayaraja: <a href="{{ $bayarajaConfig['base_url'] }}" target="_blank" class="font-weight-bold text-primary">{{ $bayarajaConfig['base_url'] }}</a> (Menu: <em>Settings &rarr; API Keys</em>).
+                        <i class="fa fa-info-circle mr-1"></i> Dapatkan Merchant Code & API Key dari Dashboard Duitku: <a href="https://sandbox.duitku.com" target="_blank" class="font-weight-bold text-primary">sandbox.duitku.com</a> atau <a href="https://passport.duitku.com" target="_blank" class="font-weight-bold text-primary">passport.duitku.com</a> (Menu: <em>Proyek Saya</em>).
                     </div>
 
                     <div class="form-group mb-3">
-                        <label class="font-weight-bold text-dark small">Bayaraja Base URL</label>
-                        <input type="url" name="bayaraja_base_url" class="form-control" value="{{ $bayarajaConfig['base_url'] }}" placeholder="https://bayaraja.arwebs.my.id">
-                        <small class="text-muted">Domain / alamat URL tempat instance Bayaraja Anda di-host.</small>
+                        <label class="font-weight-bold text-dark small">Merchant Code Duitku <span class="text-danger">*</span></label>
+                        <input type="text" name="duitku_merchant_code" class="form-control" value="{{ $duitkuConfig['merchant_code'] }}" placeholder="Contoh: DS37706 atau D1234" required>
+                        <small class="text-muted">Kode unik merchant yang terdaftar di proyek Duitku Anda.</small>
                     </div>
 
-                    <div class="form-group mb-2">
-                        <label class="font-weight-bold text-dark small">API Key (Bearer Token)</label>
-                        <input type="text" name="bayaraja_api_key" class="form-control" value="{{ $bayarajaConfig['api_key'] }}" placeholder="Contoh: byr_xxxxxxxxxxxxxxxx...">
-                        <small class="text-muted">Kunci API yang dihasilkan dari dashboard Bayaraja.</small>
+                    <div class="form-group mb-3">
+                        <label class="font-weight-bold text-dark small">API Key Duitku <span class="text-danger">*</span></label>
+                        <input type="text" name="duitku_api_key" class="form-control" value="{{ $duitkuConfig['api_key'] }}" placeholder="Contoh: 5222dae2a2ecaafc..." required>
+                        <small class="text-muted">Kunci API proyek dari dashboard Duitku.</small>
+                    </div>
+
+                    <div class="form-group form-check mb-2">
+                        <input type="checkbox" name="duitku_is_sandbox" value="1" class="form-check-input" id="checkSandbox" {{ !empty($duitkuConfig['is_sandbox']) ? 'checked' : '' }}>
+                        <label class="form-check-label font-weight-bold text-dark small" for="checkSandbox">
+                            Gunakan Mode Sandbox (Testing / Uji Coba)
+                        </label>
+                        <small class="form-text text-muted">Hapus centang ini jika akun sudah disetujui untuk transaksi Production (Live uang sungguhan).</small>
                     </div>
                 </div>
                 <div class="modal-footer bg-light border-0">
