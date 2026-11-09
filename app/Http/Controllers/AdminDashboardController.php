@@ -309,12 +309,12 @@ class AdminDashboardController extends Controller
         $totalKeluar = DonasiTransaksi::where('jenis', 'keluar')->sum('nominal');
         $saldoKas = $totalMasuk - $totalKeluar;
 
-        $serverKey = config('midtrans.server_key') ?: env('MIDTRANS_SERVER_KEY', '');
-        $midtransConfig = [
-            'server_key' => $serverKey,
-            'client_key' => config('midtrans.client_key') ?: env('MIDTRANS_CLIENT_KEY', ''),
-            'is_production' => (bool) (config('midtrans.is_production') ?? env('MIDTRANS_IS_PRODUCTION', false)),
-            'is_configured' => !empty($serverKey) && !str_contains($serverKey, 'XXXX'),
+        $bayarajaApiKey = config('bayaraja.api_key') ?: env('BAYARAJA_API_KEY', '');
+        $bayarajaBaseUrl = config('bayaraja.base_url') ?: env('BAYARAJA_BASE_URL', 'https://bayaraja.arwebs.my.id');
+        $bayarajaConfig = [
+            'base_url' => $bayarajaBaseUrl,
+            'api_key' => $bayarajaApiKey,
+            'is_configured' => !empty($bayarajaApiKey),
         ];
 
         return view('admin.donasi', compact(
@@ -327,33 +327,30 @@ class AdminDashboardController extends Controller
             'countCup',
             'totalKeluar',
             'saldoKas',
-            'midtransConfig'
+            'bayarajaConfig'
         ));
     }
 
     /**
-     * Update Midtrans API Credentials & Environment (.env)
+     * Update Bayaraja API Credentials & Environment (.env)
      */
-    public function midtransUpdate(Request $request)
+    public function bayarajaUpdate(Request $request)
     {
         $validated = $request->validate([
-            'midtrans_server_key' => ['nullable', 'string', 'max:100', 'regex:/^[a-zA-Z0-9_\-]+$/'],
-            'midtrans_client_key' => ['nullable', 'string', 'max:100', 'regex:/^[a-zA-Z0-9_\-]+$/'],
-            'midtrans_is_production' => 'nullable|in:0,1',
+            'bayaraja_base_url' => ['nullable', 'url', 'max:150'],
+            'bayaraja_api_key' => ['nullable', 'string', 'max:120', 'regex:/^[a-zA-Z0-9_\-]+$/'],
         ]);
 
         $envPath = base_path('.env');
         if (file_exists($envPath)) {
             $content = file_get_contents($envPath);
-            $isProduction = ($request->input('midtrans_is_production', '0') === '1') ? 'true' : 'false';
 
-            $updates = [
-                'MIDTRANS_CLIENT_KEY' => trim($validated['midtrans_client_key'] ?? ''),
-                'MIDTRANS_IS_PRODUCTION' => $isProduction,
-            ];
-
-            if (!empty($validated['midtrans_server_key'])) {
-                $updates['MIDTRANS_SERVER_KEY'] = trim($validated['midtrans_server_key']);
+            $updates = [];
+            if (!empty($validated['bayaraja_base_url'])) {
+                $updates['BAYARAJA_BASE_URL'] = rtrim($validated['bayaraja_base_url'], '/');
+            }
+            if (!empty($validated['bayaraja_api_key'])) {
+                $updates['BAYARAJA_API_KEY'] = trim($validated['bayaraja_api_key']);
             }
 
             foreach ($updates as $key => $val) {
@@ -367,6 +364,17 @@ class AdminDashboardController extends Controller
             file_put_contents($envPath, $content);
             \Illuminate\Support\Facades\Artisan::call('config:clear');
         }
+
+        return back()->with('status', 'Konfigurasi API Bayaraja QRIS berhasil diperbarui!');
+    }
+
+    /**
+     * Legacy alias for updating gateway config
+     */
+    public function midtransUpdate(Request $request)
+    {
+        return $this->bayarajaUpdate($request);
+    }
 
         return back()->with('status', 'Konfigurasi API Midtrans QRIS berhasil diperbarui!');
     }

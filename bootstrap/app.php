@@ -15,6 +15,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->appendToGroup('web', \App\Http\Middleware\PreventBackHistory::class);
         $middleware->validateCsrfTokens(except: [
             'donasi/midtrans/notification',
+            'donasi/bayaraja/notification',
+            'donasi/notification',
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

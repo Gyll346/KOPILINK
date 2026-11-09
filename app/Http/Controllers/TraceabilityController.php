@@ -9,6 +9,7 @@ use App\Models\KontakPesan;
 use App\Models\RekeningDonasi;
 use App\Models\DonasiTransaksi;
 use App\Services\ImageOptimizationService;
+use App\Services\BayarajaService;
 use App\Services\MidtransService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
@@ -50,9 +51,9 @@ class TraceabilityController extends Controller
     public function donasi()
     {
         $rekeningAktif = RekeningDonasi::where('is_active', true)->first();
-        $midtransClientKey = config('midtrans.client_key');
-        $midtransEnabled = !empty(config('midtrans.server_key'));
-        return view('pages.donasi', compact('rekeningAktif', 'midtransClientKey', 'midtransEnabled'));
+        $bayaraja = new BayarajaService();
+        $qrisEnabled = $bayaraja->isConfigured();
+        return view('pages.donasi', compact('rekeningAktif', 'qrisEnabled'));
     }
 
     /**
@@ -143,8 +144,8 @@ class TraceabilityController extends Controller
         ]);
 
         try {
-            $midtrans = new MidtransService();
-            $result = $midtrans->createQris(
+            $bayaraja = new BayarajaService();
+            $result = $bayaraja->createQris(
                 $orderId,
                 (int) $validated['nominal'],
                 $validated['nama_donatur'],
@@ -170,7 +171,7 @@ class TraceabilityController extends Controller
     }
 
     /**
-     * AJAX: Check payment status by order_id (sync directly with Midtrans).
+     * AJAX: Check payment status by order_id (sync directly with Bayaraja / Gateway).
      */
     public function donasiCheckStatus(Request $request)
     {
@@ -181,15 +182,15 @@ class TraceabilityController extends Controller
             return response()->json(['status' => 'not_found'], 404);
         }
 
-        // Sync langsung ke Midtrans API secara realtime jika masih pending
+        // Sync langsung ke Bayaraja API secara realtime jika masih pending
         if ($transaksi->status === 'pending') {
             try {
-                $midtrans = new MidtransService();
-                $mStatus = $midtrans->checkStatus($orderId);
-                if (in_array($mStatus, ['settlement', 'capture'])) {
+                $bayaraja = new BayarajaService();
+                $bStatus = $bayaraja->checkStatus($orderId);
+                if ($bStatus === 'settlement') {
                     $transaksi->update(['status' => 'settlement']);
-                } elseif (in_array($mStatus, ['expire', 'cancel', 'deny'])) {
-                    $transaksi->update(['status' => $mStatus]);
+                } elseif (in_array($bStatus, ['expire', 'cancel'])) {
+                    $transaksi->update(['status' => $bStatus]);
                 }
             } catch (\Throwable $e) {
                 // Abaikan jika network error sementara
@@ -212,6 +213,37 @@ class TraceabilityController extends Controller
         }
 
         return response()->json(['success' => true, 'status' => 'expire']);
+    }
+
+    /**
+     * Bayaraja notification webhook (POST, no CSRF).
+     */
+    public function bayarajaNotification(Request $request)
+    {
+        $payload = $request->all();
+        $event = $payload['event'] ?? ($payload['type'] ?? '');
+        $data = $payload['data'] ?? $payload;
+
+        $orderId = $data['order_id'] ?? ($data['title'] ?? ($payload['order_id'] ?? ''));
+
+        $transaksi = DonasiTransaksi::where('order_id', $orderId)->first();
+        if (!$transaksi && !empty($data['id'])) {
+            $transaksi = DonasiTransaksi::where('order_id', 'LIKE', '%' . $data['id'] . '%')->first();
+        }
+
+        if ($transaksi) {
+            $newStatus = match ($event) {
+                'transaction.confirmed', 'payment.success', 'paid', 'confirmed' => 'settlement',
+                'transaction.rejected', 'payment.failed', 'rejected' => 'cancel',
+                default => 'pending',
+            };
+
+            if ($newStatus !== 'pending') {
+                $transaksi->update(['status' => $newStatus]);
+            }
+        }
+
+        return response()->json(['message' => 'OK']);
     }
 
     /**

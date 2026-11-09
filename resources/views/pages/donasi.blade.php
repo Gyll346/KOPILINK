@@ -286,14 +286,6 @@
 
                     <div class="small text-muted mt-2">
                         Pindai via <strong>GoPay, OVO, Dana, ShopeePay, BCA, BRI, Mandiri</strong> atau aplikasi mobile banking apa pun yang berlogo QRIS.
-                        @if(!config('midtrans.is_production'))
-                            <div class="mt-2 p-2 bg-light rounded text-left border">
-                                <span class="badge badge-info mb-1"><i class="fa fa-flask mr-1"></i> Sandbox Test Mode</span><br>
-                                <span class="text-secondary" style="font-size: 11px;">
-                                    Untuk menguji pembayaran di environment sandbox, Anda dapat membuka <a href="https://simulator.sandbox.midtrans.com/qris/index" target="_blank" class="text-primary font-weight-bold">QRIS Simulator Midtrans</a> dan memasukkan gambar QR di atas.
-                                </span>
-                            </div>
-                        @endif
                     </div>
                 </div>
 
@@ -395,7 +387,7 @@ function prosesBayarQris() {
     }
 
     btn.disabled = true;
-    btn.innerHTML = '<i class="fa fa-spinner fa-spin mr-2"></i> Menyiapkan QRIS Midtrans...';
+    btn.innerHTML = '<i class="fa fa-spinner fa-spin mr-2"></i> Menyiapkan QR Code QRIS...';
 
     fetch('{{ route("donasi.qris") }}', {
         method: 'POST',
@@ -438,7 +430,7 @@ function prosesBayarQris() {
     .catch(err => {
         btn.disabled = false;
         btn.innerHTML = '<i class="fa fa-qrcode mr-2"></i> Bayar Donasi via QRIS (Batas Waktu 5 Menit)';
-        errAlert.innerText = 'Terjadi gangguan jaringan saat menghubungi server Midtrans.';
+        errAlert.innerText = 'Terjadi gangguan jaringan saat menghubungi server pembayaran.';
         errAlert.classList.remove('d-none');
     });
 }
