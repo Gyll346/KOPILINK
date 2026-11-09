@@ -18,9 +18,6 @@
                 <span class="badge badge-warning text-dark ml-1">Belum Disetel</span>
             @endif
         </button>
-        <button type="button" class="btn btn-outline-dark" data-toggle="modal" data-target="#modalTambahRekening">
-            <i class="fa fa-university mr-1 text-primary"></i> Atur Rekening Tujuan
-        </button>
         <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#modalCatatKeluar">
             <i class="fa fa-arrow-up mr-1"></i> Catat Uang Keluar
         </button>
@@ -116,106 +113,7 @@
     </div>
 </div>
 
-<!-- Bagian 1: Rekening Tujuan Penerima Donasi -->
-<div class="card card-stat mb-4">
-    <div class="card-header bg-white border-0 pt-3 px-3 pb-2 d-flex justify-content-between align-items-center flex-wrap" style="gap: 10px;">
-        <div>
-            <h6 class="font-weight-bold m-0 text-dark"><i class="fa fa-university text-primary mr-2"></i> Rekening Penerima Donasi yang Tersedia</h6>
-            <small class="text-muted">Pilih rekening mana yang akan diaktifkan sebagai rekening tujuan utama donasi.</small>
-        </div>
-        <div class="d-flex align-items-center flex-wrap" style="gap: 8px;">
-            <div class="input-group input-group-sm" style="width: 220px;">
-                <div class="input-group-prepend">
-                    <span class="input-group-text bg-white border-right-0"><i class="fa fa-search text-muted"></i></span>
-                </div>
-                <input type="text" id="inputCariRekening" class="form-control border-left-0" placeholder="Cari rekening / bank...">
-            </div>
-            <button type="button" class="btn btn-sm btn-koppee" data-toggle="modal" data-target="#modalTambahRekening">
-                <i class="fa fa-plus-circle mr-1"></i> Tambah Rekening
-            </button>
-        </div>
-    </div>
-    <div class="card-body p-0">
-        @if($rekeningList->isEmpty())
-            <div class="text-center py-4">
-                <i class="fa fa-university fa-2x text-muted mb-2"></i>
-                <p class="text-muted mb-0">Belum ada rekening penerima yang didaftarkan.</p>
-            </div>
-        @else
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0" id="tableRekening">
-                    <thead class="thead-light">
-                        <tr>
-                            <th class="pl-4">Bank / Provider</th>
-                            <th>Nomor Rekening / E-Wallet</th>
-                            <th>Atas Nama</th>
-                            <th>Keterangan</th>
-                            <th>Status Penerima</th>
-                            <th class="text-center pr-4">Aksi Pengaturan</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($rekeningList as $rek)
-                            <tr class="{{ $rek->is_active ? 'table-warning' : '' }}">
-                                <td class="pl-4 font-weight-bold text-dark">
-                                    <i class="fa fa-money-check text-muted mr-1"></i> {{ $rek->nama_bank }}
-                                </td>
-                                <td>
-                                    <span class="badge badge-dark p-2 font-weight-bold text-monospace" style="font-size: 13px;">
-                                        {{ $rek->nomor_rekening }}
-                                    </span>
-                                </td>
-                                <td><strong>{{ $rek->atas_nama }}</strong></td>
-                                <td><small class="text-muted">{{ $rek->keterangan ?: '-' }}</small></td>
-                                <td>
-                                    @if($rek->is_active)
-                                        <span class="badge badge-success px-2 py-1">
-                                            <i class="fa fa-check-circle mr-1"></i> Rekening Utama (Aktif)
-                                        </span>
-                                    @else
-                                        <span class="badge badge-secondary px-2 py-1">Cadangan</span>
-                                    @endif
-                                </td>
-                                <td class="text-center pr-4">
-                                    <div class="d-flex justify-content-center align-items-center" style="gap: 5px;">
-                                        <button type="button" 
-                                                class="btn btn-sm btn-outline-primary btn-edit-rek" 
-                                                title="Edit Rekening"
-                                                data-id="{{ $rek->id_rekening }}"
-                                                data-bank="{{ $rek->nama_bank }}"
-                                                data-nomor="{{ $rek->nomor_rekening }}"
-                                                data-nama="{{ $rek->atas_nama }}"
-                                                data-ket="{{ $rek->keterangan }}"
-                                                data-active="{{ $rek->is_active ? '1' : '0' }}">
-                                            <i class="fa fa-edit"></i>
-                                        </button>
-                                        @if(!$rek->is_active)
-                                            <form action="{{ route('admin.donasi.rekening.toggle', ['id_rekening' => $rek->id_rekening]) }}" method="POST">
-                                                @csrf
-                                                <button type="submit" class="btn btn-sm btn-outline-success font-weight-bold" title="Jadikan Rekening Utama">
-                                                    <i class="fa fa-check mr-1"></i> Jadikan Utama
-                                                </button>
-                                            </form>
-                                        @endif
-                                        <form action="{{ route('admin.donasi.rekening.destroy', ['id_rekening' => $rek->id_rekening]) }}" method="POST" onsubmit="return confirm('Hapus rekening {{ $rek->nama_bank }} - {{ $rek->nomor_rekening }}?');">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Hapus Rekening">
-                                                <i class="fa fa-trash-alt"></i>
-                                            </button>
-                                        </form>
-                                    </div>
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-        @endif
-    </div>
-</div>
-
-<!-- Bagian 2: Riwayat Arus Kas Donasi (Uang Masuk & Keluar) -->
+<!-- Riwayat Arus Kas Donasi (Uang Masuk & Keluar) -->
 <div class="card card-stat">
     <div class="card-header bg-white border-0 pt-3 px-3 pb-2 d-flex justify-content-between align-items-center flex-wrap">
         <div>
@@ -567,38 +465,6 @@ function filterKasTable() {
     }
 }
 
-document.addEventListener('DOMContentLoaded', function () {
-    // Cari Rekening Instant Filter
-    const inputCariRekening = document.getElementById('inputCariRekening');
-    if (inputCariRekening) {
-        inputCariRekening.addEventListener('input', function () {
-            const filter = this.value.toLowerCase().trim();
-            const rows = document.querySelectorAll('#tableRekening tbody tr');
-            rows.forEach(row => {
-                const text = row.textContent || row.innerText;
-                row.style.display = text.toLowerCase().indexOf(filter) > -1 ? '' : 'none';
-            });
-        });
-    }
 
-    // Modal Edit Rekening
-    $(document).on('click', '.btn-edit-rek', function () {
-        const id = $(this).data('id');
-        const bank = $(this).data('bank');
-        const nomor = $(this).data('nomor');
-        const nama = $(this).data('nama');
-        const ket = $(this).data('ket');
-        const active = $(this).data('active') == '1';
-
-        $('#formEditRekening').attr('action', '{{ url("admin/donasi/rekening") }}/' + id);
-        $('#edit_nama_bank').val(bank);
-        $('#edit_nomor_rekening').val(nomor);
-        $('#edit_atas_nama').val(nama);
-        $('#edit_keterangan').val(ket);
-        $('#edit_is_active').prop('checked', active);
-
-        $('#modalEditRekening').modal('show');
-    });
-});
 </script>
 @endsection
