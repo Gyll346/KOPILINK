@@ -9,6 +9,7 @@ use App\Models\KontakPesan;
 use App\Models\RekeningDonasi;
 use App\Models\DonasiTransaksi;
 use App\Services\ImageOptimizationService;
+use App\Services\BayarajaService;
 use App\Services\DuitkuService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
@@ -50,8 +51,8 @@ class TraceabilityController extends Controller
     public function donasi()
     {
         $rekeningAktif = RekeningDonasi::where('is_active', true)->first();
-        $duitku = new DuitkuService();
-        $qrisEnabled = $duitku->isConfigured();
+        $bayaraja = new BayarajaService();
+        $qrisEnabled = $bayaraja->isConfigured();
         return view('pages.donasi', compact('rekeningAktif', 'qrisEnabled'));
     }
 
@@ -142,8 +143,8 @@ class TraceabilityController extends Controller
         ]);
 
         try {
-            $duitku = new DuitkuService();
-            $result = $duitku->createQris(
+            $bayaraja = new BayarajaService();
+            $result = $bayaraja->createQris(
                 $orderId,
                 (int) $validated['nominal'],
                 $validated['nama_donatur'],
@@ -156,7 +157,6 @@ class TraceabilityController extends Controller
                 'order_id' => $orderId,
                 'expiry_time' => $result['expiry_time'],
                 'nominal' => (int) $validated['nominal'],
-                'payment_url' => $result['payment_url'],
             ]);
         } catch (\Throwable $e) {
             // Rollback: delete pending transaction
@@ -164,13 +164,13 @@ class TraceabilityController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal membuat QRIS Duitku: ' . $e->getMessage(),
+                'message' => 'Gagal membuat QRIS Bayaraja: ' . $e->getMessage(),
             ], 422);
         }
     }
 
     /**
-     * AJAX: Check payment status by order_id (sync directly with Duitku).
+     * AJAX: Check payment status by order_id (sync directly with Bayaraja / QRIS Hook).
      */
     public function donasiCheckStatus(Request $request)
     {
@@ -181,15 +181,15 @@ class TraceabilityController extends Controller
             return response()->json(['status' => 'not_found'], 404);
         }
 
-        // Sync langsung ke Duitku API secara realtime jika masih pending
+        // Sync langsung ke Bayaraja API secara realtime jika masih pending
         if ($transaksi->status === 'pending') {
             try {
-                $duitku = new DuitkuService();
-                $dStatus = $duitku->checkStatus($orderId);
-                if ($dStatus === 'settlement') {
+                $bayaraja = new BayarajaService();
+                $bStatus = $bayaraja->checkStatus($orderId);
+                if ($bStatus === 'settlement') {
                     $transaksi->update(['status' => 'settlement']);
-                } elseif (in_array($dStatus, ['expire', 'cancel'])) {
-                    $transaksi->update(['status' => $dStatus]);
+                } elseif (in_array($bStatus, ['expire', 'cancel'])) {
+                    $transaksi->update(['status' => $bStatus]);
                 }
             } catch (\Throwable $e) {
                 // Abaikan jika network error sementara
@@ -212,6 +212,155 @@ class TraceabilityController extends Controller
         }
 
         return response()->json(['success' => true, 'status' => 'expire']);
+    }
+
+    /**
+     * QRIS Hook notification webhook (POST, no CSRF).
+     * Menerima payload dari aplikasi Android QRIS Hook (suriyadi15/qrishook)
+     * saat notifikasi pembayaran QRIS (GoBiz, BRI Merchant, BCA, Livin, DANA, dll) masuk di HP toko.
+     */
+    public function qrisHookNotification(Request $request)
+    {
+        // 1. Validasi secret jika disetel di konfigurasi (QRISHOOK_SECRET)
+        $configuredSecret = config('bayaraja.qrishook_secret');
+        if (!empty($configuredSecret)) {
+            $incomingSecret = $request->header('X-Webhook-Secret') 
+                ?? $request->header('x-webhook-secret') 
+                ?? $request->query('secret') 
+                ?? $request->input('secret');
+
+            if (!$incomingSecret || !hash_equals((string) $configuredSecret, (string) $incomingSecret)) {
+                Log::warning('QRIS Hook ditolak: Secret token tidak valid', [
+                    'ip' => $request->ip(),
+                    'provided_secret' => $incomingSecret ? substr($incomingSecret, 0, 4) . '***' : null,
+                ]);
+                return response()->json(['status' => 'error', 'message' => 'Unauthorized: Invalid secret token'], 401);
+            }
+        }
+
+        $payload = $request->all();
+        Log::info('QRIS Hook webhook diterima', ['payload' => $payload]);
+
+        // Tangani Ping / Health check dari aplikasi
+        if ($request->input('type') === 'ping' || $request->has('test')) {
+            return response()->json(['status' => 'success', 'message' => 'QRIS Hook ping OK']);
+        }
+
+        // 2. Ekstraksi Nominal Pembayaran
+        // Format standar suriyadi15/qrishook: payment.amount (int)
+        $amountRaw = $request->input('payment.amount') 
+            ?? $request->input('amount') 
+            ?? $request->input('nominal') 
+            ?? null;
+
+        // Fallback: cari angka di dalam teks notifikasi jika parser belum mengekstrak
+        if ($amountRaw === null && $request->filled('raw.text')) {
+            $rawText = (string) $request->input('raw.text');
+            if (preg_match('/(?:rp|idr)\s*([0-9.,]+)/i', $rawText, $matches)) {
+                $amountRaw = $matches[1];
+            }
+        }
+
+        $amount = (int) preg_replace('/[^0-9]/', '', (string) $amountRaw);
+
+        // 3. Ekstraksi Pengirim & Aplikasi Sumber
+        $sender = $request->input('payment.sender_name') 
+            ?? $request->input('sender_name') 
+            ?? $request->input('sender') 
+            ?? null;
+        $sourceApp = $request->input('source_app') 
+            ?? $request->input('payment.payment_source') 
+            ?? 'QRIS';
+        $orderId = $request->input('payment.order_id') 
+            ?? $request->input('order_id') 
+            ?? null;
+
+        // 4. Cari Transaksi Donasi yang Berstatus Pending
+        $transaksi = null;
+        if (!empty($orderId)) {
+            $transaksi = DonasiTransaksi::where('order_id', $orderId)->first();
+        }
+
+        if (!$transaksi && $amount > 0) {
+            // Cocokkan transaksi pending dengan nominal yang sama dalam 15 menit terakhir
+            $transaksi = DonasiTransaksi::where('status', 'pending')
+                ->where('nominal', $amount)
+                ->where('created_at', '>=', now()->subMinutes(15))
+                ->orderByDesc('id_transaksi')
+                ->first();
+        }
+
+        // 5. Update Status Transaksi Menjadi Settlement (Lunas)
+        if ($transaksi) {
+            $noteAdd = " [QRIS Hook: {$sourceApp}" . ($sender ? " - {$sender}" : "") . "]";
+            $transaksi->update([
+                'status' => 'settlement',
+                'keterangan' => Str::limit($transaksi->keterangan . $noteAdd, 255),
+            ]);
+
+            Log::info("QRIS Hook: Transaksi [{$transaksi->order_id}] nominal Rp " . number_format($amount, 0, ',', '.') . " sukses diverifikasi.");
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Payment settled successfully',
+                'order_id' => $transaksi->order_id,
+                'nominal' => $transaksi->nominal,
+            ]);
+        }
+
+        Log::warning('QRIS Hook: Tidak ditemukan transaksi pending yang sesuai.', [
+            'amount' => $amount,
+            'sender' => $sender,
+            'source_app' => $sourceApp,
+        ]);
+
+        return response()->json([
+            'status' => 'acknowledged',
+            'message' => 'Webhook received, but no matching pending transaction found.',
+            'amount' => $amount,
+        ], 200);
+    }
+
+    /**
+     * Bayaraja notification webhook (POST, no CSRF).
+     */
+    public function bayarajaNotification(Request $request)
+    {
+        $payload = $request->all();
+        Log::info('Bayaraja Webhook received', ['payload' => $payload]);
+
+        $event = $payload['event'] ?? ($payload['type'] ?? '');
+        $data = $payload['data'] ?? $payload;
+        $orderId = $data['order_id'] ?? ($data['title'] ?? ($payload['order_id'] ?? ''));
+
+        $transaksi = null;
+        if (!empty($orderId)) {
+            $transaksi = DonasiTransaksi::where('order_id', $orderId)->first();
+        }
+        if (!$transaksi && !empty($data['id'])) {
+            $transaksi = DonasiTransaksi::where('order_id', 'LIKE', '%' . $data['id'] . '%')->first();
+        }
+        if (!$transaksi && !empty($data['amount'])) {
+            $transaksi = DonasiTransaksi::where('status', 'pending')
+                ->where('nominal', (int)$data['amount'])
+                ->where('created_at', '>=', now()->subMinutes(15))
+                ->orderByDesc('id_transaksi')
+                ->first();
+        }
+
+        if ($transaksi) {
+            $newStatus = match ($event) {
+                'transaction.confirmed', 'payment.success', 'paid', 'confirmed' => 'settlement',
+                'transaction.rejected', 'payment.failed', 'rejected' => 'cancel',
+                default => 'pending',
+            };
+
+            if ($newStatus !== 'pending') {
+                $transaksi->update(['status' => $newStatus]);
+            }
+        }
+
+        return response()->json(['status' => 'success', 'message' => 'OK']);
     }
 
     /**

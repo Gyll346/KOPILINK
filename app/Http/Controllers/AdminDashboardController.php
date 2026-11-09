@@ -309,14 +309,14 @@ class AdminDashboardController extends Controller
         $totalKeluar = DonasiTransaksi::where('jenis', 'keluar')->sum('nominal');
         $saldoKas = $totalMasuk - $totalKeluar;
 
-        $duitkuMerchantCode = config('duitku.merchant_code') ?: env('DUITKU_MERCHANT_CODE', '');
-        $duitkuApiKey = config('duitku.api_key') ?: env('DUITKU_API_KEY', '');
-        $duitkuIsSandbox = (bool) (config('duitku.is_sandbox') ?? env('DUITKU_IS_SANDBOX', true));
-        $duitkuConfig = [
-            'merchant_code' => $duitkuMerchantCode,
-            'api_key' => $duitkuApiKey,
-            'is_sandbox' => $duitkuIsSandbox,
-            'is_configured' => !empty($duitkuMerchantCode) && !empty($duitkuApiKey),
+        $bayarajaApiKey = config('bayaraja.api_key') ?: env('BAYARAJA_API_KEY', '');
+        $bayarajaBaseUrl = config('bayaraja.base_url') ?: env('BAYARAJA_BASE_URL', 'https://bayaraja.arwebs.my.id');
+        $qrisHookSecret = config('bayaraja.qrishook_secret') ?: env('QRISHOOK_SECRET', '');
+        $bayarajaConfig = [
+            'base_url' => $bayarajaBaseUrl,
+            'api_key' => $bayarajaApiKey,
+            'qrishook_secret' => $qrisHookSecret,
+            'is_configured' => !empty($bayarajaApiKey),
         ];
 
         return view('admin.donasi', compact(
@@ -329,18 +329,19 @@ class AdminDashboardController extends Controller
             'countCup',
             'totalKeluar',
             'saldoKas',
-            'duitkuConfig'
+            'bayarajaConfig'
         ));
     }
 
     /**
-     * Update Duitku API Credentials & Environment (.env)
+     * Update Bayaraja & QRIS Hook Credentials & Environment (.env)
      */
-    public function duitkuUpdate(Request $request)
+    public function bayarajaUpdate(Request $request)
     {
         $validated = $request->validate([
-            'duitku_merchant_code' => ['nullable', 'string', 'max:50'],
-            'duitku_api_key' => ['nullable', 'string', 'max:100', 'regex:/^[a-zA-Z0-9_\-]+$/'],
+            'bayaraja_base_url' => ['nullable', 'url', 'max:150'],
+            'bayaraja_api_key' => ['nullable', 'string', 'max:150'],
+            'qrishook_secret' => ['nullable', 'string', 'max:100'],
         ]);
 
         $envPath = base_path('.env');
@@ -348,13 +349,15 @@ class AdminDashboardController extends Controller
             $content = file_get_contents($envPath);
 
             $updates = [];
-            if (!empty($validated['duitku_merchant_code'])) {
-                $updates['DUITKU_MERCHANT_CODE'] = trim($validated['duitku_merchant_code']);
+            if (!empty($validated['bayaraja_base_url'])) {
+                $updates['BAYARAJA_BASE_URL'] = rtrim($validated['bayaraja_base_url'], '/');
             }
-            if (!empty($validated['duitku_api_key'])) {
-                $updates['DUITKU_API_KEY'] = trim($validated['duitku_api_key']);
+            if ($request->has('bayaraja_api_key')) {
+                $updates['BAYARAJA_API_KEY'] = trim($validated['bayaraja_api_key'] ?? '');
             }
-            $updates['DUITKU_IS_SANDBOX'] = $request->has('duitku_is_sandbox') ? 'true' : 'false';
+            if ($request->has('qrishook_secret')) {
+                $updates['QRISHOOK_SECRET'] = trim($validated['qrishook_secret'] ?? '');
+            }
 
             foreach ($updates as $key => $val) {
                 if (preg_match("/^{$key}=.*/m", $content)) {
@@ -368,7 +371,15 @@ class AdminDashboardController extends Controller
             \Illuminate\Support\Facades\Artisan::call('config:clear');
         }
 
-        return back()->with('status', 'Konfigurasi API Duitku QRIS berhasil diperbarui!');
+        return back()->with('status', 'Konfigurasi API Bayaraja & QRIS Hook berhasil diperbarui!');
+    }
+
+    /**
+     * Alias for gateway update
+     */
+    public function duitkuUpdate(Request $request)
+    {
+        return $this->bayarajaUpdate($request);
     }
 
     /**

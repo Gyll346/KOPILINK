@@ -277,13 +277,6 @@
                         <i class="fa fa-spinner fa-spin mr-1 text-primary"></i> Menunggu pemindaian & pembayaran dari Anda...
                     </div>
 
-                    <!-- Simulasi Sandbox Duitku (Uji Coba) -->
-                    <div id="sandboxSimulasiBox" class="mt-2 d-none">
-                        <a href="#" id="sandboxSimulasiLink" target="_blank" class="btn btn-outline-info btn-sm font-weight-bold">
-                            <i class="fa fa-flask mr-1"></i> Simulasi Bayar Duitku (Sandbox Test)
-                        </a>
-                    </div>
-
                     @if(isset($rekeningAktif) && $rekeningAktif)
                         <div class="card bg-light border-0 p-2 mt-3 text-center small text-muted">
                             <i class="fa fa-university text-primary mr-1"></i> Kas disalurkan ke: <strong>{{ $rekeningAktif->nama_bank }}</strong> ({{ $rekeningAktif->nomor_rekening }}) a.n {{ $rekeningAktif->atas_nama }}
@@ -431,13 +424,6 @@ function prosesBayarQris() {
         document.getElementById('stepQrisDonasi').classList.remove('d-none');
         document.getElementById('qrisExpiredOverlay').style.display = 'none';
 
-        if (data.payment_url) {
-            document.getElementById('sandboxSimulasiLink').href = data.payment_url;
-            document.getElementById('sandboxSimulasiBox').classList.remove('d-none');
-        } else {
-            document.getElementById('sandboxSimulasiBox').classList.add('d-none');
-        }
-
         startTimerAndPolling(data.order_id);
     })
     .catch(err => {
@@ -511,7 +497,6 @@ function updateTimerDisplay() {
 function kembaliKeInput() {
     clearInterval(countdownInterval);
     clearInterval(statusPollInterval);
-    document.getElementById('sandboxSimulasiBox').classList.add('d-none');
     document.getElementById('qrisExpiredOverlay').style.display = 'none';
     document.getElementById('stepQrisDonasi').classList.add('d-none');
     document.getElementById('stepInputDonasi').classList.remove('d-none');
@@ -521,7 +506,6 @@ function resetModalDonasi() {
     clearInterval(countdownInterval);
     clearInterval(statusPollInterval);
     currentOrderId = null;
-    document.getElementById('sandboxSimulasiBox').classList.add('d-none');
     document.getElementById('qrisExpiredOverlay').style.display = 'none';
     document.getElementById('stepInputDonasi').classList.remove('d-none');
     document.getElementById('stepQrisDonasi').classList.add('d-none');

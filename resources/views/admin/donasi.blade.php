@@ -11,8 +11,8 @@
     </div>
     <div class="d-flex flex-wrap" style="gap: 8px;">
         <button type="button" class="btn btn-outline-info" data-toggle="modal" data-target="#modalGatewayConfig">
-            <i class="fa fa-qrcode mr-1"></i> API Duitku QRIS
-            @if(!empty($duitkuConfig['is_configured']))
+            <i class="fa fa-qrcode mr-1"></i> API Bayaraja & QRIS Hook
+            @if(!empty($bayarajaConfig['is_configured']))
                 <span class="badge badge-success ml-1">Aktif</span>
             @else
                 <span class="badge badge-warning text-dark ml-1">Belum Disetel</span>
@@ -79,35 +79,39 @@
     </div>
 </div>
 
-<!-- Bagian Status Integrasi Duitku QRIS -->
+<!-- Bagian Status Integrasi Bayaraja & QRIS Hook -->
 <div class="card card-stat mb-4">
     <div class="card-header bg-white border-0 pt-3 px-3 pb-2 d-flex justify-content-between align-items-center flex-wrap" style="gap: 10px;">
         <div>
             <h6 class="font-weight-bold m-0 text-dark">
-                <i class="fa fa-qrcode text-primary mr-2"></i> Integrasi Duitku API (QRIS Dinamis Otomatis)
+                <i class="fa fa-qrcode text-primary mr-2"></i> Integrasi Dynamic QRIS Bayaraja & QRIS Hook
             </h6>
             <small class="text-muted">
-                Status Integrasi: 
-                @if(!empty($duitkuConfig['is_configured']))
-                    <span class="badge badge-success"><i class="fa fa-check-circle mr-1"></i>Aktif & Terhubung ({{ !empty($duitkuConfig['is_sandbox']) ? 'Sandbox' : 'Production' }})</span>
+                Status API Bayaraja: 
+                @if(!empty($bayarajaConfig['is_configured']))
+                    <span class="badge badge-success"><i class="fa fa-check-circle mr-1"></i>Aktif & Terhubung</span>
                 @else
-                    <span class="badge badge-warning text-dark"><i class="fa fa-exclamation-triangle mr-1"></i>Kredensial Belum Dikonfigurasi</span>
+                    <span class="badge badge-warning text-dark"><i class="fa fa-exclamation-triangle mr-1"></i>API Key Belum Disetel</span>
                 @endif
             </small>
         </div>
         <button type="button" class="btn btn-sm btn-outline-primary font-weight-bold" data-toggle="modal" data-target="#modalGatewayConfig">
-            <i class="fa fa-cog mr-1"></i> Konfigurasi Kunci API Duitku
+            <i class="fa fa-cog mr-1"></i> Konfigurasi Kunci API & Webhook
         </button>
     </div>
     <div class="card-body px-3 py-2 bg-light border-top">
         <div class="row small text-muted">
-            <div class="col-md-6 mb-2 mb-md-0">
-                <span class="d-block font-weight-bold text-dark">Merchant Code:</span>
-                <code>{{ $duitkuConfig['merchant_code'] ?: 'Belum disetel' }}</code>
+            <div class="col-md-4 mb-2 mb-md-0">
+                <span class="d-block font-weight-bold text-dark">Instance Base URL:</span>
+                <code>{{ $bayarajaConfig['base_url'] }}</code>
             </div>
-            <div class="col-md-6">
+            <div class="col-md-4 mb-2 mb-md-0">
                 <span class="d-block font-weight-bold text-dark">API Key:</span>
-                <code>{{ !empty($duitkuConfig['api_key']) ? substr($duitkuConfig['api_key'], 0, 8) . '...' . substr($duitkuConfig['api_key'], -4) : 'Belum disetel' }}</code>
+                <code>{{ !empty($bayarajaConfig['api_key']) ? substr($bayarajaConfig['api_key'], 0, 8) . '...' . substr($bayarajaConfig['api_key'], -4) : 'Belum disetel' }}</code>
+            </div>
+            <div class="col-md-4">
+                <span class="d-block font-weight-bold text-dark">Webhook URL QRIS Hook:</span>
+                <code class="text-primary font-weight-bold">{{ url('/donasi/qrishook') }}</code>
             </div>
         </div>
     </div>
@@ -401,13 +405,13 @@
     </div>
 </div>
 
-<!-- Modal Pengaturan Duitku QRIS -->
+<!-- Modal Pengaturan Bayaraja QRIS & QRIS Hook -->
 <div class="modal fade" id="modalGatewayConfig" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
         <div class="modal-content border-0 shadow">
             <div class="modal-header bg-dark text-white">
                 <h5 class="modal-title font-weight-bold">
-                    <i class="fa fa-qrcode text-warning mr-2"></i> Pengaturan Duitku QRIS
+                    <i class="fa fa-qrcode text-warning mr-2"></i> Pengaturan Bayaraja QRIS & QRIS Hook
                 </h5>
                 <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
@@ -417,27 +421,53 @@
                 @csrf
                 <div class="modal-body p-4">
                     <div class="alert alert-info py-2 px-3 small mb-3">
-                        <i class="fa fa-info-circle mr-1"></i> Dapatkan Merchant Code & API Key dari Dashboard Duitku: <a href="https://sandbox.duitku.com" target="_blank" class="font-weight-bold text-primary">sandbox.duitku.com</a> atau <a href="https://passport.duitku.com" target="_blank" class="font-weight-bold text-primary">passport.duitku.com</a> (Menu: <em>Proyek Saya</em>).
+                        <i class="fa fa-info-circle mr-1"></i> <strong>Sistem Otomatis:</strong> Bayaraja membuat Dynamic QRIS dengan nominal otomatis, lalu aplikasi Android <strong>QRIS Hook</strong> mendeteksi notifikasi mutasi masuk di HP toko dan menyelesaikan status donasi secara otomatis.
                     </div>
 
-                    <div class="form-group mb-3">
-                        <label class="font-weight-bold text-dark small">Merchant Code Duitku <span class="text-danger">*</span></label>
-                        <input type="text" name="duitku_merchant_code" class="form-control" value="{{ $duitkuConfig['merchant_code'] }}" placeholder="Contoh: DS37706 atau D1234" required>
-                        <small class="text-muted">Kode unik merchant yang terdaftar di proyek Duitku Anda.</small>
-                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="font-weight-bold text-dark mb-2"><i class="fa fa-server text-primary mr-1"></i> API Bayaraja</h6>
+                            
+                            <div class="form-group mb-3">
+                                <label class="font-weight-bold text-dark small">Instance Base URL Bayaraja <span class="text-danger">*</span></label>
+                                <input type="url" name="bayaraja_base_url" class="form-control" value="{{ $bayarajaConfig['base_url'] }}" placeholder="https://bayaraja.arwebs.my.id" required>
+                                <small class="text-muted">URL server instance Bayaraja tempat QRIS statis Anda diunggah.</small>
+                            </div>
 
-                    <div class="form-group mb-3">
-                        <label class="font-weight-bold text-dark small">API Key Duitku <span class="text-danger">*</span></label>
-                        <input type="text" name="duitku_api_key" class="form-control" value="{{ $duitkuConfig['api_key'] }}" placeholder="Contoh: 5222dae2a2ecaafc..." required>
-                        <small class="text-muted">Kunci API proyek dari dashboard Duitku.</small>
-                    </div>
+                            <div class="form-group mb-3">
+                                <label class="font-weight-bold text-dark small">API Key Bayaraja <span class="text-danger">*</span></label>
+                                <input type="text" name="bayaraja_api_key" class="form-control" value="{{ $bayarajaConfig['api_key'] }}" placeholder="Contoh: byr_..." required>
+                                <small class="text-muted">Kunci API yang digenerate dari menu Profil / Pengembang Bayaraja.</small>
+                            </div>
+                        </div>
 
-                    <div class="form-group form-check mb-2">
-                        <input type="checkbox" name="duitku_is_sandbox" value="1" class="form-check-input" id="checkSandbox" {{ !empty($duitkuConfig['is_sandbox']) ? 'checked' : '' }}>
-                        <label class="form-check-label font-weight-bold text-dark small" for="checkSandbox">
-                            Gunakan Mode Sandbox (Testing / Uji Coba)
-                        </label>
-                        <small class="form-text text-muted">Hapus centang ini jika akun sudah disetujui untuk transaksi Production (Live uang sungguhan).</small>
+                        <div class="col-md-6 border-left">
+                            <h6 class="font-weight-bold text-dark mb-2"><i class="fa fa-mobile-alt text-success mr-1"></i> Integrasi QRIS Hook (Android)</h6>
+
+                            <div class="form-group mb-3">
+                                <label class="font-weight-bold text-dark small">URL Webhook QRIS Hook (Salin ke HP):</label>
+                                <div class="input-group">
+                                    <input type="text" id="qrisHookUrlInput" class="form-control font-weight-bold text-monospace bg-light" value="{{ url('/donasi/qrishook') }}" readonly>
+                                    <div class="input-group-append">
+                                        <button class="btn btn-outline-secondary" type="button" onclick="salinWebhookUrl(this)" title="Salin URL">
+                                            <i class="fa fa-copy"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <small class="text-muted">Masukkan URL ini ke pengaturan aplikasi QRIS Hook di HP Anda.</small>
+                            </div>
+
+                            <div class="form-group mb-3">
+                                <label class="font-weight-bold text-dark small">Secret Token QRIS Hook (Opsional)</label>
+                                <input type="text" name="qrishook_secret" class="form-control" value="{{ $bayarajaConfig['qrishook_secret'] ?? '' }}" placeholder="Contoh: kopilink_secret_token">
+                                <small class="text-muted">Jika diisi, masukkan nilai yang sama pada header <code>X-Webhook-Secret</code> di aplikasi QRIS Hook.</small>
+                            </div>
+
+                            <div class="p-2 bg-light rounded small border">
+                                <i class="fa fa-info-circle text-success mr-1"></i>
+                                QRIS Hook membaca notifikasi masuk dari <strong>GoBiz, BRI Merchant, Livin Merchant, BCA, DANA Bisnis, ShopeePay</strong> dll., lalu memanggil webhook di atas.
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer bg-light border-0">
@@ -450,6 +480,18 @@
         </div>
     </div>
 </div>
+
+<script>
+function salinWebhookUrl(btn) {
+    const input = document.getElementById('qrisHookUrlInput');
+    input.select();
+    input.setSelectionRange(0, 99999);
+    navigator.clipboard.writeText(input.value).then(() => {
+        const oldHtml = btn.innerHTML;
+        btn.innerHTML = '<i class="fa fa-check text-success"></i> Disalin!';
+        setTimeout(() => { btn.innerHTML = oldHtml; }, 2000);
+    });
+}
 
 <script>
 function filterKasTable() {
