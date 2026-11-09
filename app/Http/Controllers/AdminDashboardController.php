@@ -369,14 +369,6 @@ class AdminDashboardController extends Controller
     }
 
     /**
-     * Legacy alias for updating gateway config
-     */
-    public function midtransUpdate(Request $request)
-    {
-        return $this->bayarajaUpdate($request);
-    }
-
-    /**
      * Simpan Rekening Donasi Baru
      */
     public function rekeningStore(Request $request)

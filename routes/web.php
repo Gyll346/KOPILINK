@@ -23,7 +23,6 @@ Route::post('/donasi/qris', [TraceabilityController::class, 'donasiCreateQris'])
     ->name('donasi.qris');
 Route::get('/donasi/status', [TraceabilityController::class, 'donasiCheckStatus'])->name('donasi.status');
 Route::post('/donasi/expire', [TraceabilityController::class, 'donasiExpire'])->name('donasi.expire');
-Route::post('/donasi/midtrans/notification', [TraceabilityController::class, 'midtransNotification'])->name('donasi.notification');
 Route::post('/donasi/bayaraja/notification', [TraceabilityController::class, 'bayarajaNotification'])->name('donasi.bayaraja.notification');
 Route::get('/csrf-token', function () {
     return response()->json(['token' => csrf_token()]);
@@ -148,9 +147,7 @@ Route::middleware('auth:web')->prefix('admin')->name('admin.')->group(function (
     // Manajemen Donasi & Pengaturan Rekening
     Route::get('/donasi', [\App\Http\Controllers\AdminDashboardController::class, 'donasiIndex'])->name('donasi.index');
     Route::get('/donasi/gateway', fn() => redirect()->route('admin.donasi.index'));
-    Route::get('/donasi/midtrans', fn() => redirect()->route('admin.donasi.index'));
     Route::post('/donasi/gateway', [\App\Http\Controllers\AdminDashboardController::class, 'bayarajaUpdate'])->name('donasi.gateway.update');
-    Route::post('/donasi/midtrans', [\App\Http\Controllers\AdminDashboardController::class, 'bayarajaUpdate'])->name('donasi.midtrans.update');
     Route::post('/donasi/rekening', [\App\Http\Controllers\AdminDashboardController::class, 'rekeningStore'])->name('donasi.rekening.store');
     Route::put('/donasi/rekening/{id_rekening}', [\App\Http\Controllers\AdminDashboardController::class, 'rekeningUpdate'])->name('donasi.rekening.update');
     Route::post('/donasi/rekening/{id_rekening}/toggle', [\App\Http\Controllers\AdminDashboardController::class, 'rekeningToggle'])->name('donasi.rekening.toggle');

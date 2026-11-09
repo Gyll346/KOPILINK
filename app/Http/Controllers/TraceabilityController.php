@@ -10,7 +10,6 @@ use App\Models\RekeningDonasi;
 use App\Models\DonasiTransaksi;
 use App\Services\ImageOptimizationService;
 use App\Services\BayarajaService;
-use App\Services\MidtransService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Log;
@@ -57,8 +56,7 @@ class TraceabilityController extends Controller
     }
 
     /**
-     * Legacy: Manual donation (bukti transfer).
-     * Still works as fallback when Midtrans is not configured.
+     * Manual donation (bukti transfer fallback).
      */
     public function donasiSend(Request $request)
     {
@@ -109,7 +107,7 @@ class TraceabilityController extends Controller
     }
 
     /**
-     * AJAX: Create Midtrans QRIS payment → returns QR code URL.
+     * AJAX: Create Bayaraja QRIS payment → returns QR code URL.
      */
     public function donasiCreateQris(Request $request)
     {
@@ -242,41 +240,6 @@ class TraceabilityController extends Controller
                 $transaksi->update(['status' => $newStatus]);
             }
         }
-
-        return response()->json(['message' => 'OK']);
-    }
-
-    /**
-     * Midtrans notification webhook (POST, no CSRF).
-     */
-    public function midtransNotification(Request $request)
-    {
-        $payload = $request->all();
-        $midtrans = new MidtransService();
-
-        if (!$midtrans->verifySignature($payload)) {
-            return response()->json(['message' => 'Invalid signature'], 403);
-        }
-
-        $orderId = $payload['order_id'] ?? '';
-        $transactionStatus = $payload['transaction_status'] ?? '';
-
-        $transaksi = DonasiTransaksi::where('order_id', $orderId)->first();
-        if (!$transaksi) {
-            return response()->json(['message' => 'Order not found'], 404);
-        }
-
-        // Map Midtrans status
-        $newStatus = match ($transactionStatus) {
-            'capture', 'settlement' => 'settlement',
-            'pending' => 'pending',
-            'deny' => 'deny',
-            'cancel' => 'cancel',
-            'expire' => 'expire',
-            default => $transactionStatus,
-        };
-
-        $transaksi->update(['status' => $newStatus]);
 
         return response()->json(['message' => 'OK']);
     }
