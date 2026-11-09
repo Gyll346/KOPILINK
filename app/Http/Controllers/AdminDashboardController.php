@@ -376,9 +376,6 @@ class AdminDashboardController extends Controller
         return $this->bayarajaUpdate($request);
     }
 
-        return back()->with('status', 'Konfigurasi API Midtrans QRIS berhasil diperbarui!');
-    }
-
     /**
      * Simpan Rekening Donasi Baru
      */
