@@ -147,6 +147,8 @@ Route::middleware('auth:web')->prefix('admin')->name('admin.')->group(function (
 
     // Manajemen Donasi & Pengaturan Rekening
     Route::get('/donasi', [\App\Http\Controllers\AdminDashboardController::class, 'donasiIndex'])->name('donasi.index');
+    Route::get('/donasi/gateway', fn() => redirect()->route('admin.donasi.index'));
+    Route::get('/donasi/midtrans', fn() => redirect()->route('admin.donasi.index'));
     Route::post('/donasi/gateway', [\App\Http\Controllers\AdminDashboardController::class, 'bayarajaUpdate'])->name('donasi.gateway.update');
     Route::post('/donasi/midtrans', [\App\Http\Controllers\AdminDashboardController::class, 'bayarajaUpdate'])->name('donasi.midtrans.update');
     Route::post('/donasi/rekening', [\App\Http\Controllers\AdminDashboardController::class, 'rekeningStore'])->name('donasi.rekening.store');
