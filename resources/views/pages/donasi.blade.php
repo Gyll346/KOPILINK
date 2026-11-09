@@ -258,7 +258,7 @@
                         <img id="qrisImageSrc" src="" alt="QRIS Code" class="img-fluid" style="width: 230px; height: 230px; object-fit: contain;">
                         
                         <!-- Overlay Expired -->
-                        <div id="qrisExpiredOverlay" class="position-absolute d-flex flex-column align-items-center justify-content-center d-none" style="top:0;left:0;right:0;bottom:0; background: rgba(255,255,255,0.92); border-radius: 8px;">
+                        <div id="qrisExpiredOverlay" class="position-absolute flex-column align-items-center justify-content-center" style="top:0;left:0;right:0;bottom:0; background: rgba(255,255,255,0.92); border-radius: 8px; display: none;">
                             <i class="fa fa-hourglass-end text-danger fa-3x mb-2"></i>
                             <h6 class="font-weight-bold text-danger mb-1">QR Code Kedaluwarsa</h6>
                             <small class="text-muted px-2">Batas waktu 5 menit telah berakhir.</small>
@@ -422,7 +422,7 @@ function prosesBayarQris() {
 
         document.getElementById('stepInputDonasi').classList.add('d-none');
         document.getElementById('stepQrisDonasi').classList.remove('d-none');
-        document.getElementById('qrisExpiredOverlay').classList.add('d-none');
+        document.getElementById('qrisExpiredOverlay').style.display = 'none';
 
         startTimerAndPolling(data.order_id);
     })
@@ -450,7 +450,7 @@ function startTimerAndPolling(orderId) {
             clearInterval(statusPollInterval);
 
             // Mark expired
-            document.getElementById('qrisExpiredOverlay').classList.remove('d-none');
+            document.getElementById('qrisExpiredOverlay').style.display = 'flex';
             document.getElementById('qrisStatusBox').innerHTML = '<span class="text-danger"><i class="fa fa-times-circle mr-1"></i> Batas waktu pembayaran habis (5 menit).</span>';
 
             fetch('{{ route("donasi.expire") }}', {
@@ -479,7 +479,7 @@ function startTimerAndPolling(orderId) {
                 } else if (data.status === 'expire' || data.status === 'cancel') {
                     clearInterval(countdownInterval);
                     clearInterval(statusPollInterval);
-                    document.getElementById('qrisExpiredOverlay').classList.remove('d-none');
+                    document.getElementById('qrisExpiredOverlay').style.display = 'flex';
                 }
             })
             .catch(() => {});
@@ -497,6 +497,7 @@ function updateTimerDisplay() {
 function kembaliKeInput() {
     clearInterval(countdownInterval);
     clearInterval(statusPollInterval);
+    document.getElementById('qrisExpiredOverlay').style.display = 'none';
     document.getElementById('stepQrisDonasi').classList.add('d-none');
     document.getElementById('stepInputDonasi').classList.remove('d-none');
 }
@@ -505,6 +506,7 @@ function resetModalDonasi() {
     clearInterval(countdownInterval);
     clearInterval(statusPollInterval);
     currentOrderId = null;
+    document.getElementById('qrisExpiredOverlay').style.display = 'none';
     document.getElementById('stepInputDonasi').classList.remove('d-none');
     document.getElementById('stepQrisDonasi').classList.add('d-none');
     document.getElementById('stepSuksesDonasi').classList.add('d-none');
