@@ -5,3 +5,4 @@ return [
     'api_key' => env('BAYARAJA_API_KEY', ''),
     'qrishook_secret' => env('QRISHOOK_SECRET', ''),
 ];
+
