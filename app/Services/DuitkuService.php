@@ -147,3 +147,4 @@ class DuitkuService
         return hash_equals($expectedSignature, (string) $signature);
     }
 }
+

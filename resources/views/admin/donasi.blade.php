@@ -82,35 +82,35 @@
     </div>
 </div>
 
-<!-- Bagian Status Integrasi Bayaraja QRIS -->
+<!-- Bagian Status Integrasi Duitku QRIS -->
 <div class="card card-stat mb-4">
     <div class="card-header bg-white border-0 pt-3 px-3 pb-2 d-flex justify-content-between align-items-center flex-wrap" style="gap: 10px;">
         <div>
             <h6 class="font-weight-bold m-0 text-dark">
-                <i class="fa fa-qrcode text-primary mr-2"></i> Integrasi Bayaraja API (QRIS Dinamis Otomatis)
+                <i class="fa fa-qrcode text-primary mr-2"></i> Integrasi Duitku API (QRIS Dinamis Otomatis)
             </h6>
             <small class="text-muted">
                 Status Integrasi: 
-                @if(!empty($bayarajaConfig['is_configured']))
-                    <span class="badge badge-success"><i class="fa fa-check-circle mr-1"></i>Aktif & Terhubung</span>
+                @if(!empty($duitkuConfig['is_configured']))
+                    <span class="badge badge-success"><i class="fa fa-check-circle mr-1"></i>Aktif & Terhubung ({{ !empty($duitkuConfig['is_sandbox']) ? 'Sandbox' : 'Production' }})</span>
                 @else
-                    <span class="badge badge-warning text-dark"><i class="fa fa-exclamation-triangle mr-1"></i>Kunci API Belum Dikonfigurasi</span>
+                    <span class="badge badge-warning text-dark"><i class="fa fa-exclamation-triangle mr-1"></i>Kredensial Belum Dikonfigurasi</span>
                 @endif
             </small>
         </div>
         <button type="button" class="btn btn-sm btn-outline-primary font-weight-bold" data-toggle="modal" data-target="#modalGatewayConfig">
-            <i class="fa fa-cog mr-1"></i> Konfigurasi Kunci API Bayaraja
+            <i class="fa fa-cog mr-1"></i> Konfigurasi Kunci API Duitku
         </button>
     </div>
     <div class="card-body px-3 py-2 bg-light border-top">
         <div class="row small text-muted">
             <div class="col-md-6 mb-2 mb-md-0">
-                <span class="d-block font-weight-bold text-dark">Instance Base URL:</span>
-                <code>{{ $bayarajaConfig['base_url'] }}</code>
+                <span class="d-block font-weight-bold text-dark">Merchant Code:</span>
+                <code>{{ $duitkuConfig['merchant_code'] ?: 'Belum disetel' }}</code>
             </div>
             <div class="col-md-6">
                 <span class="d-block font-weight-bold text-dark">API Key:</span>
-                <code>{{ !empty($bayarajaConfig['api_key']) ? substr($bayarajaConfig['api_key'], 0, 10) . '...' . substr($bayarajaConfig['api_key'], -6) : 'Belum disetel' }}</code>
+                <code>{{ !empty($duitkuConfig['api_key']) ? substr($duitkuConfig['api_key'], 0, 8) . '...' . substr($duitkuConfig['api_key'], -4) : 'Belum disetel' }}</code>
             </div>
         </div>
     </div>

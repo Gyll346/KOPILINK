@@ -6,3 +6,4 @@ return [
     'is_sandbox' => (bool) env('DUITKU_IS_SANDBOX', true),
     'payment_method' => env('DUITKU_PAYMENT_METHOD', 'SP'), // ShopeePay QRIS channel
 ];
+
