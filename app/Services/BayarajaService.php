@@ -9,11 +9,37 @@ class BayarajaService
 {
     protected string $baseUrl;
     protected string $apiKey;
+    protected string $qrishookSecret;
 
     public function __construct()
     {
-        $this->baseUrl = rtrim(config('bayaraja.base_url') ?: (env('BAYARAJA_BASE_URL') ?: 'https://bayaraja.arwebs.my.id'), '/');
-        $this->apiKey = config('bayaraja.api_key') ?: (env('BAYARAJA_API_KEY') ?: '');
+        $config = self::getConfig();
+        $this->baseUrl = $config['base_url'];
+        $this->apiKey = $config['api_key'];
+        $this->qrishookSecret = $config['qrishook_secret'];
+    }
+
+    /**
+     * Get Bayaraja and QRIS Hook runtime configuration safely.
+     */
+    public static function getConfig(): array
+    {
+        $stored = [];
+        $file = storage_path('app/bayaraja_config.json');
+        if (file_exists($file)) {
+            $stored = json_decode((string) file_get_contents($file), true) ?: [];
+        }
+
+        $baseUrl = $stored['base_url'] ?? config('bayaraja.base_url') ?? env('BAYARAJA_BASE_URL', 'https://bayaraja.arwebs.my.id');
+        $apiKey = $stored['api_key'] ?? config('bayaraja.api_key') ?? env('BAYARAJA_API_KEY', '');
+        $secret = $stored['qrishook_secret'] ?? config('bayaraja.qrishook_secret') ?? env('QRISHOOK_SECRET', '');
+
+        return [
+            'base_url' => rtrim($baseUrl ?: 'https://bayaraja.arwebs.my.id', '/'),
+            'api_key' => $apiKey ?: '',
+            'qrishook_secret' => $secret ?: '',
+            'is_configured' => !empty($apiKey),
+        ];
     }
 
     public function isConfigured(): bool

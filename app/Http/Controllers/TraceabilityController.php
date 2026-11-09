@@ -222,7 +222,7 @@ class TraceabilityController extends Controller
     public function qrisHookNotification(Request $request)
     {
         // 1. Validasi secret jika disetel di konfigurasi (QRISHOOK_SECRET)
-        $configuredSecret = config('bayaraja.qrishook_secret');
+        $configuredSecret = BayarajaService::getConfig()['qrishook_secret'];
         if (!empty($configuredSecret)) {
             $incomingSecret = $request->header('X-Webhook-Secret') 
                 ?? $request->header('x-webhook-secret') 

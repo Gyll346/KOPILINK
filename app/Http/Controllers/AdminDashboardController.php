@@ -309,15 +309,7 @@ class AdminDashboardController extends Controller
         $totalKeluar = DonasiTransaksi::where('jenis', 'keluar')->sum('nominal');
         $saldoKas = $totalMasuk - $totalKeluar;
 
-        $bayarajaApiKey = config('bayaraja.api_key') ?: env('BAYARAJA_API_KEY', '');
-        $bayarajaBaseUrl = config('bayaraja.base_url') ?: env('BAYARAJA_BASE_URL', 'https://bayaraja.arwebs.my.id');
-        $qrisHookSecret = config('bayaraja.qrishook_secret') ?: env('QRISHOOK_SECRET', '');
-        $bayarajaConfig = [
-            'base_url' => $bayarajaBaseUrl,
-            'api_key' => $bayarajaApiKey,
-            'qrishook_secret' => $qrisHookSecret,
-            'is_configured' => !empty($bayarajaApiKey),
-        ];
+        $bayarajaConfig = \App\Services\BayarajaService::getConfig();
 
         return view('admin.donasi', compact(
             'rekeningList',
@@ -334,7 +326,7 @@ class AdminDashboardController extends Controller
     }
 
     /**
-     * Update Bayaraja & QRIS Hook Credentials & Environment (.env)
+     * Update Bayaraja & QRIS Hook Credentials (disimpan di storage/app/bayaraja_config.json)
      */
     public function bayarajaUpdate(Request $request)
     {
@@ -344,34 +336,21 @@ class AdminDashboardController extends Controller
             'qrishook_secret' => ['nullable', 'string', 'max:100'],
         ]);
 
-        $envPath = base_path('.env');
-        if (file_exists($envPath)) {
-            $content = file_get_contents($envPath);
+        $current = \App\Services\BayarajaService::getConfig();
+        $config = [
+            'base_url' => rtrim($validated['bayaraja_base_url'] ?? $current['base_url'], '/'),
+            'api_key' => trim($validated['bayaraja_api_key'] ?? ''),
+            'qrishook_secret' => trim($validated['qrishook_secret'] ?? ''),
+        ];
 
-            $updates = [];
-            if (!empty($validated['bayaraja_base_url'])) {
-                $updates['BAYARAJA_BASE_URL'] = rtrim($validated['bayaraja_base_url'], '/');
-            }
-            if ($request->has('bayaraja_api_key')) {
-                $updates['BAYARAJA_API_KEY'] = trim($validated['bayaraja_api_key'] ?? '');
-            }
-            if ($request->has('qrishook_secret')) {
-                $updates['QRISHOOK_SECRET'] = trim($validated['qrishook_secret'] ?? '');
-            }
-
-            foreach ($updates as $key => $val) {
-                if (preg_match("/^{$key}=.*/m", $content)) {
-                    $content = preg_replace("/^{$key}=.*/m", "{$key}={$val}", $content);
-                } else {
-                    $content .= "\n{$key}={$val}";
-                }
-            }
-
-            file_put_contents($envPath, $content);
-            \Illuminate\Support\Facades\Artisan::call('config:clear');
+        // Simpan langsung ke JSON file agar tidak memicu auto-restart server (ERR_EMPTY_RESPONSE)
+        $storageDir = storage_path('app');
+        if (!is_dir($storageDir)) {
+            mkdir($storageDir, 0755, true);
         }
+        file_put_contents(storage_path('app/bayaraja_config.json'), json_encode($config, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
 
-        return back()->with('status', 'Konfigurasi API Bayaraja & QRIS Hook berhasil diperbarui!');
+        return back()->with('status', 'Konfigurasi API Bayaraja & QRIS Hook berhasil disimpan!');
     }
 
     /**
