@@ -164,17 +164,6 @@
                             Program: <strong id="modalDonasiHalamanProgramName">Donasi Bibit Kopi</strong>
                         </div>
 
-                        @if(isset($rekeningAktif) && $rekeningAktif)
-                            <div class="card bg-light border-0 p-3 mb-3 text-center">
-                                <small class="text-muted font-weight-bold text-uppercase">Kas Rekening Resmi Penerima Donasi:</small>
-                                <h5 class="font-weight-bold text-dark my-1">{{ $rekeningAktif->nama_bank }}</h5>
-                                <div class="badge badge-dark p-2 font-weight-bold text-monospace mx-auto my-1" style="font-size: 14px; letter-spacing: 1px;">
-                                    {{ $rekeningAktif->nomor_rekening }}
-                                </div>
-                                <small class="text-muted">a.n <strong>{{ $rekeningAktif->atas_nama }}</strong></small>
-                            </div>
-                        @endif
-
                         <div class="form-group">
                             <label class="font-weight-bold text-dark">Nama Donatur / Pembayar <span class="text-danger">*</span></label>
                             <input type="text" name="nama_donatur" id="donasiHalamanNama" class="form-control" placeholder="Contoh: Budi Santoso (atau Hamba Allah)" required>
@@ -217,6 +206,16 @@
 
                         <div class="collapse mt-3" id="collapseManualTransfer">
                             <div class="p-3 bg-light rounded border">
+                                @if(isset($rekeningAktif) && $rekeningAktif)
+                                    <div class="card bg-white border p-3 mb-3 text-center shadow-sm" style="border-radius: 8px;">
+                                        <small class="text-muted font-weight-bold text-uppercase">Tujuan Transfer Manual Rekening Resmi:</small>
+                                        <h5 class="font-weight-bold text-dark my-1">{{ $rekeningAktif->nama_bank }}</h5>
+                                        <div class="badge badge-dark p-2 font-weight-bold text-monospace mx-auto my-1" style="font-size: 14px; letter-spacing: 1px;">
+                                            {{ $rekeningAktif->nomor_rekening }}
+                                        </div>
+                                        <small class="text-muted">a.n <strong>{{ $rekeningAktif->atas_nama }}</strong></small>
+                                    </div>
+                                @endif
                                 <small class="text-muted font-weight-bold d-block mb-2">Upload Bukti Transfer Manual:</small>
                                 <input type="file" id="rawBuktiDonasi" class="form-control-file border p-2 rounded bg-white" accept="image/*" onchange="compressBuktiDonasi(this)">
                                 <div id="buktiCompressStatus" class="mt-2 small text-success font-weight-bold"></div>
