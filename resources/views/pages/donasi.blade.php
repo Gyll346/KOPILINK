@@ -254,13 +254,13 @@
                     <p class="text-muted small mb-3" id="qrisProgramDisplay"></p>
 
                     <!-- QR Image Container -->
-                    <div class="p-3 bg-white rounded border shadow-sm d-inline-block mx-auto position-relative" style="max-width: 270px;">
+                    <div class="p-3 bg-white rounded border shadow-sm d-inline-block mx-auto position-relative" style="max-width: 280px;">
                         <div class="position-relative d-inline-block">
-                            <img id="qrisImageSrc" src="" alt="QRIS Code" class="img-fluid" style="width: 230px; height: 230px; object-fit: contain;">
+                            <img id="qrisImageSrc" src="" alt="QRIS Code" class="img-fluid" style="width: 240px; height: 240px; object-fit: contain;">
                             
-                            <!-- Logo KopiLink di Tengah QR Code -->
+                            <!-- Logo KopiLink di Tengah QR Code (Ukuran Maksimal Aman Rekomendasi) -->
                             <div class="position-absolute d-flex align-items-center justify-content-center bg-white rounded-circle shadow"
-                                 style="top: 50%; left: 50%; transform: translate(-50%, -50%); width: 60px; height: 60px; padding: 3px; border: 3px solid #DA9F5B; pointer-events: none;">
+                                 style="top: 50%; left: 50%; transform: translate(-50%, -50%); width: 74px; height: 74px; padding: 4px; border: 3.5px solid #DA9F5B; pointer-events: none;">
                                 <img src="{{ asset('img/icon-128x128.png') }}" alt="KopiLink" class="img-fluid rounded-circle" style="width: 100%; height: 100%; object-fit: contain;">
                             </div>
                         </div>
