@@ -255,10 +255,18 @@
 
                     <!-- QR Image Container -->
                     <div class="p-3 bg-white rounded border shadow-sm d-inline-block mx-auto position-relative" style="max-width: 270px;">
-                        <img id="qrisImageSrc" src="" alt="QRIS Code" class="img-fluid" style="width: 230px; height: 230px; object-fit: contain;">
+                        <div class="position-relative d-inline-block">
+                            <img id="qrisImageSrc" src="" alt="QRIS Code" class="img-fluid" style="width: 230px; height: 230px; object-fit: contain;">
+                            
+                            <!-- Logo KopiLink di Tengah QR Code -->
+                            <div class="position-absolute d-flex align-items-center justify-content-center bg-white rounded-circle shadow-sm"
+                                 style="top: 50%; left: 50%; transform: translate(-50%, -50%); width: 44px; height: 44px; padding: 4px; border: 2px solid #DA9F5B; pointer-events: none;">
+                                <img src="{{ asset('img/icon-128x128.png') }}" alt="KopiLink" class="img-fluid rounded-circle" style="width: 100%; height: 100%; object-fit: contain;">
+                            </div>
+                        </div>
                         
                         <!-- Overlay Expired -->
-                        <div id="qrisExpiredOverlay" class="position-absolute flex-column align-items-center justify-content-center" style="top:0;left:0;right:0;bottom:0; background: rgba(255,255,255,0.92); border-radius: 8px; display: none;">
+                        <div id="qrisExpiredOverlay" class="position-absolute flex-column align-items-center justify-content-center" style="top:0;left:0;right:0;bottom:0; background: rgba(255,255,255,0.92); border-radius: 8px; display: none; z-index: 10;">
                             <i class="fa fa-hourglass-end text-danger fa-3x mb-2"></i>
                             <h6 class="font-weight-bold text-danger mb-1">QR Code Kedaluwarsa</h6>
                             <small class="text-muted px-2">Batas waktu 5 menit telah berakhir.</small>
