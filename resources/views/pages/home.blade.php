@@ -245,8 +245,14 @@
                                 {{ $kem->produksi->lahan->jenis_kopi }} &bull; {{ $kem->produksi->lahan->petani->kelompok_tani }}
                             </span>
                         </div>
-                        <div class="p-2 bg-white rounded d-inline-block mx-auto mb-3">
-                            {!! \SimpleSoftwareIO\QrCode\Facades\QrCode::size(120)->margin(0)->generate(url('/trace/' . $kem->qr_code_url)) !!}
+                        <div class="p-2 bg-white rounded d-inline-block mx-auto mb-3 position-relative">
+                            <div class="position-relative d-inline-block">
+                                {!! \SimpleSoftwareIO\QrCode\Facades\QrCode::errorCorrection('H')->size(120)->margin(0)->generate(url('/trace/' . $kem->qr_code_url)) !!}
+                                <div class="position-absolute d-flex align-items-center justify-content-center bg-white rounded-circle shadow-sm"
+                                     style="top: 50%; left: 50%; transform: translate(-50%, -50%); width: 34px; height: 34px; padding: 2px; border: 2px solid #DA9F5B; pointer-events: none;">
+                                    <img src="{{ asset('img/icon-128x128.png') }}" alt="KopiLink" class="img-fluid rounded-circle" style="width: 100%; height: 100%; object-fit: contain;">
+                                </div>
+                            </div>
                         </div>
                         <h5 class="text-white font-weight-bold mb-1">{{ $kem->produksi->lahan->petani->nama }}</h5>
                         <p class="text-white-50 small mb-1"><i class="fa fa-map-marker-alt text-primary mr-1"></i> {{ $kem->produksi->lahan->petani->alamat }}</p>

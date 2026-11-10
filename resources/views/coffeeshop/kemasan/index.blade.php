@@ -58,8 +58,12 @@
                             <tr class="{{ !$isActive ? 'table-light text-muted' : '' }}">
                                 <td class="pl-4">
                                     <div class="p-1 bg-white border rounded d-inline-block text-center position-relative" style="width: 68px; height: 68px;">
-                                        <div style="{{ !$isActive ? 'filter: grayscale(100%); opacity: 0.5;' : '' }}">
-                                            {!! \SimpleSoftwareIO\QrCode\Facades\QrCode::size(58)->margin(0)->generate($publicUrl) !!}
+                                        <div class="position-relative d-inline-block" style="{{ !$isActive ? 'filter: grayscale(100%); opacity: 0.5;' : '' }}">
+                                            {!! \SimpleSoftwareIO\QrCode\Facades\QrCode::errorCorrection('H')->size(58)->margin(0)->generate($publicUrl) !!}
+                                            <div class="position-absolute d-flex align-items-center justify-content-center bg-white rounded-circle shadow-sm"
+                                                 style="top: 50%; left: 50%; transform: translate(-50%, -50%); width: 18px; height: 18px; padding: 1.5px; border: 1.5px solid #DA9F5B; pointer-events: none;">
+                                                <img src="{{ asset('img/icon-128x128.png') }}" alt="KopiLink" class="img-fluid rounded-circle" style="width: 100%; height: 100%; object-fit: contain;">
+                                            </div>
                                         </div>
                                         @if(!$isActive)
                                             <span class="badge badge-danger position-absolute" style="top: 2px; right: 2px; font-size: 9px;" title="QR Nonaktif di Publik">OFF</span>

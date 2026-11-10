@@ -99,6 +99,34 @@
             background: #fff;
             border: 1px dashed #ccc;
             border-radius: 4px;
+            position: relative;
+            display: inline-block;
+        }
+
+        .qr-logo-badge {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 36px;
+            height: 36px;
+            background: #ffffff;
+            border-radius: 50%;
+            border: 2px solid #DA9F5B;
+            padding: 2px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        .qr-logo-badge img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 50%;
         }
 
         .sticker-variety {
@@ -148,6 +176,10 @@
                 margin: 0;
                 page-break-inside: avoid;
             }
+            .qr-logo-badge {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
         }
     </style>
 </head>
@@ -170,7 +202,10 @@
         </div>
 
         <div class="qr-wrapper">
-            {!! \SimpleSoftwareIO\QrCode\Facades\QrCode::size(140)->margin(0)->generate($traceUrl) !!}
+            {!! \SimpleSoftwareIO\QrCode\Facades\QrCode::errorCorrection('H')->size(140)->margin(0)->generate($traceUrl) !!}
+            <div class="qr-logo-badge">
+                <img src="{{ asset('img/icon-128x128.png') }}" alt="KopiLink">
+            </div>
         </div>
 
         <div class="sticker-variety">
