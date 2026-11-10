@@ -259,8 +259,8 @@
                             <img id="qrisImageSrc" src="" alt="QRIS Code" class="img-fluid" style="width: 230px; height: 230px; object-fit: contain;">
                             
                             <!-- Logo KopiLink di Tengah QR Code -->
-                            <div class="position-absolute d-flex align-items-center justify-content-center bg-white rounded-circle shadow-sm"
-                                 style="top: 50%; left: 50%; transform: translate(-50%, -50%); width: 44px; height: 44px; padding: 4px; border: 2px solid #DA9F5B; pointer-events: none;">
+                            <div class="position-absolute d-flex align-items-center justify-content-center bg-white rounded-circle shadow"
+                                 style="top: 50%; left: 50%; transform: translate(-50%, -50%); width: 52px; height: 52px; padding: 3px; border: 2.5px solid #DA9F5B; pointer-events: none;">
                                 <img src="{{ asset('img/icon-128x128.png') }}" alt="KopiLink" class="img-fluid rounded-circle" style="width: 100%; height: 100%; object-fit: contain;">
                             </div>
                         </div>
