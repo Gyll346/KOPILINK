@@ -260,7 +260,7 @@
                             
                             <!-- Logo KopiLink di Tengah QR Code -->
                             <div class="position-absolute d-flex align-items-center justify-content-center bg-white rounded-circle shadow"
-                                 style="top: 50%; left: 50%; transform: translate(-50%, -50%); width: 52px; height: 52px; padding: 3px; border: 2.5px solid #DA9F5B; pointer-events: none;">
+                                 style="top: 50%; left: 50%; transform: translate(-50%, -50%); width: 60px; height: 60px; padding: 3px; border: 3px solid #DA9F5B; pointer-events: none;">
                                 <img src="{{ asset('img/icon-128x128.png') }}" alt="KopiLink" class="img-fluid rounded-circle" style="width: 100%; height: 100%; object-fit: contain;">
                             </div>
                         </div>
