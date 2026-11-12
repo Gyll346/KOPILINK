@@ -1,0 +1,29 @@
+<IfModule mod_rewrite.c>
+    <IfModule mod_negotiation.c>
+        Options -MultiViews -Indexes
+    </IfModule>
+
+    RewriteEngine On
+
+    # Keamanan 1: Blokir akses ke file sensitif (.env, artisan, git, composer, dsb.)
+    <FilesMatch "(^\.env|composer\.(json|lock)|package(-lock)?\.json|artisan|\.git|uploads\.ini|Dockerfile|docker-compose\.yml)">
+        <IfModule mod_authz_core.c>
+            Require all denied
+        </IfModule>
+        <IfModule !mod_authz_core.c>
+            Order allow,deny
+            Deny from all
+        </IfModule>
+    </FilesMatch>
+
+    # Keamanan 2: Blokir akses langsung ke direktori internal Laravel
+    RewriteRule ^(app|bootstrap|config|database|resources|routes|storage/logs|tests|vendor)(/.*)?$ - [F,L,NC]
+
+    # Handle Authorization Header (untuk API & Webhook)
+    RewriteCond %{HTTP:Authorization} .
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
+    # Arahkan semua request publik ke folder public/
+    RewriteCond %{REQUEST_URI} !^/public/
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
